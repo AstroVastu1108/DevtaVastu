@@ -321,6 +321,41 @@ const DrawingBoard = ({
     );
   }
 
+  const drawLinesEquallyDivide = (label1, label2, stroke, strokeWidth) => {
+    const point1 = pointLookup[label1];
+    const point2 = pointLookup[label2];
+  
+    if (!point1 || !point2) return null;
+  
+    // Calculate the division points
+    const division1 = {
+      x: point1.x + (point2.x - point1.x) / 3,
+      y: point1.y + (point2.y - point1.y) / 3,
+    };
+    const division2 = {
+      x: point1.x + (2 * (point2.x - point1.x)) / 3,
+      y: point1.y + (2 * (point2.y - point1.y)) / 3,
+    };
+  
+    return (
+      <>
+        {/* Draw the main line */}
+        <line
+          x1={point1.x}
+          y1={point1.y}
+          x2={point2.x}
+          y2={point2.y}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+        />
+        {/* Draw points at the division positions */}
+        <circle cx={division1.x} cy={division1.y} r="4" fill="red" />
+        <circle cx={division2.x} cy={division2.y} r="4" fill="red" />
+      </>
+    );
+  };
+  
+
   const lines = [
     ["N7", "E3"],
     ["N8", "E2"],
@@ -344,7 +379,23 @@ const DrawingBoard = ({
     ["E2", "S8"],
     ["W8", "S2"],
     ["N1", "S1"],
-    ["N2", "E8"]
+    ["N2", "E8"],
+    // new points
+    ["W8", "N2"],
+    ["W7", "N3"],
+    ["W6", "N4"],
+    ["W5", "N5"],
+    ["W4", "N6"],
+    ["W3", "N7"],
+    ["W2", "N8"],
+    ["W1", "E1"],
+    ["S8", "E2"],
+    ["S7", "E3"],
+    ["S6", "E4"],
+    ["S5", "E5"],
+    ["S4", "E6"],
+    ["S3", "E7"],
+    ["S2", "E8"],
   ];
 
   const Marmalines = [
