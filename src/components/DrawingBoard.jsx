@@ -324,9 +324,9 @@ const DrawingBoard = ({
   const drawLinesEquallyDivide = (label1, label2, stroke, strokeWidth) => {
     const point1 = pointLookup[label1];
     const point2 = pointLookup[label2];
-  
+
     if (!point1 || !point2) return null;
-  
+
     // Calculate the division points
     const division1 = {
       x: point1.x + (point2.x - point1.x) / 3,
@@ -336,7 +336,7 @@ const DrawingBoard = ({
       x: point1.x + (2 * (point2.x - point1.x)) / 3,
       y: point1.y + (2 * (point2.y - point1.y)) / 3,
     };
-  
+
     return (
       <>
         {/* Draw the main line */}
@@ -354,7 +354,7 @@ const DrawingBoard = ({
       </>
     );
   };
-  
+
 
   const lines = [
     ["N7", "E3"],
@@ -548,15 +548,15 @@ const DrawingBoard = ({
         }
       }
       const filteredLeftIntersectionPoints = newLeftIntersectionPoints.filter(
-        (newPoint) => 
-          !intersectionPoints.some((existingPoint) => 
+        (newPoint) =>
+          !intersectionPoints.some((existingPoint) =>
             existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
           )
       );
 
       setLeftIntersectionPoints(filteredLeftIntersectionPoints);
     }
-  }, [intersectionsState, points,intersectionPoints]);
+  }, [intersectionsState, points, intersectionPoints]);
 
   useEffect(() => {
     if (intersectionsState.length > 0) {
@@ -676,6 +676,19 @@ const DrawingBoard = ({
     }
   }, [hideCircle, totalLines, angleIncrement, inputDegree, centroid, points]);
 
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
+
+  const handleMouseEnter = (event, point) => {
+    setTooltip({
+      visible: true,
+      x: point.x,
+      y: point.y,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ ...tooltip, visible: false });
+  };
 
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
@@ -878,7 +891,7 @@ const DrawingBoard = ({
                     {intersectionsState.map((intersection, i) => (
                       <g key={i}>
                         <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
-                        <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black"  style={{
+                        <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
                           userSelect: 'none', // Prevent text selection
                           cursor: 'default' // Optional: Make the cursor non-interactive
                         }}>
@@ -924,6 +937,8 @@ const DrawingBoard = ({
                     r={4}
                     fill="green"
                     stroke="black"
+                    onMouseEnter={(e) => handleMouseEnter(e, point)}
+                    onMouseLeave={handleMouseLeave} 
                   />
                 ))}
                 {leftIntersectionPoints.map((point, idx) => (
@@ -934,6 +949,8 @@ const DrawingBoard = ({
                     r={4}
                     fill="blue"
                     stroke="black"
+                    onMouseEnter={(e) => handleMouseEnter(e, point)}
+                    onMouseLeave={handleMouseLeave} 
                   />
                 ))}
                 {MarmaintersectionPoints.map((point, idx) => (
@@ -944,6 +961,8 @@ const DrawingBoard = ({
                     r={4}
                     fill="red"
                     stroke="black"
+                    onMouseEnter={(e) => handleMouseEnter(e, point)}
+                    onMouseLeave={handleMouseLeave} 
                   />
                 ))}
               </g>
@@ -1035,6 +1054,24 @@ const DrawingBoard = ({
             })}
 
           </svg>
+
+          {tooltip.visible && (
+            <div
+              style={{
+                position: 'absolute',
+                left: tooltip.x + 20,
+                top: tooltip.y - 30,
+                backgroundColor: 'white',
+                border: '1px solid black',
+                padding: '5px',
+                borderRadius: '5px',
+                pointerEvents: 'none',
+                fontSize: '12px',
+              }}
+            >
+              x: {tooltip.x}, y: {tooltip.y}
+            </div>
+          )}
 
           <div className="flex flex-col ms-2">
             {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
