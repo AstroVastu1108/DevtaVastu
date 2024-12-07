@@ -381,6 +381,47 @@ const DrawingBoard = ({
     ["N1", "S1"],
     ["N2", "E8"],
     // new points
+    // ["W8", "N2"],
+    // ["W7", "N3"],
+    // ["W6", "N4"],
+    // ["W5", "N5"],
+    // ["W4", "N6"],
+    // ["W3", "N7"],
+    // ["W2", "N8"],
+    // ["W1", "E1"],
+    // ["S8", "E2"],
+    // ["S7", "E3"],
+    // ["S6", "E4"],
+    // ["S5", "E5"],
+    // ["S4", "E6"],
+    // ["S3", "E7"],
+    // ["S2", "E8"],
+  ];
+  const linesLeft = [
+    ["N7", "E3"],
+    ["N8", "E2"],
+    ["N6", "E4"],
+    ["N5", "E5"],
+    ["N5", "E5"],
+    ["N4", "E6"],
+    ["N4", "E6"],
+    ["N3", "E7"],
+    ["N2", "E8"],
+    ["N1", "S1"],
+    ["W8", "S2"],
+    ["W7", "S3"],
+    ["W6", "S4"],
+    ["W5", "S5"],
+    ["W4", "S6"],
+    ["W3", "S7"],
+    ["W2", "S8"],
+    ["N8", "W2"],
+    ["E1", "W1"],
+    ["E2", "S8"],
+    ["W8", "S2"],
+    ["N1", "S1"],
+    ["N2", "E8"],
+    // new points
     ["W8", "N2"],
     ["W7", "N3"],
     ["W6", "N4"],
@@ -453,6 +494,7 @@ const DrawingBoard = ({
   }
 
   const [intersectionPoints, setIntersectionPoints] = useState([]);
+  const [leftIntersectionPoints, setLeftIntersectionPoints] = useState([]);
   const [MarmaintersectionPoints, setMarmaIntersectionPoints] = useState([]);
 
   useEffect(() => {
@@ -481,6 +523,40 @@ const DrawingBoard = ({
       setIntersectionPoints(newIntersectionPoints);
     }
   }, [intersectionsState, points]);
+
+  useEffect(() => {
+    if (intersectionsState.length > 0) {
+      const newLeftIntersectionPoints = [];
+
+      for (let i = 0; i < linesLeft.length; i++) {
+        const line1 = [
+          pointLookup[linesLeft[i][0]],
+          pointLookup[linesLeft[i][1]],
+        ];
+
+        for (let j = i + 1; j < linesLeft.length; j++) {
+          const line2 = [
+            pointLookup[linesLeft[j][0]],
+            pointLookup[linesLeft[j][1]],
+          ];
+
+          const intersection = calculateIntersectionPoins(line1, line2);
+
+          if (intersection) {
+            newLeftIntersectionPoints.push(intersection);
+          }
+        }
+      }
+      const filteredLeftIntersectionPoints = newLeftIntersectionPoints.filter(
+        (newPoint) => 
+          !intersectionPoints.some((existingPoint) => 
+            existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+          )
+      );
+
+      setLeftIntersectionPoints(filteredLeftIntersectionPoints);
+    }
+  }, [intersectionsState, points,intersectionPoints]);
 
   useEffect(() => {
     if (intersectionsState.length > 0) {
@@ -822,6 +898,14 @@ const DrawingBoard = ({
                         </g>
                       );
                     })}
+                    {linesLeft.map((line, index) => {
+                      const [startPoint, endPoint] = line;
+                      return (
+                        <g key={`marma-line-${index}`}>
+                          {drawLines(startPoint, endPoint, "orange", 1)}
+                        </g>
+                      );
+                    })}
 
                     {/* Direction fixed lines */}
                     <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
@@ -839,6 +923,16 @@ const DrawingBoard = ({
                     cy={point.y}
                     r={4}
                     fill="green"
+                    stroke="black"
+                  />
+                ))}
+                {leftIntersectionPoints.map((point, idx) => (
+                  <circle
+                    key={idx}
+                    cx={point.x}
+                    cy={point.y}
+                    r={4}
+                    fill="blue"
                     stroke="black"
                   />
                 ))}
