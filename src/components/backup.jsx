@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { calculateCentroid, pointToLineDistance } from '../utils/geometryUtils';
 import { DEFAULT_LINE_SETS } from '../constants/directions';
 import GridBackground from './GridBackground';
+import FileUpload from './FileUpload';
 import LineControls from './LineControls';
 import jsPDF from "jspdf";
 
-import { Upload } from 'lucide-react';
 const DEFAULT_POINTS = [
   { x: 120, y: 120 },
   { x: 560, y: 120 },
@@ -24,17 +24,8 @@ const DrawingBoard = ({
   const [points, setPoints] = useState(DEFAULT_POINTS);
   const [centroid, setCentroid] = useState(null);
   const [snapToCentroid, setSnapToCentroid] = useState(true);
-  // Show Marma lines
-  const [hideMarmaLines, setHideMarmaLines] = useState(false);
-  // Show Marma points
-  const [hideMarmapoints, setHideMarmapoints] = useState(false);
-  // file upload state
-  const [fileUploaded, setFileUploaded] = useState(false);
-  // circle visible state
-  const [hideCircle, setHideCircle] = useState(false);
-  // Show Devta
-  const [showDevta, setShowDevta] = useState(false);
-
+  const [hideCircle, setHideCircle] = useState(true);
+  const [hideMarmaLines, setHideMarmaLines] = useState(true);
 
   const svgRef = useRef(null);
   const printRef = useRef(null);
@@ -71,7 +62,6 @@ const DrawingBoard = ({
 
       if (fileType.includes("image")) {
         // If the uploaded file is an image
-        setFileUploaded(true)
         const reader = new FileReader();
         reader.onloadend = () => {
           setPreviewUrl(reader.result);
@@ -700,80 +690,16 @@ const DrawingBoard = ({
     setTooltip({ ...tooltip, visible: false });
   };
 
-  const intermediatePoints1 = []; // Array to store the first intermediate points (P1)
-  const intermediatePoints2 = []; // Array to store the second intermediate points (P2)
-
-
-
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
       <div className="flex flex-col w-1/4 p-4 bg-white rounded shadow-md">
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleFileUpload}
+        <button
+          onClick={exportToPDF}
+          className="download-button mb-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
         >
-          <label className=" flex items-center gap-2 px-4 py-2 mb-4 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-600 transition-colors">
-            <Upload size={20} />
-            <span>Upload File</span>
-            <input
-              type="file"
-              className="hidden"
-              accept=".jpg,.jpeg,.png,.pdf"
-              onChange={handleFileUpload}
-              // disabled={fileUploaded}
-            />
-          </label>
-        </div>
+          Download SVG
+        </button>
 
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={hideCircle}
-            onChange={(e) => setHideCircle(e.target.checked)}
-            id="hideCircle"
-            className="mr-2"
-          />
-          <label htmlFor="hideCircle">Show Chakra</label>
-        </div>
-
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={showDevta}
-            onChange={(e) => setShowDevta(e.target.checked)}
-            id="showDevta"
-            className="mr-2"
-          />
-          <label htmlFor="showDevta">Show Devta</label>
-        </div>
-
-        
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={hideMarmaLines}
-            onChange={(e) => setHideMarmaLines(e.target.checked)}
-            id="hideMarmaLines"
-            className="mr-2"
-          />
-          <label htmlFor="hideMarmaLines">Show Marma Lines</label>
-        </div>
-
-        
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={hideMarmapoints}
-            onChange={(e) => setHideMarmapoints(e.target.checked)}
-            id="hideMarmapoints"
-            className="mr-2"
-          />
-          <label htmlFor="hideMarmapoints">Show Marma Points</label>
-        </div>
-
-
-
-        { hideCircle && fileUploaded && <> 
         {lineSets.map((lineSet, i) => (
           <LineControls
             key={i}
@@ -782,6 +708,8 @@ const DrawingBoard = ({
             onUpdate={handleLineSetUpdate}
           />
         ))}
+
+        <FileUpload onFileSelect={handleFileUpload} />
 
         <div className="flex items-center mb-2">
           <input
@@ -792,6 +720,28 @@ const DrawingBoard = ({
             className="mr-2"
           />
           <label htmlFor="snapToCentroid">Snap to Centroid</label>
+        </div>
+
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            checked={hideCircle}
+            onChange={(e) => setHideCircle(e.target.checked)}
+            id="hideCircle"
+            className="mr-2"
+          />
+          <label htmlFor="hideCircle">Hide Circle</label>
+        </div>
+
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            checked={hideMarmaLines}
+            onChange={(e) => setHideMarmaLines(e.target.checked)}
+            id="hideMarmaLines"
+            className="mr-2"
+          />
+          <label htmlFor="hideMarmaLines">Hide Marma Lines</label>
         </div>
 
         <label className="flex items-center">
@@ -805,14 +755,6 @@ const DrawingBoard = ({
             aria-label="Degree input"
           />
         </label>
-        </>}
-        
-        <button
-          onClick={exportToPDF}
-          className="download-button mb-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
-        >
-          Download SVG
-        </button>
       </div>
 
       <div className="flex-grow p-4" ref={printRef}>
@@ -841,121 +783,112 @@ const DrawingBoard = ({
             onDoubleClick={handleDoubleClick}
             style={{ touchAction: 'none', border: "0" }}
           >
+            <defs>
+              <clipPath id="svgViewBox">
+                <rect width={width} height={height} />
+              </clipPath>
+            </defs>
 
-            {!fileUploaded && <>
+            <g clipPath="url(#svgViewBox)">
+              {/* Layer 1: Uploaded File */}
+              <g className="file-layer">
+
+                <image
+                  href={previewUrl}
+                  style={{ maxWidth: "100%", maxHeight: "400px" }}
+                  width={width}
+                  height={height}
+                />
+              </g>
+
               <GridBackground width={width} height={height} gridSize={gridSize} />
-            </>}
 
-            {fileUploaded &&
-              <>
+              <g className="drawing-layer" style={{ pointerEvents: 'all' }}>
+                {points.length > 1 && (
+                  <polygon
+                    points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                    fill="none"
+                    stroke="blue"
+                    strokeWidth="1"
+                  />
+                )}
 
+                {/* Draw points */}
+                {points.map((point, i) => (
+                  <circle
+                    key={i}
+                    cx={point.x}
+                    cy={point.y}
+                    r="5"
+                    fill="red"
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                ))}
 
-                <defs>
-                  <clipPath id="svgViewBox">
-                    <rect width={width} height={height} />
-                  </clipPath>
-                </defs>
-
-                <g clipPath="url(#svgViewBox)">
-                  {/* Layer 1: Uploaded File */}
-                  <g className="file-layer">
-
-                    <image
-                      href={previewUrl}
-                      style={{ maxWidth: "100%", maxHeight: "400px" }}
-                      width={width}
-                      height={height}
+                {centroid && (
+                  <>
+                    <circle
+                      cx={centroid.x}
+                      cy={centroid.y}
+                      r="5"
+                      fill="green"
+                      stroke="white"
+                      strokeWidth="2"
                     />
-                  </g>
 
-                  <GridBackground width={width} height={height} gridSize={gridSize} />
+                    {hideCircle &&
+                      Array.from({ length: totalLines }).map((_, index) => {
+                        const rotationIndex = index % totalLines;
+                        const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                        const radian = (angle * Math.PI) / 180;
 
-                  <g className="drawing-layer" style={{ pointerEvents: 'all' }}>
-                    {points.length > 1 && (
-                      <polygon
-                        points={points.map(p => `${p.x},${p.y}`).join(' ')}
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="1"
-                      />
-                    )}
+                        const squareSize = 676;
+                        const halfSize = squareSize;
+                        const margin = 26;
 
-                    {/* Draw points */}
-                    {points.map((point, i) => (
-                      <circle
-                        key={i}
-                        cx={point.x}
-                        cy={point.y}
-                        r="5"
-                        fill="red"
-                        stroke="white"
-                        strokeWidth="2"
-                      />
-                    ))}
+                        let endX, endY;
+                        const slope = Math.tan(radian);
+                        const rightBoundary = centroid.x + halfSize - margin;
+                        const leftBoundary = centroid.x - halfSize + margin;
+                        const topBoundary = centroid.y - halfSize + margin;
+                        const bottomBoundary = centroid.y + halfSize - margin;
 
-                    {centroid && (
-                      <>
-                        <circle
-                          cx={centroid.x}
-                          cy={centroid.y}
-                          r="5"
-                          fill="green"
-                          stroke="white"
-                          strokeWidth="2"
-                        />
+                        if (Math.abs(slope) <= 1) {
+                          if (Math.cos(radian) > 0) {
+                            endX = rightBoundary;
+                            endY = centroid.y + slope * (rightBoundary - centroid.x);
+                          } else {
+                            endX = leftBoundary;
+                            endY = centroid.y - slope * (centroid.x - leftBoundary);
+                          }
+                        } else {
+                          if (Math.sin(radian) > 0) {
+                            endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+                            endY = bottomBoundary;
+                          } else {
+                            endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+                            endY = topBoundary;
+                          }
+                        }
 
-                        {hideCircle &&
-                          Array.from({ length: totalLines }).map((_, index) => {
-                            const rotationIndex = index % totalLines;
-                            const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                            const radian = (angle * Math.PI) / 180;
+                        const style = lineSets[index % lineSets.length];
 
-                            const squareSize = 676;
-                            const halfSize = squareSize;
-                            const margin = 26;
-
-                            let endX, endY;
-                            const slope = Math.tan(radian);
-                            const rightBoundary = centroid.x + halfSize - margin;
-                            const leftBoundary = centroid.x - halfSize + margin;
-                            const topBoundary = centroid.y - halfSize + margin;
-                            const bottomBoundary = centroid.y + halfSize - margin;
-
-                            if (Math.abs(slope) <= 1) {
-                              if (Math.cos(radian) > 0) {
-                                endX = rightBoundary;
-                                endY = centroid.y + slope * (rightBoundary - centroid.x);
-                              } else {
-                                endX = leftBoundary;
-                                endY = centroid.y - slope * (centroid.x - leftBoundary);
-                              }
-                            } else {
-                              if (Math.sin(radian) > 0) {
-                                endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
-                                endY = bottomBoundary;
-                              } else {
-                                endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
-                                endY = topBoundary;
-                              }
-                            }
-
-                            const style = lineSets[index % lineSets.length];
-
-                            return (
-                              <g key={index}>
-                                <line
-                                  x1={centroid.x}
-                                  y1={centroid.y}
-                                  x2={endX}
-                                  y2={endY}
-                                  stroke={style.stroke}
-                                  strokeWidth={style.strokeWidth}
-                                  strokeDasharray={style.strokeDasharray}
-                                />
-                              </g>
-                            );
-                          })}
-                        {/* {intersectionsState.map((intersection, i) => (
+                        return (
+                          <g key={index}>
+                            <line
+                              x1={centroid.x}
+                              y1={centroid.y}
+                              x2={endX}
+                              y2={endY}
+                              stroke={style.stroke}
+                              strokeWidth={style.strokeWidth}
+                              strokeDasharray={style.strokeDasharray}
+                            />
+                          </g>
+                        );
+                      })}
+                    {intersectionsState.map((intersection, i) => (
                       <g key={i}>
                         <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
                         <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
@@ -965,255 +898,160 @@ const DrawingBoard = ({
                           {intersection.label}
                         </text>
                       </g>
-                    ))} */}
+                    ))}
+                  </>
+                )}
+                {hideMarmaLines && (
+                  <>
+                    {lines.map((line, index) => {
+                      const [startPoint, endPoint] = line;
+                      return (
+                        <g key={`marma-line-${index}`}>
+                          {drawLines(startPoint, endPoint, "purple", 1)}
+                        </g>
+                      );
+                    })}
+                    {linesLeft.map((line, index) => {
+                      const [startPoint, endPoint] = line;
+                      return (
+                        <g key={`marma-line-${index}`}>
+                          {drawLines(startPoint, endPoint, "orange", 1)}
+                        </g>
+                      );
+                    })}
 
+                    {/* Direction fixed lines */}
+                    <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
+                    <g key="fixed-line-e1-w1">{drawLines("E1", "W1", "orange", 1)}</g>
+                    <g key="fixed-line-e2-s8">{drawLines("E2", "S8", "orange", 1)}</g>
+                    <g key="fixed-line-w8-s2">{drawLines("W8", "S2", "orange", 1)}</g>
+                    <g key="fixed-line-n1-s1">{drawLines("N1", "S1", "orange", 1)}</g>
+                    <g key="fixed-line-n2-e8">{drawLines("N2", "E8", "orange", 1)}</g>
+                  </>
+                )}
+                {intersectionPoints.map((point, idx) => (
+                  <circle
+                    key={idx}
+                    cx={point.x}
+                    cy={point.y}
+                    r={4}
+                    fill="green"
+                    stroke="black"
+                    onMouseEnter={(e) => handleMouseEnter(e, point)}
+                    onMouseLeave={handleMouseLeave} 
+                  />
+                ))}
+                {leftIntersectionPoints.map((point, idx) => (
+                  <circle
+                    key={idx}
+                    cx={point.x}
+                    cy={point.y}
+                    r={4}
+                    fill="blue"
+                    stroke="black"
+                    onMouseEnter={(e) => handleMouseEnter(e, point)}
+                    onMouseLeave={handleMouseLeave} 
+                  />
+                ))}
+                {MarmaintersectionPoints.map((point, idx) => (
+                  <circle
+                    key={idx}
+                    cx={point.x}
+                    cy={point.y}
+                    r={4}
+                    fill="red"
+                    stroke="black"
+                    onMouseEnter={(e) => handleMouseEnter(e, point)}
+                    onMouseLeave={handleMouseLeave} 
+                  />
+                ))}
+              </g>
+            </g>
+            <rect x={0} y={0} width="676" height="26" fill="white" mask="url(#white-mask)" />
+            <rect x={0} y={0} width="26" height="676" fill="white" mask="url(#white-mask)" />
+            <rect x={0} y={650} width="676" height="26" fill="white" mask="url(#white-mask)" />
+            <rect x={650} y={0} width="26" height="676" fill="white" mask="url(#white-mask)" />
 
-                        {showDevta ? <>
+            {Array.from({ length: totalLines }).map((_, index) => {
+              const rotationIndex = index % totalLines;
+              const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+              const radian = (angle * Math.PI) / 180;
 
-                          {intersectionsState.map((intersection, i) => {
-                            // Calculate the delta (difference) for x and y coordinates
-                            const dx = (centroid.x - intersection.point.x) / 3;
-                            const dy = (centroid.y - intersection.point.y) / 3;
+              const squareSize = 670;
+              const halfSize = squareSize / 2;
+              const margin = 26;
+              const canvasBounds = { xMin: 0, xMax: 676, yMin: 0, yMax: 676 };
+              const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, 0));
+              const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, 0));
 
-                            // Calculate the first intermediate point (P1)
-                            const point1 = { x: intersection.point.x + dx, y: intersection.point.y + dy };
-                            intermediatePoints1.push(point1); // Add P1 to the array
+              const slope = Math.tan(radian);
+              const rightBoundary = clampedX + halfSize - margin;
+              const leftBoundary = clampedX - halfSize + margin;
+              const topBoundary = clampedY - halfSize + margin;
+              const bottomBoundary = clampedY + halfSize - margin;
+              const direction = index % 2 === 0 ? DIRECTION_DATA[index / 2] : null;
 
-                            // Calculate the second intermediate point (P2)
-                            const point2 = { x: intersection.point.x + 2 * dx, y: intersection.point.y + 2 * dy };
-                            intermediatePoints2.push(point2); // Add P2 to the array
+              let endX, endY;
+              let labelX, labelY;
+              const labelOffset = 1.04; // Label position offset
 
-                            return (
-                              <g key={i}>
-                                {/* Draw the intersection point */}
-                                <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
-                                <text
-                                  x={intersection.point.x + 5}
-                                  y={intersection.point.y - 5}
-                                  fontSize="10"
-                                  fill="black"
-                                  style={{
-                                    userSelect: 'none', // Prevent text selection
-                                    cursor: 'default', // Optional: Make the cursor non-interactive
-                                  }}
-                                >
-                                  {intersection.label}
-                                </text>
+              if (Math.abs(slope) <= 1) {
+                endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                endY = clampedY + slope * (endX - clampedX);
+                labelX = clampedX + (endX - clampedX) * labelOffset + 340;
+                labelY = clampedY + (endY - clampedY) * labelOffset + 340;
 
-                                {/* Draw the first intermediate point (P1) */}
-                                <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />
-                                {/* <text
-        x={point1.x + 5}
-        y={point1.y - 5}
-        fontSize="10"
-        fill="black"
-        style={{ userSelect: 'none', cursor: 'default' }}
-      >
-        P1-{i}
-      </text> */}
-
-                                {/* Draw the second intermediate point (P2) */}
-                                <circle cx={point2.x} cy={point2.y} r="3" fill="blue" />
-                                {/* <text
-        x={point2.x + 5}
-        y={point2.y - 5}
-        fontSize="10"
-        fill="black"
-        style={{ userSelect: 'none', cursor: 'default' }}
-      >
-        P2-{i}
-      </text> */}
-                              </g>
-                            );
-                          })}
-
-                          {intermediatePoints1.length > 1 && (
-                            <polyline
-                              points={intermediatePoints1.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints1[0].x},${intermediatePoints1[0].y}`} // Connect back to the start point
-                              fill="none"
-                              stroke="purple"
-                              strokeWidth="2"
-                            />
-                          )}
-
-                          {intermediatePoints2.length > 1 && (
-                            <polyline
-                              points={intermediatePoints2.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints2[0].x},${intermediatePoints2[0].y}`}
-                              fill="none"
-                              stroke="orange" // Different color for distinction
-                              strokeWidth="2"
-                            />
-                          )}
-                        </> : <>
-                          {intersectionsState.map((intersection, i) => (
-                            <g key={i}>
-                              <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
-                              <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
-                                userSelect: 'none', // Prevent text selection
-                                cursor: 'default' // Optional: Make the cursor non-interactive
-                              }}>
-                                {intersection.label}
-                              </text>
-                            </g>
-                          ))}
-                        </>}
-                      </>
+                return (
+                  <g key={index}>
+                    {direction && (
+                      <text
+                        x={labelX}
+                        y={labelY}
+                        fontSize="18"
+                        fontWeight="500"
+                        fill="purple"
+                        transform={Math.cos(radian) > 0 ? `rotate(90, ${labelX}, ${labelY})` : `rotate(-90, ${labelX}, ${labelY})`}
+                        textAnchor="middle"
+                        alignmentBaseline="middle"
+                        style={{
+                          userSelect: 'none', // Prevent text selection
+                          cursor: 'default' // Optional: Make the cursor non-interactive
+                        }}
+                      >
+                        {direction}
+                      </text>
                     )}
-                    {hideMarmaLines && (
-                      <>
-                        {lines.map((line, index) => {
-                          const [startPoint, endPoint] = line;
-                          return (
-                            <g key={`marma-line-${index}`}>
-                              {drawLines(startPoint, endPoint, "purple", 1)}
-                            </g>
-                          );
-                        })}
-                        {linesLeft.map((line, index) => {
-                          const [startPoint, endPoint] = line;
-                          return (
-                            <g key={`marma-line-${index}`}>
-                              {drawLines(startPoint, endPoint, "orange", 1)}
-                            </g>
-                          );
-                        })}
-
-                        {/* Direction fixed lines */}
-                        <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
-                        <g key="fixed-line-e1-w1">{drawLines("E1", "W1", "orange", 1)}</g>
-                        <g key="fixed-line-e2-s8">{drawLines("E2", "S8", "orange", 1)}</g>
-                        <g key="fixed-line-w8-s2">{drawLines("W8", "S2", "orange", 1)}</g>
-                        <g key="fixed-line-n1-s1">{drawLines("N1", "S1", "orange", 1)}</g>
-                        <g key="fixed-line-n2-e8">{drawLines("N2", "E8", "orange", 1)}</g>
-                      </>
-                    )}
-                    { hideMarmapoints && <>
-                    {intersectionPoints.map((point, idx) => (
-                      <circle
-                        key={idx}
-                        cx={point.x}
-                        cy={point.y}
-                        r={4}
-                        fill="green"
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point)}
-                        onMouseLeave={handleMouseLeave}
-                      />
-                    ))}
-                    {leftIntersectionPoints.map((point, idx) => (
-                      <circle
-                        key={idx}
-                        cx={point.x}
-                        cy={point.y}
-                        r={4}
-                        fill="blue"
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point)}
-                        onMouseLeave={handleMouseLeave}
-                      />
-                    ))}
-                    {MarmaintersectionPoints.map((point, idx) => (
-                      <circle
-                        key={idx}
-                        cx={point.x}
-                        cy={point.y}
-                        r={4}
-                        fill="red"
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point)}
-                        onMouseLeave={handleMouseLeave}
-                      />
-                    ))}
-                    </>}
                   </g>
-                </g>
-                <rect x={0} y={0} width="676" height="26" fill="white" mask="url(#white-mask)" />
-                <rect x={0} y={0} width="26" height="676" fill="white" mask="url(#white-mask)" />
-                <rect x={0} y={650} width="676" height="26" fill="white" mask="url(#white-mask)" />
-                <rect x={650} y={0} width="26" height="676" fill="white" mask="url(#white-mask)" />
+                );
+              } else {
+                endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                endX = clampedX + (1 / slope) * (endY - clampedY);
+                labelX = clampedX + (endX - clampedX) * labelOffset + 340;
+                labelY = clampedY + (endY - clampedY) * labelOffset + 340;
 
-                {Array.from({ length: totalLines }).map((_, index) => {
-                  const rotationIndex = index % totalLines;
-                  const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                  const radian = (angle * Math.PI) / 180;
-
-                  const squareSize = 670;
-                  const halfSize = squareSize / 2;
-                  const margin = 26;
-                  const canvasBounds = { xMin: 0, xMax: 676, yMin: 0, yMax: 676 };
-                  const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, 0));
-                  const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, 0));
-
-                  const slope = Math.tan(radian);
-                  const rightBoundary = clampedX + halfSize - margin;
-                  const leftBoundary = clampedX - halfSize + margin;
-                  const topBoundary = clampedY - halfSize + margin;
-                  const bottomBoundary = clampedY + halfSize - margin;
-                  const direction = index % 2 === 0 ? DIRECTION_DATA[index / 2] : null;
-
-                  let endX, endY;
-                  let labelX, labelY;
-                  const labelOffset = 1.04; // Label position offset
-
-                  if (Math.abs(slope) <= 1) {
-                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
-                    endY = clampedY + slope * (endX - clampedX);
-                    labelX = clampedX + (endX - clampedX) * labelOffset + 340;
-                    labelY = clampedY + (endY - clampedY) * labelOffset + 340;
-
-                    return (
-                      <g key={index}>
-                        {direction && (
-                          <text
-                            x={labelX}
-                            y={labelY}
-                            fontSize="18"
-                            fontWeight="500"
-                            fill="purple"
-                            transform={Math.cos(radian) > 0 ? `rotate(90, ${labelX}, ${labelY})` : `rotate(-90, ${labelX}, ${labelY})`}
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                            style={{
-                              userSelect: 'none', // Prevent text selection
-                              cursor: 'default' // Optional: Make the cursor non-interactive
-                            }}
-                          >
-                            {direction}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  } else {
-                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
-                    endX = clampedX + (1 / slope) * (endY - clampedY);
-                    labelX = clampedX + (endX - clampedX) * labelOffset + 340;
-                    labelY = clampedY + (endY - clampedY) * labelOffset + 340;
-
-                    return (
-                      <g key={index}>
-                        {direction && (
-                          <text
-                            x={labelX}
-                            y={labelY}
-                            fontSize="18"
-                            fontWeight="500"
-                            fill="purple"
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                            style={{
-                              userSelect: 'none', // Prevent text selection
-                              cursor: 'default' // Optional: Make the cursor non-interactive
-                            }}
-                          >
-                            {direction}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  }
-                })}
-              </>
-            }
+                return (
+                  <g key={index}>
+                    {direction && (
+                      <text
+                        x={labelX}
+                        y={labelY}
+                        fontSize="18"
+                        fontWeight="500"
+                        fill="purple"
+                        textAnchor="middle"
+                        alignmentBaseline="middle"
+                        style={{
+                          userSelect: 'none', // Prevent text selection
+                          cursor: 'default' // Optional: Make the cursor non-interactive
+                        }}
+                      >
+                        {direction}
+                      </text>
+                    )}
+                  </g>
+                );
+              }
+            })}
 
           </svg>
 

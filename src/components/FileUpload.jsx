@@ -7,7 +7,6 @@ const FileUpload = ({ onFileSelect }) => {
 
   return (
     <div
-      className="absolute top-4 right-4 z-10"
       onDragOver={(e) => e.preventDefault()}
       onDrop={onFileSelect}
     >
