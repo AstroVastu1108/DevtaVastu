@@ -597,93 +597,93 @@ const DrawingBoard = ({
 
 
   useEffect(() => {
-    if (hideCircle) {
-      const newIntersections = [];
+    // if (hideCircle) {
+    const newIntersections = [];
 
-      Array.from({ length: totalLines }).forEach((_, index) => {
-        const rotationIndex = index % totalLines;
-        const angle = rotationIndex * angleIncrement + (360 + inputDegree);
-        const radian = (angle * Math.PI) / 180;
+    Array.from({ length: totalLines }).forEach((_, index) => {
+      const rotationIndex = index % totalLines;
+      const angle = rotationIndex * angleIncrement + (360 + inputDegree);
+      const radian = (angle * Math.PI) / 180;
 
-        const squareSize = 676; // Define your square size
-        const halfSize = squareSize / 2; // Calculate half size
-        const margin = 26; // Define your margin
+      const squareSize = 676; // Define your square size
+      const halfSize = squareSize / 2; // Calculate half size
+      const margin = 26; // Define your margin
 
-        // Check if centroid is defined and has valid x, y properties
-        if (centroid && typeof centroid.x === 'number' && typeof centroid.y === 'number') {
-          let endX, endY;
-          const slope = Math.tan(radian);
-          const rightBoundary = centroid.x + halfSize - margin;
-          const leftBoundary = centroid.x - halfSize + margin;
-          const topBoundary = centroid.y - halfSize + margin;
-          const bottomBoundary = centroid.y + halfSize - margin;
+      // Check if centroid is defined and has valid x, y properties
+      if (centroid && typeof centroid.x === 'number' && typeof centroid.y === 'number') {
+        let endX, endY;
+        const slope = Math.tan(radian);
+        const rightBoundary = centroid.x + halfSize - margin;
+        const leftBoundary = centroid.x - halfSize + margin;
+        const topBoundary = centroid.y - halfSize + margin;
+        const bottomBoundary = centroid.y + halfSize - margin;
 
-          // Determine line endpoint based on slope
-          if (Math.abs(slope) <= 1) {
-            if (Math.cos(radian) > 0) {
-              endX = rightBoundary;
-              endY = centroid.y + slope * (rightBoundary - centroid.x);
-            } else {
-              endX = leftBoundary;
-              endY = centroid.y - slope * (centroid.x - leftBoundary);
-            }
+        // Determine line endpoint based on slope
+        if (Math.abs(slope) <= 1) {
+          if (Math.cos(radian) > 0) {
+            endX = rightBoundary;
+            endY = centroid.y + slope * (rightBoundary - centroid.x);
           } else {
-            if (Math.sin(radian) > 0) {
-              endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
-              endY = bottomBoundary;
-            } else {
-              endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
-              endY = topBoundary;
-            }
+            endX = leftBoundary;
+            endY = centroid.y - slope * (centroid.x - leftBoundary);
           }
-
-          let labelPrefix;
-          let labelIndex;
-
-          // Assign labels based on rotation index
-          if (rotationIndex >= 20 && rotationIndex <= 27) {
-            labelPrefix = "N";
-            labelIndex = rotationIndex - 19; // N1-N8
-          } else if (rotationIndex >= 28 || rotationIndex <= 3) {
-            labelPrefix = "E";
-            labelIndex = rotationIndex >= 28 ? rotationIndex - 27 : rotationIndex + 5; // E1-E8
-          } else if (rotationIndex >= 4 && rotationIndex <= 11) {
-            labelPrefix = "S";
-            labelIndex = rotationIndex - 3; // S1-S8
-          } else if (rotationIndex >= 12 && rotationIndex <= 19) {
-            labelPrefix = "W";
-            labelIndex = rotationIndex - 11; // W1-W8
+        } else {
+          if (Math.sin(radian) > 0) {
+            endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+            endY = bottomBoundary;
+          } else {
+            endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+            endY = topBoundary;
           }
+        }
 
-          // Calculate intersections if points are valid
-          if (points.length > 1) {
-            for (let i = 0; i < points.length; i++) {
-              const nextIndex = (i + 1) % points.length;
-              const intersection = calculateLineIntersection(
-                centroid.x,
-                centroid.y,
-                endX,
-                endY,
-                points[i].x,
-                points[i].y,
-                points[nextIndex].x,
-                points[nextIndex].y
-              );
+        let labelPrefix;
+        let labelIndex;
 
-              // Only push valid intersections
-              if (intersection) {
-                newIntersections.push({
-                  point: intersection,
-                  label: `${labelPrefix}${labelIndex}`,
-                });
-              }
+        // Assign labels based on rotation index
+        if (rotationIndex >= 20 && rotationIndex <= 27) {
+          labelPrefix = "N";
+          labelIndex = rotationIndex - 19; // N1-N8
+        } else if (rotationIndex >= 28 || rotationIndex <= 3) {
+          labelPrefix = "E";
+          labelIndex = rotationIndex >= 28 ? rotationIndex - 27 : rotationIndex + 5; // E1-E8
+        } else if (rotationIndex >= 4 && rotationIndex <= 11) {
+          labelPrefix = "S";
+          labelIndex = rotationIndex - 3; // S1-S8
+        } else if (rotationIndex >= 12 && rotationIndex <= 19) {
+          labelPrefix = "W";
+          labelIndex = rotationIndex - 11; // W1-W8
+        }
+
+        // Calculate intersections if points are valid
+        if (points.length > 1) {
+          for (let i = 0; i < points.length; i++) {
+            const nextIndex = (i + 1) % points.length;
+            const intersection = calculateLineIntersection(
+              centroid.x,
+              centroid.y,
+              endX,
+              endY,
+              points[i].x,
+              points[i].y,
+              points[nextIndex].x,
+              points[nextIndex].y
+            );
+
+            // Only push valid intersections
+            if (intersection) {
+              newIntersections.push({
+                point: intersection,
+                label: `${labelPrefix}${labelIndex}`,
+              });
             }
           }
         }
-      });
+      }
+    });
 
-      setIntersectionsState(newIntersections);
-    }
+    setIntersectionsState(newIntersections);
+    // }
   }, [hideCircle, totalLines, angleIncrement, inputDegree, centroid, points]);
 
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
@@ -720,7 +720,7 @@ const DrawingBoard = ({
               className="hidden"
               accept=".jpg,.jpeg,.png,.pdf"
               onChange={handleFileUpload}
-              // disabled={fileUploaded}
+            // disabled={fileUploaded}
             />
           </label>
         </div>
@@ -747,7 +747,7 @@ const DrawingBoard = ({
           <label htmlFor="showDevta">Show Devta</label>
         </div>
 
-        
+
         <div className="flex items-center mb-2">
           <input
             type="checkbox"
@@ -759,7 +759,7 @@ const DrawingBoard = ({
           <label htmlFor="hideMarmaLines">Show Marma Lines</label>
         </div>
 
-        
+
         <div className="flex items-center mb-2">
           <input
             type="checkbox"
@@ -773,40 +773,40 @@ const DrawingBoard = ({
 
 
 
-        { hideCircle && fileUploaded && <> 
-        {lineSets.map((lineSet, i) => (
-          <LineControls
-            key={i}
-            lineSet={lineSet}
-            setIndex={i}
-            onUpdate={handleLineSetUpdate}
-          />
-        ))}
+        {hideCircle && fileUploaded && <>
+          {lineSets.map((lineSet, i) => (
+            <LineControls
+              key={i}
+              lineSet={lineSet}
+              setIndex={i}
+              onUpdate={handleLineSetUpdate}
+            />
+          ))}
 
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={snapToCentroid}
-            onChange={(e) => setSnapToCentroid(e.target.checked)}
-            id="snapToCentroid"
-            className="mr-2"
-          />
-          <label htmlFor="snapToCentroid">Snap to Centroid</label>
-        </div>
+          <div className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              checked={snapToCentroid}
+              onChange={(e) => setSnapToCentroid(e.target.checked)}
+              id="snapToCentroid"
+              className="mr-2"
+            />
+            <label htmlFor="snapToCentroid">Snap to Centroid</label>
+          </div>
 
-        <label className="flex items-center">
-          Enter Degree:
-          <input
-            type="number"
-            value={inputDegree}
-            onChange={handleInputChange}
-            className="border border-gray-300 p-1 rounded ml-2 w-16"
-            placeholder="0"
-            aria-label="Degree input"
-          />
-        </label>
+          <label className="flex items-center">
+            Enter Degree:
+            <input
+              type="number"
+              value={inputDegree}
+              onChange={handleInputChange}
+              className="border border-gray-300 p-1 rounded ml-2 w-16"
+              placeholder="0"
+              aria-label="Degree input"
+            />
+          </label>
         </>}
-        
+
         <button
           onClick={exportToPDF}
           className="download-button mb-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
@@ -986,6 +986,7 @@ const DrawingBoard = ({
                             return (
                               <g key={i}>
                                 {/* Draw the intersection point */}
+                                {hideCircle && <> 
                                 <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
                                 <text
                                   x={intersection.point.x + 5}
@@ -999,6 +1000,7 @@ const DrawingBoard = ({
                                 >
                                   {intersection.label}
                                 </text>
+                                </>}
 
                                 {/* Draw the first intermediate point (P1) */}
                                 <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />
@@ -1045,6 +1047,7 @@ const DrawingBoard = ({
                             />
                           )}
                         </> : <>
+                        {hideCircle && <>
                           {intersectionsState.map((intersection, i) => (
                             <g key={i}>
                               <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
@@ -1056,6 +1059,7 @@ const DrawingBoard = ({
                               </text>
                             </g>
                           ))}
+                        </>}
                         </>}
                       </>
                     )}
@@ -1087,43 +1091,43 @@ const DrawingBoard = ({
                         <g key="fixed-line-n2-e8">{drawLines("N2", "E8", "orange", 1)}</g>
                       </>
                     )}
-                    { hideMarmapoints && <>
-                    {intersectionPoints.map((point, idx) => (
-                      <circle
-                        key={idx}
-                        cx={point.x}
-                        cy={point.y}
-                        r={4}
-                        fill="green"
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point)}
-                        onMouseLeave={handleMouseLeave}
-                      />
-                    ))}
-                    {leftIntersectionPoints.map((point, idx) => (
-                      <circle
-                        key={idx}
-                        cx={point.x}
-                        cy={point.y}
-                        r={4}
-                        fill="blue"
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point)}
-                        onMouseLeave={handleMouseLeave}
-                      />
-                    ))}
-                    {MarmaintersectionPoints.map((point, idx) => (
-                      <circle
-                        key={idx}
-                        cx={point.x}
-                        cy={point.y}
-                        r={4}
-                        fill="red"
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point)}
-                        onMouseLeave={handleMouseLeave}
-                      />
-                    ))}
+                    {hideMarmapoints && <>
+                      {intersectionPoints.map((point, idx) => (
+                        <circle
+                          key={idx}
+                          cx={point.x}
+                          cy={point.y}
+                          r={4}
+                          fill="green"
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          onMouseLeave={handleMouseLeave}
+                        />
+                      ))}
+                      {leftIntersectionPoints.map((point, idx) => (
+                        <circle
+                          key={idx}
+                          cx={point.x}
+                          cy={point.y}
+                          r={4}
+                          fill="blue"
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          onMouseLeave={handleMouseLeave}
+                        />
+                      ))}
+                      {MarmaintersectionPoints.map((point, idx) => (
+                        <circle
+                          key={idx}
+                          cx={point.x}
+                          cy={point.y}
+                          r={4}
+                          fill="red"
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          onMouseLeave={handleMouseLeave}
+                        />
+                      ))}
                     </>}
                   </g>
                 </g>
