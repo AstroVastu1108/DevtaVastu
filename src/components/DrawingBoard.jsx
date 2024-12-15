@@ -701,9 +701,99 @@ const DrawingBoard = ({
   };
 
   const intermediatePoints1 = []; // Array to store the first intermediate points (P1)
+  const intermediatePoints1Test = []; // Array to store the first intermediate points (P1)
   const intermediatePoints2 = []; // Array to store the second intermediate points (P2)
+  const intermediatePoints2Test = []; // Array to store the second intermediate points (P2)
+  const [intersactMidIntermediatePoints, setIntersactMidIntermediatePoints] = useState([]); // Array to store the second intermediate points (P2)
+
+  const calculateMidpoint = (pointA, pointB) => {
+    return {
+      x: (pointA.x + pointB.x) / 2,
+      y: (pointA.y + pointB.y) / 2,
+    };
+  };
+  const labelsToExtract = ["I3", "I4", "I5", "I6", "I10", "I11", "I12", "I13", "I18", "I19", "I20", "I21", "I26", "I27", "I28", "I29"];
+  const labelsToExtract1 = ["X3", "X4", "X5", "X6", "X10", "X11", "X12", "X13", "X18", "X19", "X20", "X21", "X26", "X27", "X28", "X29"];
+  useEffect(() => {
+
+    // Filtered data
+    const filteredData = intermediatePoints1Test.filter((item) =>
+      labelsToExtract.includes(item.label)
+    );
+    // console.log("filteredData : ",filteredData)
+    const filteredData1 = intermediatePoints2Test.filter((item) =>
+      labelsToExtract1.includes(item.label)
+    );
+    // console.log("filteredData1 : ",filteredData1)
+    const midpoints = filteredData.map((item1, index) => {
+      const item2 = filteredData1[index];
+      const midpoint = calculateMidpoint(item1.point, item2.point);
+      return {
+        label: `A${index + 1}`,
+        midpoint,
+      };
+    });
+    setIntersactMidIntermediatePoints(midpoints)
+    // intersactMidIntermediatePoints.push(midpoints)
+    console.log(midpoints);
+  }, [showDevta, points, intersectionPoints])
+
+  const drawLinesForDevta = (label1, label2, stroke, strokeWidth) => {
+    const point1filteredData = intersactMidIntermediatePoints.filter((item) =>
+      label1 == item.label
+    );
+    const point2filteredData = intersactMidIntermediatePoints.filter((item) =>
+      label2 == item.label
+    );
+    console.log('point1filteredData : ', point1filteredData[0]?.midpoint)
+    console.log('point2filteredData : ', point2filteredData[0]?.midpoint)
+    const point1 = point1filteredData[0]?.midpoint;
+    const point2 = point2filteredData[0]?.midpoint;
+    console.log('point1 : ', point1)
+    console.log('point2 : ', point2)
+
+    if (!point1 || !point2) return null;
+
+    return (
+      <line
+        // key={index}
+        x1={point1.x}
+        y1={point1.y}
+        x2={point2.x}
+        y2={point2.y}
+        //  stroke="blue"
+        //   strokeWidth="2"
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+      />
+    );
+  }
 
 
+  const [zoom, setZoom] = useState(1); // Initial zoom level
+  const [rotation, setRotation] = useState(0); // Initial rotation angle
+  const [translate, setTranslate] = useState({ x: 0, y: 0 }); // Initial pan offsets
+
+  // Zoom in
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev * 1.1, 5)); // Limit max zoom to 5
+  // Zoom out
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev / 1.1, 1)); // Limit min zoom to 1
+  // Rotate Clockwise
+  const handleRotateCW = () => setRotation((prev) => prev + 15);
+  // Rotate counterclockwise
+  const handleRotateCCW = () => setRotation((prev) => prev - 15);
+
+  // Reset Transformations
+  const handleReset = () => {
+    setZoom(1);
+    setRotation(0);
+    setTranslate({ x: 0, y: 0 });
+  };
+
+  const handleRotationChange = (e) => {
+    const angle = parseFloat(e.target.value);
+    setRotation(angle); // Update the rotation state immediately for visual feedback
+  };
 
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
@@ -723,6 +813,18 @@ const DrawingBoard = ({
             // disabled={fileUploaded}
             />
           </label>
+        </div>
+
+        <div style={{ marginTop: "10px" }}>
+          <input
+            type="number"
+            value={rotation}
+            onChange={handleRotationChange}
+            placeholder="Enter rotation angle"
+          />
+          <button onClick={handleZoomIn}>Zoom In</button>
+          <button onClick={handleZoomOut}>Zoom Out</button><br />
+          <button onClick={handleReset}>Reset</button>
         </div>
 
         <div className="flex items-center mb-2">
@@ -848,8 +950,6 @@ const DrawingBoard = ({
 
             {fileUploaded &&
               <>
-
-
                 <defs>
                   <clipPath id="svgViewBox">
                     <rect width={width} height={height} />
@@ -858,7 +958,10 @@ const DrawingBoard = ({
 
                 <g clipPath="url(#svgViewBox)">
                   {/* Layer 1: Uploaded File */}
-                  <g className="file-layer">
+                  <g className="file-layer"
+                    transform={`translate(${translate.x}, ${translate.y}) rotate(${rotation}, ${width / 2}, ${height / 2}) scale(${zoom})`}
+
+                  >
 
                     <image
                       href={previewUrl}
@@ -904,57 +1007,60 @@ const DrawingBoard = ({
                           strokeWidth="2"
                         />
 
-                        {hideCircle &&
-                          Array.from({ length: totalLines }).map((_, index) => {
-                            const rotationIndex = index % totalLines;
-                            const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                            const radian = (angle * Math.PI) / 180;
+{hideCircle &&
+                  Array.from({ length: totalLines }).map((_, index) => {
+                    const rotationIndex = index % totalLines;
+                    const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                    const radian = (angle * Math.PI) / 180;
 
-                            const squareSize = 676;
-                            const halfSize = squareSize;
-                            const margin = 26;
+                    const squareSize = 676;
+                    const halfSize = squareSize;
+                    const margin = 26;
 
-                            let endX, endY;
-                            const slope = Math.tan(radian);
-                            const rightBoundary = centroid.x + halfSize - margin;
-                            const leftBoundary = centroid.x - halfSize + margin;
-                            const topBoundary = centroid.y - halfSize + margin;
-                            const bottomBoundary = centroid.y + halfSize - margin;
+                    let endX, endY;
+                    const slope = Math.tan(radian);
+                    const rightBoundary = centroid.x + halfSize - margin;
+                    const leftBoundary = centroid.x - halfSize + margin;
+                    const topBoundary = centroid.y - halfSize + margin;
+                    const bottomBoundary = centroid.y + halfSize - margin;
 
-                            if (Math.abs(slope) <= 1) {
-                              if (Math.cos(radian) > 0) {
-                                endX = rightBoundary;
-                                endY = centroid.y + slope * (rightBoundary - centroid.x);
-                              } else {
-                                endX = leftBoundary;
-                                endY = centroid.y - slope * (centroid.x - leftBoundary);
-                              }
-                            } else {
-                              if (Math.sin(radian) > 0) {
-                                endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
-                                endY = bottomBoundary;
-                              } else {
-                                endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
-                                endY = topBoundary;
-                              }
-                            }
+                    if (Math.abs(slope) <= 1) {
+                      if (Math.cos(radian) > 0) {
+                        endX = rightBoundary;
+                        endY = centroid.y + slope * (rightBoundary - centroid.x);
+                      } else {
+                        endX = leftBoundary;
+                        endY = centroid.y - slope * (centroid.x - leftBoundary);
+                      }
+                    } else {
+                      if (Math.sin(radian) > 0) {
+                        endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+                        endY = bottomBoundary;
+                      } else {
+                        endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+                        endY = topBoundary;
+                      }
+                    }
 
-                            const style = lineSets[index % lineSets.length];
+                    const style = lineSets[index % lineSets.length];
 
-                            return (
-                              <g key={index}>
-                                <line
-                                  x1={centroid.x}
-                                  y1={centroid.y}
-                                  x2={endX}
-                                  y2={endY}
-                                  stroke={style.stroke}
-                                  strokeWidth={style.strokeWidth}
-                                  strokeDasharray={style.strokeDasharray}
-                                />
-                              </g>
-                            );
-                          })}
+                    return (
+                      <g key={index}>
+                        {index % lineSets.length == 0 &&
+                        <line
+                          x1={centroid.x}
+                          y1={centroid.y}
+                          x2={endX}
+                          y2={endY}
+                          stroke={style.stroke}
+                          strokeWidth={style.strokeWidth}
+                          strokeDasharray={style.strokeDasharray}
+                        />
+                      }
+                      </g>
+                    );
+                  })}
+
                         {/* {intersectionsState.map((intersection, i) => (
                       <g key={i}>
                         <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
@@ -978,28 +1084,34 @@ const DrawingBoard = ({
                             // Calculate the first intermediate point (P1)
                             const point1 = { x: intersection.point.x + dx, y: intersection.point.y + dy };
                             intermediatePoints1.push(point1); // Add P1 to the array
-
+                            intermediatePoints1Test.push({
+                              point: point1,
+                              label: `I${i}`,
+                            });
                             // Calculate the second intermediate point (P2)
                             const point2 = { x: intersection.point.x + 2 * dx, y: intersection.point.y + 2 * dy };
                             intermediatePoints2.push(point2); // Add P2 to the array
-
+                            intermediatePoints2Test.push({
+                              point: point2,
+                              label: `X${i}`,
+                            });
                             return (
                               <g key={i}>
                                 {/* Draw the intersection point */}
-                                {hideCircle && <> 
-                                <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
-                                <text
-                                  x={intersection.point.x + 5}
-                                  y={intersection.point.y - 5}
-                                  fontSize="10"
-                                  fill="black"
-                                  style={{
-                                    userSelect: 'none', // Prevent text selection
-                                    cursor: 'default', // Optional: Make the cursor non-interactive
-                                  }}
-                                >
-                                  {intersection.label}
-                                </text>
+                                {hideCircle && <>
+                                  <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
+                                  <text
+                                    x={intersection.point.x + 5}
+                                    y={intersection.point.y - 5}
+                                    fontSize="10"
+                                    fill="black"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {intersection.label}
+                                  </text>
                                 </>}
 
                                 {/* Draw the first intermediate point (P1) */}
@@ -1029,6 +1141,31 @@ const DrawingBoard = ({
                             );
                           })}
 
+                          {intersactMidIntermediatePoints.map((item, i) => (
+                            // console.log("Items : ",item)
+                            <circle
+                              key={i}
+                              cx={item.midpoint.x}
+                              cy={item.midpoint.y}
+                              r="5"
+                              fill="black"
+                              stroke="white"
+                              strokeWidth="2"
+                            />
+                          ))}
+                          {drawLinesForDevta("A1", "A2", "purple", 1)}
+                          {drawLinesForDevta("A2", "A3", "purple", 1)}
+                          {drawLinesForDevta("A3", "A4", "purple", 1)}
+                          {drawLinesForDevta("A5", "A6", "purple", 1)}
+                          {drawLinesForDevta("A6", "A7", "purple", 1)}
+                          {drawLinesForDevta("A7", "A8", "purple", 1)}
+                          {drawLinesForDevta("A9", "A10", "purple", 1)}
+                          {drawLinesForDevta("A10", "A11", "purple", 1)}
+                          {drawLinesForDevta("A11", "A12", "purple", 1)}
+                          {drawLinesForDevta("A13", "A14", "purple", 1)}
+                          {drawLinesForDevta("A14", "A15", "purple", 1)}
+                          {drawLinesForDevta("A15", "A16", "purple", 1)}
+
                           {intermediatePoints1.length > 1 && (
                             <polyline
                               points={intermediatePoints1.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints1[0].x},${intermediatePoints1[0].y}`} // Connect back to the start point
@@ -1047,19 +1184,19 @@ const DrawingBoard = ({
                             />
                           )}
                         </> : <>
-                        {hideCircle && <>
-                          {intersectionsState.map((intersection, i) => (
-                            <g key={i}>
-                              <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
-                              <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
-                                userSelect: 'none', // Prevent text selection
-                                cursor: 'default' // Optional: Make the cursor non-interactive
-                              }}>
-                                {intersection.label}
-                              </text>
-                            </g>
-                          ))}
-                        </>}
+                          {hideCircle && <>
+                            {intersectionsState.map((intersection, i) => (
+                              <g key={i}>
+                                <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
+                                <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
+                                  userSelect: 'none', // Prevent text selection
+                                  cursor: 'default' // Optional: Make the cursor non-interactive
+                                }}>
+                                  {intersection.label}
+                                </text>
+                              </g>
+                            ))}
+                          </>}
                         </>}
                       </>
                     )}
@@ -1131,11 +1268,63 @@ const DrawingBoard = ({
                     </>}
                   </g>
                 </g>
-                <rect x={0} y={0} width="676" height="26" fill="white" mask="url(#white-mask)" />
-                <rect x={0} y={0} width="26" height="676" fill="white" mask="url(#white-mask)" />
-                <rect x={0} y={650} width="676" height="26" fill="white" mask="url(#white-mask)" />
-                <rect x={650} y={0} width="26" height="676" fill="white" mask="url(#white-mask)" />
+                <rect x={0} y={0} width="676" height="27" fill="white" mask="url(#white-mask)" />
+                <rect x={0} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
+                <rect x={0} y={649} width="676" height="27" fill="white" mask="url(#white-mask)" />
+                <rect x={649} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
+                {hideCircle &&
+                  Array.from({ length: totalLines }).map((_, index) => {
+                    const rotationIndex = index % totalLines;
+                    const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                    const radian = (angle * Math.PI) / 180;
 
+                    const squareSize = 676;
+                    const halfSize = squareSize;
+                    const margin = 26;
+
+                    let endX, endY;
+                    const slope = Math.tan(radian);
+                    const rightBoundary = centroid.x + halfSize - margin;
+                    const leftBoundary = centroid.x - halfSize + margin;
+                    const topBoundary = centroid.y - halfSize + margin;
+                    const bottomBoundary = centroid.y + halfSize - margin;
+
+                    if (Math.abs(slope) <= 1) {
+                      if (Math.cos(radian) > 0) {
+                        endX = rightBoundary;
+                        endY = centroid.y + slope * (rightBoundary - centroid.x);
+                      } else {
+                        endX = leftBoundary;
+                        endY = centroid.y - slope * (centroid.x - leftBoundary);
+                      }
+                    } else {
+                      if (Math.sin(radian) > 0) {
+                        endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+                        endY = bottomBoundary;
+                      } else {
+                        endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+                        endY = topBoundary;
+                      }
+                    }
+
+                    const style = lineSets[index % lineSets.length];
+
+                    return (
+                      <g key={index}>
+                        {index % lineSets.length &&
+                        <line
+                          x1={centroid.x}
+                          y1={centroid.y}
+                          x2={endX}
+                          y2={endY}
+                          stroke={style.stroke}
+                          strokeWidth={style.strokeWidth}
+                          strokeDasharray={style.strokeDasharray}
+                        />
+                      }
+                      </g>
+                    );
+                  })}
                 {Array.from({ length: totalLines }).map((_, index) => {
                   const rotationIndex = index % totalLines;
                   const angle = rotationIndex * angleIncrement + (270 + inputDegree);
