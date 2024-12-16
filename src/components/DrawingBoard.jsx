@@ -4,11 +4,6 @@ import { DEFAULT_LINE_SETS } from '../constants/directions';
 import GridBackground from './GridBackground';
 import LineControls from './LineControls';
 import jsPDF from "jspdf";
-import * as pdfjsLib from "pdfjs-dist/webpack";
-
-// Set the worker source
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-
 
 import { Upload } from 'lucide-react';
 const DEFAULT_POINTS = [

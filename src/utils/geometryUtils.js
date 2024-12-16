@@ -1,14 +1,47 @@
-export const calculateCentroid = (points) => {
-  if (!points || points.length === 0) return null;
+// export const calculateCentroid = (points) => {
+//   if (!points || points.length === 0) return null;
 
-  const sumX = points.reduce((sum, point) => sum + point.x, 0);
-  const sumY = points.reduce((sum, point) => sum + point.y, 0);
+//   const sumX = points.reduce((sum, point) => sum + point.x, 0);
+//   const sumY = points.reduce((sum, point) => sum + point.y, 0);
 
-  return {
-    x: sumX / points.length,
-    y: sumY / points.length
-  };
+//   return {
+//     x: sumX / points.length,
+//     y: sumY / points.length
+//   };
+// };
+
+export const calculateCentroid = (vertices) => {
+  const n = vertices.length;
+  if (n < 3) return null; // A polygon must have at least 3 vertices
+
+  let A = 0; // Signed area
+  let C_x = 0; // Centroid x-coordinate
+  let C_y = 0; // Centroid y-coordinate
+
+  for (let i = 0; i < n; i++) {
+    const x_i = vertices[i].x;
+    const y_i = vertices[i].y;
+    const x_next = vertices[(i + 1) % n].x; // Next vertex (wrapping around)
+    const y_next = vertices[(i + 1) % n].y;
+
+    const partialArea = x_i * y_next - x_next * y_i;
+    A += partialArea;
+
+    C_x += (x_i + x_next) * partialArea;
+    C_y += (y_i + y_next) * partialArea;
+  }
+
+  A *= 0.5; // Final area calculation
+  if (A === 0) return null; // Degenerate polygon (area is zero)
+
+  // Final centroid calculation
+  C_x /= (6 * A);
+  C_y /= (6 * A);
+
+  return { x: C_x, y: C_y };
+
 };
+
 
 export const pointToLineDistance = (x, y, start, end) => {
   const A = x - start.x;
