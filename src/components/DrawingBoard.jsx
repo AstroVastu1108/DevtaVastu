@@ -4,6 +4,11 @@ import { DEFAULT_LINE_SETS } from '../constants/directions';
 import GridBackground from './GridBackground';
 import LineControls from './LineControls';
 import jsPDF from "jspdf";
+import * as pdfjsLib from "pdfjs-dist/webpack";
+
+// Set the worker source
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
 
 import { Upload } from 'lucide-react';
 const DEFAULT_POINTS = [
@@ -63,6 +68,19 @@ const DrawingBoard = ({
   };
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  const readFileData = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target.result);
+      };
+      reader.onerror = (err) => {
+        reject(err);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
 
@@ -78,28 +96,11 @@ const DrawingBoard = ({
         };
         reader.readAsDataURL(uploadedFile);
       } else if (fileType === "application/pdf") {
-        // If the uploaded file is a PDF
-        const pdfData = await uploadedFile.arrayBuffer();
+        // const data = await readFileData(uploadedFile);
+        const images = [];
+        const data = await readFileData(uploadedFile);
+        console.log("images : ", images)
 
-        const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-        const page = await pdf.getPage(1); // Get the first page
-
-        const viewport = page.getViewport({ scale: 1 });
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        await page.render(renderContext).promise;
-        const base64Image = canvas.toDataURL("image/png");
-
-        setPreviewUrl(base64Image);
       } else {
         alert("Unsupported file type. Please upload an image or PDF.");
       }
@@ -797,7 +798,7 @@ const DrawingBoard = ({
 
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
-      <div className="flex flex-col w-1/4 p-4 bg-white rounded shadow-md">
+      {/* <div className="flex flex-col w-1/4 p-4 bg-white rounded shadow-md">
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleFileUpload}
@@ -915,6 +916,128 @@ const DrawingBoard = ({
         >
           Download SVG
         </button>
+      </div> */}
+      <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6">
+        {/* File Upload Section */}
+        <div
+          className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleFileUpload}
+        >
+          <label className="flex flex-col items-center gap-2 cursor-pointer">
+            <Upload size={24} className="text-blue-600" />
+            <span className="text-blue-600 font-medium">Upload File</span>
+            <input
+              type="file"
+              className="hidden"
+              accept=".jpg,.jpeg,.png,.pdf"
+              onChange={handleFileUpload}
+            />
+          </label>
+          <p className="text-sm text-gray-500 mt-2">Supported: .jpg, .jpeg, .png, .pdf</p>
+        </div>
+
+        {/* Image Controls */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={rotation}
+              onChange={handleRotationChange}
+              placeholder="Rotation (°)"
+              className="border border-gray-300 rounded px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleReset}
+              className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="flex justify-between gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition w-full"
+            >
+              Zoom In
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition w-full"
+            >
+              Zoom Out
+            </button>
+          </div>
+        </div>
+
+        {/* Checkbox Toggles */}
+        <div className="space-y-3">
+          {[
+            { id: "hideCircle", label: "Show Chakra", checked: hideCircle, onChange: setHideCircle },
+            { id: "showDevta", label: "Show Devta", checked: showDevta, onChange: setShowDevta },
+            { id: "hideMarmaLines", label: "Show Marma Lines", checked: hideMarmaLines, onChange: setHideMarmaLines },
+            { id: "hideMarmapoints", label: "Show Marma Points", checked: hideMarmapoints, onChange: setHideMarmapoints },
+          ].map(({ id, label, checked, onChange }) => (
+            <div key={id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id={id}
+                checked={checked}
+                onChange={(e) => onChange(e.target.checked)}
+                className="cursor-pointer w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor={id} className="text-sm text-gray-700 cursor-pointer">
+                {label}
+              </label>
+            </div>
+          ))}
+        </div>
+
+        {/* Line Controls (Conditionally Rendered) */}
+        {hideCircle && fileUploaded && (
+          <div className="space-y-4">
+            {lineSets.map((lineSet, i) => (
+              <LineControls
+                key={i}
+                lineSet={lineSet}
+                setIndex={i}
+                onUpdate={handleLineSetUpdate}
+              />
+            ))}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="snapToCentroid"
+                checked={snapToCentroid}
+                onChange={(e) => setSnapToCentroid(e.target.checked)}
+                className="cursor-pointer w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="snapToCentroid" className="text-sm text-gray-700">
+                Snap to Centroid
+              </label>
+            </div>
+            <label className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Enter Degree:</span>
+              <input
+                type="number"
+                value={inputDegree}
+                onChange={handleInputChange}
+                className="border border-gray-300 rounded px-2 py-1 w-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0"
+                aria-label="Degree input"
+              />
+            </label>
+          </div>
+        )}
+
+        {/* Export Button */}
+        <button
+          onClick={exportToPDF}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition w-full"
+        >
+          Download SVG
+        </button>
       </div>
 
       <div className="flex-grow p-4" ref={printRef}>
@@ -1007,59 +1130,59 @@ const DrawingBoard = ({
                           strokeWidth="2"
                         />
 
-{hideCircle &&
-                  Array.from({ length: totalLines }).map((_, index) => {
-                    const rotationIndex = index % totalLines;
-                    const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                    const radian = (angle * Math.PI) / 180;
+                        {hideCircle &&
+                          Array.from({ length: totalLines }).map((_, index) => {
+                            const rotationIndex = index % totalLines;
+                            const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                            const radian = (angle * Math.PI) / 180;
 
-                    const squareSize = 676;
-                    const halfSize = squareSize;
-                    const margin = 26;
+                            const squareSize = 676;
+                            const halfSize = squareSize;
+                            const margin = 26;
 
-                    let endX, endY;
-                    const slope = Math.tan(radian);
-                    const rightBoundary = centroid.x + halfSize - margin;
-                    const leftBoundary = centroid.x - halfSize + margin;
-                    const topBoundary = centroid.y - halfSize + margin;
-                    const bottomBoundary = centroid.y + halfSize - margin;
+                            let endX, endY;
+                            const slope = Math.tan(radian);
+                            const rightBoundary = centroid.x + halfSize - margin;
+                            const leftBoundary = centroid.x - halfSize + margin;
+                            const topBoundary = centroid.y - halfSize + margin;
+                            const bottomBoundary = centroid.y + halfSize - margin;
 
-                    if (Math.abs(slope) <= 1) {
-                      if (Math.cos(radian) > 0) {
-                        endX = rightBoundary;
-                        endY = centroid.y + slope * (rightBoundary - centroid.x);
-                      } else {
-                        endX = leftBoundary;
-                        endY = centroid.y - slope * (centroid.x - leftBoundary);
-                      }
-                    } else {
-                      if (Math.sin(radian) > 0) {
-                        endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
-                        endY = bottomBoundary;
-                      } else {
-                        endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
-                        endY = topBoundary;
-                      }
-                    }
+                            if (Math.abs(slope) <= 1) {
+                              if (Math.cos(radian) > 0) {
+                                endX = rightBoundary;
+                                endY = centroid.y + slope * (rightBoundary - centroid.x);
+                              } else {
+                                endX = leftBoundary;
+                                endY = centroid.y - slope * (centroid.x - leftBoundary);
+                              }
+                            } else {
+                              if (Math.sin(radian) > 0) {
+                                endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+                                endY = bottomBoundary;
+                              } else {
+                                endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+                                endY = topBoundary;
+                              }
+                            }
 
-                    const style = lineSets[index % lineSets.length];
+                            const style = lineSets[index % lineSets.length];
 
-                    return (
-                      <g key={index}>
-                        {index % lineSets.length == 0 &&
-                        <line
-                          x1={centroid.x}
-                          y1={centroid.y}
-                          x2={endX}
-                          y2={endY}
-                          stroke={style.stroke}
-                          strokeWidth={style.strokeWidth}
-                          strokeDasharray={style.strokeDasharray}
-                        />
-                      }
-                      </g>
-                    );
-                  })}
+                            return (
+                              <g key={index}>
+                                {index % lineSets.length == 0 &&
+                                  <line
+                                    x1={centroid.x}
+                                    y1={centroid.y}
+                                    x2={endX}
+                                    y2={endY}
+                                    stroke={style.stroke}
+                                    strokeWidth={style.strokeWidth}
+                                    strokeDasharray={style.strokeDasharray}
+                                  />
+                                }
+                              </g>
+                            );
+                          })}
 
                         {/* {intersectionsState.map((intersection, i) => (
                       <g key={i}>
@@ -1312,16 +1435,16 @@ const DrawingBoard = ({
                     return (
                       <g key={index}>
                         {index % lineSets.length &&
-                        <line
-                          x1={centroid.x}
-                          y1={centroid.y}
-                          x2={endX}
-                          y2={endY}
-                          stroke={style.stroke}
-                          strokeWidth={style.strokeWidth}
-                          strokeDasharray={style.strokeDasharray}
-                        />
-                      }
+                          <line
+                            x1={centroid.x}
+                            y1={centroid.y}
+                            x2={endX}
+                            y2={endY}
+                            stroke={style.stroke}
+                            strokeWidth={style.strokeWidth}
+                            strokeDasharray={style.strokeDasharray}
+                          />
+                        }
                       </g>
                     );
                   })}
