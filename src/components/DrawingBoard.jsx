@@ -32,8 +32,11 @@ const DrawingBoard = ({
   const [fileUploaded, setFileUploaded] = useState(false);
   // circle visible state
   const [hideCircle, setHideCircle] = useState(false);
+  // circle visible state
+  const [hideCircleIntersaction, setHideCircleIntersaction] = useState(false);
   // Show Devta
   const [showDevta, setShowDevta] = useState(false);
+  const [showDevtaIntersaction, setShowDevtaIntersaction] = useState(false);
 
 
   const svgRef = useRef(null);
@@ -94,7 +97,7 @@ const DrawingBoard = ({
         // const data = await readFileData(uploadedFile);
         const images = [];
         const data = await readFileData(uploadedFile);
-        console.log("images : ", images)
+        // console.log("images : ", images)
 
       } else {
         alert("Unsupported file type. Please upload an image or PDF.");
@@ -167,6 +170,9 @@ const DrawingBoard = ({
   };
 
 
+  
+  
+
   const handleMouseUp = () => {
     movingCentroidRef.current = false;
     selectedPointRef.current = null;
@@ -196,7 +202,7 @@ const DrawingBoard = ({
   };
 
   const handleLineSetUpdate = (setIndex, updates) => {
-    console.log("updates : ", updates)
+    // console.log("updates : ", updates)
     setLineSets(prevSets =>
       prevSets.map((set, i) =>
         i === setIndex ? { ...set, ...updates } : set
@@ -708,8 +714,8 @@ const DrawingBoard = ({
       y: (pointA.y + pointB.y) / 2,
     };
   };
-  const labelsToExtract = ["I3", "I4", "I5", "I6", "I10", "I11", "I12", "I13", "I18", "I19", "I20", "I21", "I26", "I27", "I28", "I29"];
-  const labelsToExtract1 = ["X3", "X4", "X5", "X6", "X10", "X11", "X12", "X13", "X18", "X19", "X20", "X21", "X26", "X27", "X28", "X29"];
+  const labelsToExtract = ["I2", "I3", "I4", "I5", "I6", "I10", "I11", "I12", "I13", "I14", "I18", "I19", "I20", "I21", "I22", "I26", "I27", "I28", "I29", "I30"];
+  const labelsToExtract1 = ["X2", "X3", "X4", "X5", "X6", "X10", "X11", "X12", "X13", "X14", "X18", "X19", "X20", "X21", "X22", "X26", "X27", "X28", "X29", "X30"];
   useEffect(() => {
 
     // Filtered data
@@ -731,7 +737,7 @@ const DrawingBoard = ({
     });
     setIntersactMidIntermediatePoints(midpoints)
     // intersactMidIntermediatePoints.push(midpoints)
-    console.log(midpoints);
+    // console.log(midpoints);
   }, [showDevta, points, intersectionPoints])
 
   const drawLinesForDevta = (label1, label2, stroke, strokeWidth) => {
@@ -741,12 +747,12 @@ const DrawingBoard = ({
     const point2filteredData = intersactMidIntermediatePoints.filter((item) =>
       label2 == item.label
     );
-    console.log('point1filteredData : ', point1filteredData[0]?.midpoint)
-    console.log('point2filteredData : ', point2filteredData[0]?.midpoint)
+    // console.log('point1filteredData : ', point1filteredData[0]?.midpoint)
+    // console.log('point2filteredData : ', point2filteredData[0]?.midpoint)
     const point1 = point1filteredData[0]?.midpoint;
     const point2 = point2filteredData[0]?.midpoint;
-    console.log('point1 : ', point1)
-    console.log('point2 : ', point2)
+    // console.log('point1 : ', point1)
+    // console.log('point2 : ', point2)
 
     if (!point1 || !point2) return null;
 
@@ -791,127 +797,112 @@ const DrawingBoard = ({
     setRotation(angle); // Update the rotation state immediately for visual feedback
   };
 
+  // const pointLookup = intersectionsState.reduce((acc, item) => {
+  //   acc[item.label] = item.point;
+  //   return acc;
+  // }, {});
+  const drawDevtaLineData = (point1, point2) => {
+    return (
+      <line
+        x1={point1?.x}
+        y1={point1?.y}
+        x2={point2?.x}
+        y2={point2?.y}
+        //  stroke="blue"
+        //   strokeWidth="2"
+        stroke={"red"}
+        strokeWidth={2}
+      />
+    );
+  }
+
+  const [drawDevtaObject, setDrawDevtaObject] = useState([]);
+
+  useEffect(() => {
+    const filteredData = (label, object) => {
+      return object.filter((item) => label === item.label);
+    };
+
+    const intermediatePoints = [
+      { pointLookup: pointLookup["W4"], label: "I15" },
+      { pointLookup: pointLookup["W5"], label: "I16" },
+      { pointLookup: pointLookup["W6"], label: "I17" },
+      { pointLookup: pointLookup["W7"], label: "I18", intersectLabel: "A11" },
+      { pointLookup: pointLookup["W8"], label: "I19" },
+      { pointLookup: pointLookup["N1"], label: "I20", intersectLabel: "A13", extraIntersect: "X20" },
+      { pointLookup: pointLookup["N2"], label: "I21" },
+      { pointLookup: pointLookup["N3"], label: "I22", intersectLabel: "A15" },
+      // Another side
+      { pointLookup: pointLookup["N4"], label: "I23" },
+      { pointLookup: pointLookup["N5"], label: "I24" },
+      { pointLookup: pointLookup["N6"], label: "I25" },
+      { pointLookup: pointLookup["N7"], label: "I26", intersectLabel: "A16" },
+      { pointLookup: pointLookup["N8"], label: "I27" },
+      { pointLookup: pointLookup["E1"], label: "I28", intersectLabel: "A18", extraIntersect: "X28" },
+      { pointLookup: pointLookup["E2"], label: "I29" },
+      { pointLookup: pointLookup["E3"], label: "I30", intersectLabel: "A20" },
+      // Another side
+      { pointLookup: pointLookup["E4"], label: "I31" },
+      { pointLookup: pointLookup["E5"], label: "I0" },
+      { pointLookup: pointLookup["E6"], label: "I1" },
+      { pointLookup: pointLookup["E7"], label: "I2", intersectLabel: "A1" },
+      { pointLookup: pointLookup["E8"], label: "I3" },
+      { pointLookup: pointLookup["S1"], label: "I4", intersectLabel: "A3", extraIntersect: "X4" },
+      { pointLookup: pointLookup["S2"], label: "I5" },
+      { pointLookup: pointLookup["S3"], label: "I6", intersectLabel: "A5" },
+      // Another side
+      { pointLookup: pointLookup["S4"], label: "I7" },
+      { pointLookup: pointLookup["S5"], label: "I8" },
+      { pointLookup: pointLookup["S6"], label: "I9" },
+      { pointLookup: pointLookup["S7"], label: "I10", intersectLabel: "A6" },
+      { pointLookup: pointLookup["S8"], label: "I11" },
+      { pointLookup: pointLookup["W1"], label: "I12", intersectLabel: "A8", extraIntersect: "X12" },
+      { pointLookup: pointLookup["W2"], label: "I13" },
+      { pointLookup: pointLookup["W3"], label: "I14", intersectLabel: "A10" },
+    ];
+
+    const newDrawDevtaObject = intermediatePoints.reduce((acc, { pointLookup, label, intersectLabel, extraIntersect }) => {
+      const filteredPoint = filteredData(label, intermediatePoints1Test);
+      const intersectPoint = intersectLabel ? filteredData(intersectLabel, intersactMidIntermediatePoints) : null;
+      const extraFilteredPoint = extraIntersect ? filteredData(extraIntersect, intermediatePoints2Test) : null;
+
+      const obj = {
+        point1: pointLookup,
+        point2: filteredPoint[0]?.point || null,
+        midpoint: intersectPoint ? intersectPoint[0]?.midpoint || null : null,
+        extrapoint: extraFilteredPoint ? extraFilteredPoint[0]?.point || null : null,
+      };
+
+      // Check and push the main object if point1 is not null
+      if (obj.point1 !== null) {
+        // Push the main object
+        if (obj.point2 !== null || obj.midpoint !== null) {
+          acc.push({
+            point1: obj.point1,
+            point2: obj.midpoint || obj.point2,
+          });
+        }
+
+        // If extraIntersect is defined, push the extrapoint object as well
+        if (extraIntersect && obj.extrapoint !== null) {
+          acc.push({
+            point1: obj.extrapoint,
+            point2: obj.midpoint || obj.point2,
+          });
+        }
+      }
+
+      return acc;
+    }, []);
+
+    setDrawDevtaObject(newDrawDevtaObject);
+
+  }, [intersactMidIntermediatePoints]);
+
+
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
-      {/* <div className="flex flex-col w-1/4 p-4 bg-white rounded shadow-md">
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleFileUpload}
-        >
-          <label className=" flex items-center gap-2 px-4 py-2 mb-4 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-600 transition-colors">
-            <Upload size={20} />
-            <span>Upload File</span>
-            <input
-              type="file"
-              className="hidden"
-              accept=".jpg,.jpeg,.png,.pdf"
-              onChange={handleFileUpload}
-            // disabled={fileUploaded}
-            />
-          </label>
-        </div>
 
-        <div style={{ marginTop: "10px" }}>
-          <input
-            type="number"
-            value={rotation}
-            onChange={handleRotationChange}
-            placeholder="Enter rotation angle"
-          />
-          <button onClick={handleZoomIn}>Zoom In</button>
-          <button onClick={handleZoomOut}>Zoom Out</button><br />
-          <button onClick={handleReset}>Reset</button>
-        </div>
-
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={hideCircle}
-            onChange={(e) => setHideCircle(e.target.checked)}
-            id="hideCircle"
-            className="mr-2"
-          />
-          <label htmlFor="hideCircle">Show Chakra</label>
-        </div>
-
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={showDevta}
-            onChange={(e) => setShowDevta(e.target.checked)}
-            id="showDevta"
-            className="mr-2"
-          />
-          <label htmlFor="showDevta">Show Devta</label>
-        </div>
-
-
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={hideMarmaLines}
-            onChange={(e) => setHideMarmaLines(e.target.checked)}
-            id="hideMarmaLines"
-            className="mr-2"
-          />
-          <label htmlFor="hideMarmaLines">Show Marma Lines</label>
-        </div>
-
-
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            checked={hideMarmapoints}
-            onChange={(e) => setHideMarmapoints(e.target.checked)}
-            id="hideMarmapoints"
-            className="mr-2"
-          />
-          <label htmlFor="hideMarmapoints">Show Marma Points</label>
-        </div>
-
-
-
-        {hideCircle && fileUploaded && <>
-          {lineSets.map((lineSet, i) => (
-            <LineControls
-              key={i}
-              lineSet={lineSet}
-              setIndex={i}
-              onUpdate={handleLineSetUpdate}
-            />
-          ))}
-
-          <div className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              checked={snapToCentroid}
-              onChange={(e) => setSnapToCentroid(e.target.checked)}
-              id="snapToCentroid"
-              className="mr-2"
-            />
-            <label htmlFor="snapToCentroid">Snap to Centroid</label>
-          </div>
-
-          <label className="flex items-center">
-            Enter Degree:
-            <input
-              type="number"
-              value={inputDegree}
-              onChange={handleInputChange}
-              className="border border-gray-300 p-1 rounded ml-2 w-16"
-              placeholder="0"
-              aria-label="Degree input"
-            />
-          </label>
-        </>}
-
-        <button
-          onClick={exportToPDF}
-          className="download-button mb-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
-        >
-          Download SVG
-        </button>
-      </div> */}
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6">
         {/* File Upload Section */}
         <div
@@ -970,7 +961,9 @@ const DrawingBoard = ({
         <div className="space-y-3">
           {[
             { id: "hideCircle", label: "Show Chakra", checked: hideCircle, onChange: setHideCircle },
+            { id: "hideCircleIntersaction", label: "Show Chakra Intersaction points", checked: hideCircleIntersaction, onChange: setHideCircleIntersaction },
             { id: "showDevta", label: "Show Devta", checked: showDevta, onChange: setShowDevta },
+            { id: "showDevtaIntersaction", label: "Show Devta Intersaction points", checked: showDevtaIntersaction, onChange: setShowDevtaIntersaction },
             { id: "hideMarmaLines", label: "Show Marma Lines", checked: hideMarmaLines, onChange: setHideMarmaLines },
             { id: "hideMarmapoints", label: "Show Marma Points", checked: hideMarmapoints, onChange: setHideMarmapoints },
           ].map(({ id, label, checked, onChange }) => (
@@ -1078,7 +1071,6 @@ const DrawingBoard = ({
                   {/* Layer 1: Uploaded File */}
                   <g className="file-layer"
                     transform={`translate(${translate.x}, ${translate.y}) rotate(${rotation}, ${width / 2}, ${height / 2}) scale(${zoom})`}
-
                   >
 
                     <image
@@ -1177,7 +1169,8 @@ const DrawingBoard = ({
                                 }
                               </g>
                             );
-                          })}
+                          })
+                        }
 
                         {/* {intersectionsState.map((intersection, i) => (
                       <g key={i}>
@@ -1217,15 +1210,16 @@ const DrawingBoard = ({
                               <g key={i}>
                                 {/* Draw the intersection point */}
                                 {hideCircle && <>
-                                  <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
+                                  {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
+                                  {/* <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" /> */}
                                   <text
                                     x={intersection.point.x + 5}
                                     y={intersection.point.y - 5}
                                     fontSize="10"
                                     fill="black"
                                     style={{
-                                      userSelect: 'none', // Prevent text selection
-                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                      userSelect: 'none',
+                                      cursor: 'default',
                                     }}
                                   >
                                     {intersection.label}
@@ -1233,19 +1227,19 @@ const DrawingBoard = ({
                                 </>}
 
                                 {/* Draw the first intermediate point (P1) */}
-                                <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />
+                                {showDevtaIntersaction && <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />}
                                 {/* <text
-        x={point1.x + 5}
-        y={point1.y - 5}
-        fontSize="10"
-        fill="black"
-        style={{ userSelect: 'none', cursor: 'default' }}
-      >
-        P1-{i}
-      </text> */}
+                                  x={point1.x + 5}
+                                  y={point1.y - 5}
+                                  fontSize="10"
+                                  fill="black"
+                                  style={{ userSelect: 'none', cursor: 'default' }}
+                                >
+                                  P1-{i}
+                                </text> */}
 
                                 {/* Draw the second intermediate point (P2) */}
-                                <circle cx={point2.x} cy={point2.y} r="3" fill="blue" />
+                                {showDevtaIntersaction && <circle cx={point2.x} cy={point2.y} r="3" fill="blue" />}
                                 {/* <text
         x={point2.x + 5}
         y={point2.y - 5}
@@ -1259,30 +1253,57 @@ const DrawingBoard = ({
                             );
                           })}
 
-                          {intersactMidIntermediatePoints.map((item, i) => (
-                            // console.log("Items : ",item)
-                            <circle
-                              key={i}
-                              cx={item.midpoint.x}
-                              cy={item.midpoint.y}
-                              r="5"
-                              fill="black"
-                              stroke="white"
-                              strokeWidth="2"
-                            />
-                          ))}
-                          {drawLinesForDevta("A1", "A2", "purple", 1)}
-                          {drawLinesForDevta("A2", "A3", "purple", 1)}
-                          {drawLinesForDevta("A3", "A4", "purple", 1)}
-                          {drawLinesForDevta("A5", "A6", "purple", 1)}
-                          {drawLinesForDevta("A6", "A7", "purple", 1)}
-                          {drawLinesForDevta("A7", "A8", "purple", 1)}
-                          {drawLinesForDevta("A9", "A10", "purple", 1)}
-                          {drawLinesForDevta("A10", "A11", "purple", 1)}
-                          {drawLinesForDevta("A11", "A12", "purple", 1)}
-                          {drawLinesForDevta("A13", "A14", "purple", 1)}
-                          {drawLinesForDevta("A14", "A15", "purple", 1)}
-                          {drawLinesForDevta("A15", "A16", "purple", 1)}
+                          {intersactMidIntermediatePoints.map((item, i) => {
+                            return (
+                              // console.log("Items : ",item)
+                              <>
+                                {showDevtaIntersaction &&
+                                  <circle
+                                    key={i}
+                                    cx={item.midpoint.x}
+                                    cy={item.midpoint.y}
+                                    r="5"
+                                    fill="black"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                  />}
+                                {/* <text
+                                  x={item.midpoint.x + 5}
+                                  y={item.midpoint.y - 5}
+                                  fontSize="10"
+                                  fill="black"
+                                  style={{ userSelect: 'none', cursor: 'default' }}
+                                >
+                                  {item.label}
+                                </text> */}
+                              </>
+                            )
+                          })}
+                          {drawDevtaObject && drawDevtaObject.map((item) => {
+                            return (
+                              drawDevtaLineData(item.point1, item.point2)
+                            )
+                          })}
+
+                          {/* {drawDevtaLineData()} */}
+
+                          {drawLinesForDevta("A1", "A2", "red", 2)}
+                          {drawLinesForDevta("A2", "A3", "red", 2)}
+                          {drawLinesForDevta("A3", "A4", "red", 2)}
+                          {drawLinesForDevta("A4", "A5", "red", 2)}
+
+                          {drawLinesForDevta("A6", "A7", "red", 2)}
+                          {drawLinesForDevta("A7", "A8", "red", 2)}
+                          {drawLinesForDevta("A8", "A9", "red", 2)}
+                          {drawLinesForDevta("A9", "A10", "red", 2)}
+                          {drawLinesForDevta("A11", "A12", "red", 2)}
+                          {drawLinesForDevta("A12", "A13", "red", 2)}
+                          {drawLinesForDevta("A13", "A14", "red", 2)}
+                          {drawLinesForDevta("A14", "A15", "red", 2)}
+                          {drawLinesForDevta("A16", "A17", "red", 2)}
+                          {drawLinesForDevta("A17", "A18", "red", 2)}
+                          {drawLinesForDevta("A18", "A19", "red", 2)}
+                          {drawLinesForDevta("A19", "A20", "red", 2)}
 
                           {intermediatePoints1.length > 1 && (
                             <polyline
@@ -1305,7 +1326,7 @@ const DrawingBoard = ({
                           {hideCircle && <>
                             {intersectionsState.map((intersection, i) => (
                               <g key={i}>
-                                <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
+                                {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
                                 <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
                                   userSelect: 'none', // Prevent text selection
                                   cursor: 'default' // Optional: Make the cursor non-interactive
