@@ -13,7 +13,6 @@ const DEFAULT_POINTS = [
   { x: 120, y: 560 },
 ];
 
-
 const DrawingBoard = ({
   width = 676,
   height = 676,
@@ -37,7 +36,7 @@ const DrawingBoard = ({
   // Show Devta
   const [showDevta, setShowDevta] = useState(false);
   const [showDevtaIntersaction, setShowDevtaIntersaction] = useState(false);
-
+  const [disableDraw, setDisableDraw] = useState(false);
 
   const svgRef = useRef(null);
   const printRef = useRef(null);
@@ -145,7 +144,6 @@ const DrawingBoard = ({
     }
   };
 
-
   const handleMouseMove = (e) => {
     const position = getMousePosition(e);
 
@@ -160,18 +158,16 @@ const DrawingBoard = ({
       }
     } else if (selectedPointRef.current !== null) {
       // Move a specific point
-      const newPoints = [...points];
-      newPoints[selectedPointRef.current] = position;
-      setPoints(newPoints);
+      if (!disableDraw) {
+        const newPoints = [...points];
+        newPoints[selectedPointRef.current] = position;
+        setPoints(newPoints);
 
-      // Recalculate centroid after point modification
-      setCentroid(calculateCentroid(newPoints));
+        // Recalculate centroid after point modification
+        setCentroid(calculateCentroid(newPoints));
+      }
     }
   };
-
-
-  
-  
 
   const handleMouseUp = () => {
     movingCentroidRef.current = false;
@@ -179,30 +175,31 @@ const DrawingBoard = ({
   };
 
   const handleDoubleClick = (e) => {
-    if (drawingMode !== 'drawing') return;
+    if (!disableDraw) {
+      if (drawingMode !== 'drawing') return;
 
-    const position = getMousePosition(e);
-    const clickedPointIndex = findNearestPoint(position.x, position.y);
+      const position = getMousePosition(e);
+      const clickedPointIndex = findNearestPoint(position.x, position.y);
 
-    if (clickedPointIndex !== -1) {
-      if (points.length > 3) {
-        const newPoints = points.filter((_, i) => i !== clickedPointIndex);
-        setPoints(newPoints);
-        setCentroid(calculateCentroid(newPoints));
-      }
-    } else {
-      const closestLineIndex = findClosestLine(position.x, position.y);
-      if (closestLineIndex !== -1) {
-        const newPoints = [...points];
-        newPoints.splice(closestLineIndex + 1, 0, position);
-        setPoints(newPoints);
-        setCentroid(calculateCentroid(newPoints));
+      if (clickedPointIndex !== -1) {
+        if (points.length > 3) {
+          const newPoints = points.filter((_, i) => i !== clickedPointIndex);
+          setPoints(newPoints);
+          setCentroid(calculateCentroid(newPoints));
+        }
+      } else {
+        const closestLineIndex = findClosestLine(position.x, position.y);
+        if (closestLineIndex !== -1) {
+          const newPoints = [...points];
+          newPoints.splice(closestLineIndex + 1, 0, position);
+          setPoints(newPoints);
+          setCentroid(calculateCentroid(newPoints));
+        }
       }
     }
   };
 
   const handleLineSetUpdate = (setIndex, updates) => {
-    // console.log("updates : ", updates)
     setLineSets(prevSets =>
       prevSets.map((set, i) =>
         i === setIndex ? { ...set, ...updates } : set
@@ -332,41 +329,6 @@ const DrawingBoard = ({
       />
     );
   }
-
-  const drawLinesEquallyDivide = (label1, label2, stroke, strokeWidth) => {
-    const point1 = pointLookup[label1];
-    const point2 = pointLookup[label2];
-
-    if (!point1 || !point2) return null;
-
-    // Calculate the division points
-    const division1 = {
-      x: point1.x + (point2.x - point1.x) / 3,
-      y: point1.y + (point2.y - point1.y) / 3,
-    };
-    const division2 = {
-      x: point1.x + (2 * (point2.x - point1.x)) / 3,
-      y: point1.y + (2 * (point2.y - point1.y)) / 3,
-    };
-
-    return (
-      <>
-        {/* Draw the main line */}
-        <line
-          x1={point1.x}
-          y1={point1.y}
-          x2={point2.x}
-          y2={point2.y}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-        />
-        {/* Draw points at the division positions */}
-        <circle cx={division1.x} cy={division1.y} r="4" fill="red" />
-        <circle cx={division2.x} cy={division2.y} r="4" fill="red" />
-      </>
-    );
-  };
-
 
   const lines = [
     ["N7", "E3"],
@@ -780,10 +742,6 @@ const DrawingBoard = ({
   const handleZoomIn = () => setZoom((prev) => Math.min(prev * 1.1, 5)); // Limit max zoom to 5
   // Zoom out
   const handleZoomOut = () => setZoom((prev) => Math.max(prev / 1.1, 1)); // Limit min zoom to 1
-  // Rotate Clockwise
-  const handleRotateCW = () => setRotation((prev) => prev + 15);
-  // Rotate counterclockwise
-  const handleRotateCCW = () => setRotation((prev) => prev - 15);
 
   // Reset Transformations
   const handleReset = () => {
@@ -797,10 +755,6 @@ const DrawingBoard = ({
     setRotation(angle); // Update the rotation state immediately for visual feedback
   };
 
-  // const pointLookup = intersectionsState.reduce((acc, item) => {
-  //   acc[item.label] = item.point;
-  //   return acc;
-  // }, {});
   const drawDevtaLineData = (point1, point2) => {
     return (
       <line
@@ -816,7 +770,75 @@ const DrawingBoard = ({
     );
   }
 
+  const devta = [
+    "Brahma",
+    "Bhudhar",
+    "Aryama",
+    "Viviswan",
+    "Mitra",
+    "Aapaha",
+    "Aapahavatsa",
+    "Savita",
+    "Savitra",
+    "Indra",
+    "Jaya",
+    "Rudra",
+    "Rajyakshma",
+    "Shikhi",
+    "Parjanya",
+    "Jayant",
+    "Mahendra",
+    "Surya",
+    "Satya",
+    "Bhrisha",
+    "Antriksh",
+    "Anil",
+    "Pusha",
+    "Vitasta",
+    "GrihaSpatya",
+    "Yama",
+    "Gandharva",
+    "Bhringraj",
+    "Mrigah",
+    "Pitra",
+    "Dauwarik",
+    "Sugreev",
+    "Pushpdant",
+    "Varun",
+    "Asur",
+    "Shosha",
+    "Papyakshma",
+    "Roga",
+    "Ahir",
+    "Mukhya",
+    "Bhallat",
+    "Soma",
+    "Bhujag",
+    "Aditi",
+    "Diti"]
+
   const [drawDevtaObject, setDrawDevtaObject] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const convertPointsToCoordinates = (area) => {
+    return [
+      { x: area.point1.x, y: area.point1.y },
+      { x: area.point2.x, y: area.point2.y },
+      { x: area.point3.x, y: area.point3.y },
+      { x: area.point4.x, y: area.point4.y },
+    ];
+  };
+  const convertPointsToCoordinates1 = (area) => {
+    return [
+      { x: area.point1.x, y: area.point1.y },
+      { x: area.point2.x, y: area.point2.y },
+      { x: area.point3.x, y: area.point3.y },
+      { x: area.point4.x, y: area.point4.y },
+      { x: area.point5.x, y: area.point5.y },
+      { x: area.point6.x, y: area.point6.y },
+      { x: area.point7.x, y: area.point7.y },
+      { x: area.point8.x, y: area.point8.y },
+    ];
+  };
 
   useEffect(() => {
     const filteredData = (label, object) => {
@@ -895,14 +917,243 @@ const DrawingBoard = ({
       return acc;
     }, []);
 
-    setDrawDevtaObject(newDrawDevtaObject);
+    const intermediatePointsTest = [
+      { pointLookup: pointLookup["E1"], label: "I28", pointLookup1: pointLookup["E2"], label1: "I29" },
+      { pointLookup: pointLookup["E2"], label: "I29", pointLookup1: pointLookup["E3"], label1: "I30" },
+      { pointLookup: pointLookup["E3"], label: "I30", pointLookup1: pointLookup["E4"], label1: "I31" },
+      { pointLookup: pointLookup["E4"], label: "I31", pointLookup1: pointLookup["E5"], label1: "I0" },
+      { pointLookup: pointLookup["E5"], label: "I0", pointLookup1: pointLookup["E6"], label1: "I1" },
+      { pointLookup: pointLookup["E6"], label: "I1", pointLookup1: pointLookup["E7"], label1: "I2" },
+      { pointLookup: pointLookup["E7"], label: "I2", pointLookup1: pointLookup["E8"], label1: "I3" },
+      { pointLookup: pointLookup["E8"], label: "I3", pointLookup1: pointLookup["S1"], label1: "I4" },
+      { pointLookup: pointLookup["S1"], label: "I4", pointLookup1: pointLookup["S2"], label1: "I5" },
+      { pointLookup: pointLookup["S2"], label: "I5", pointLookup1: pointLookup["S3"], label1: "I6" },
+      { pointLookup: pointLookup["S3"], label: "I6", pointLookup1: pointLookup["S4"], label1: "I7" },
+      { pointLookup: pointLookup["S4"], label: "I7", pointLookup1: pointLookup["S5"], label1: "I8" },
+      { pointLookup: pointLookup["S5"], label: "I8", pointLookup1: pointLookup["S6"], label1: "I9" },
+      { pointLookup: pointLookup["S6"], label: "I9", pointLookup1: pointLookup["S7"], label1: "I10" },
+      { pointLookup: pointLookup["S7"], label: "I10", pointLookup1: pointLookup["S8"], label1: "I11" },
+      { pointLookup: pointLookup["S8"], label: "I11", pointLookup1: pointLookup["W1"], label1: "I12" },
+      { pointLookup: pointLookup["W1"], label: "I12", pointLookup1: pointLookup["W2"], label1: "I13" },
+      { pointLookup: pointLookup["W2"], label: "I13", pointLookup1: pointLookup["W3"], label1: "I14" },
+      { pointLookup: pointLookup["W3"], label: "I14", pointLookup1: pointLookup["W4"], label1: "I15" },
+      { pointLookup: pointLookup["W4"], label: "I15", pointLookup1: pointLookup["W5"], label1: "I16" },
+      { pointLookup: pointLookup["W5"], label: "I16", pointLookup1: pointLookup["W6"], label1: "I17" },
+      { pointLookup: pointLookup["W6"], label: "I17", pointLookup1: pointLookup["W7"], label1: "I18" },
+      { pointLookup: pointLookup["W7"], label: "I18", pointLookup1: pointLookup["W8"], label1: "I19" },
+      { pointLookup: pointLookup["W8"], label: "I19", pointLookup1: pointLookup["N1"], label1: "I20" },
+      { pointLookup: pointLookup["N1"], label: "I20", pointLookup1: pointLookup["N2"], label1: "I21" },
+      { pointLookup: pointLookup["N2"], label: "I21", pointLookup1: pointLookup["N3"], label1: "I22" },
+      { pointLookup: pointLookup["N3"], label: "I22", pointLookup1: pointLookup["N4"], label1: "I23" },
+      { pointLookup: pointLookup["N4"], label: "I23", pointLookup1: pointLookup["N5"], label1: "I24" },
+      { pointLookup: pointLookup["N5"], label: "I24", pointLookup1: pointLookup["N6"], label1: "I25" },
+      { pointLookup: pointLookup["N6"], label: "I25", pointLookup1: pointLookup["N7"], label1: "I26" },
+      { pointLookup: pointLookup["N7"], label: "I26", pointLookup1: pointLookup["N8"], label1: "I27" },
+      { pointLookup: pointLookup["N8"], label: "I27", pointLookup1: pointLookup["E1"], label1: "I28" },
+    ];
 
+    const reversedIntermediatePointsTest = intermediatePointsTest.reverse();
+
+    const newDrawDevtaObjectTest = reversedIntermediatePointsTest.reduce((acc, { pointLookup, label, pointLookup1, label1 }) => {
+      const filteredPoint = filteredData(label, intermediatePoints1Test);
+      const filteredPoint2 = filteredData(label1, intermediatePoints1Test);
+
+      const newObject = {
+        point1: pointLookup,
+        point2: pointLookup1,
+        point3: filteredPoint2[0]?.point || null,
+        point4: filteredPoint[0]?.point || null,
+      };
+
+      // Check if all points are not null
+      if (newObject.point1 && newObject.point2 && newObject.point3 && newObject.point4) {
+        acc.push(newObject);
+      }
+
+      return acc;
+    }, []);
+
+    const areas1 = newDrawDevtaObjectTest.map((area, index) => ({
+      id: index,
+      coordinates: convertPointsToCoordinates(area),
+      text: `Area ${index + 1}`,
+    }));
+
+    const intermediatePointsTest1 = [
+      { points: { p1: "I20", p2: "A13", p3: "I22", p4: "A15" } },
+      { points: { p1: "I18", p2: "A11", p3: "I20", p4: "A13" } },
+      { points: { p1: "I12", p2: "A8", p3: "I14", p4: "A10" } },
+      { points: { p1: "I10", p2: "A6", p3: "I12", p4: "A8" } },
+      { points: { p1: "I4", p2: "A3", p3: "I6", p4: "A5" } },
+      { points: { p1: "I2", p2: "A1", p3: "I4", p4: "A3" } },
+      { points: { p1: "I28", p2: "A18", p3: "I30", p4: "A20" } },
+      { points: { p1: "I26", p2: "A16", p3: "I28", p4: "A18" } },
+    ];
+
+    const newDrawDevtaObjectTest1 = intermediatePointsTest1.reduce((acc, { points: { p1, p2, p3, p4 } }) => {
+      const filteredPoint1 = filteredData(p1, intermediatePoints1Test);
+      const filteredPoint2 = filteredData(p2, intersactMidIntermediatePoints);
+      const filteredPoint3 = filteredData(p3, intermediatePoints1Test);
+      const filteredPoint4 = filteredData(p4, intersactMidIntermediatePoints);
+
+      const newObject = {
+        point1: filteredPoint3[0]?.point || null,
+        point2: filteredPoint1[0]?.point || null,
+        point3: filteredPoint2[0]?.midpoint || null,
+        point4: filteredPoint4[0]?.midpoint || null,
+      };
+
+      // Check if all points are not null
+      if (newObject.point1 && newObject.point2 && newObject.point3 && newObject.point4) {
+        acc.push(newObject);
+      }
+
+      return acc;
+    }, []);
+
+    const intermediatePointsTest2 = [
+      { points: { p1: "I14", p2: "A10", p3: "A8", p4: "X12", p5: "X20", p6: "A13", p7: "A11", p8: "I20" } },
+      { points: { p1: "I6", p2: "A5", p3: "A3", p4: "X4", p5: "X12", p6: "A8", p7: "A6", p8: "I10" } },
+      { points: { p1: "I30", p2: "A20", p3: "A18", p4: "X28", p5: "X4", p6: "A3", p7: "A1", p8: "I2" } },
+      { points: { p1: "I22", p2: "A15", p3: "A13", p4: "X20", p5: "X28", p6: "A18", p7: "A16", p8: "I26" } },
+    ];
+
+    const newDrawDevtaObjectTest2 = intermediatePointsTest2.reduce((acc, { points: { p1, p2, p3, p4, p5, p6, p7, p8 } }) => {
+      const filteredPoint1 = filteredData(p1, intermediatePoints1Test);
+      const filteredPoint2 = filteredData(p2, intersactMidIntermediatePoints);
+      const filteredPoint3 = filteredData(p3, intersactMidIntermediatePoints);
+      const filteredPoint4 = filteredData(p4, intermediatePoints2Test);
+      const filteredPoint5 = filteredData(p5, intermediatePoints2Test);
+      const filteredPoint6 = filteredData(p6, intersactMidIntermediatePoints);
+      const filteredPoint7 = filteredData(p7, intersactMidIntermediatePoints);
+      const filteredPoint8 = filteredData(p8, intermediatePoints1Test);
+
+      const newObject = {
+        point1: filteredPoint1[0]?.point || null,
+        point2: filteredPoint2[0]?.midpoint || null,
+        point3: filteredPoint3[0]?.midpoint || null,
+        point4: filteredPoint4[0]?.point || null,
+        point5: filteredPoint5[0]?.point || null,
+        point6: filteredPoint6[0]?.midpoint || null,
+        point7: filteredPoint7[0]?.midpoint || null,
+        point8: filteredPoint8[0]?.point || null,
+      };
+
+      // Check if all points are not null
+      if (newObject.point1 && newObject.point2 && newObject.point3 && newObject.point4
+        && newObject.point5
+        && newObject.point6
+        && newObject.point7
+        && newObject.point8
+      ) {
+        acc.push(newObject);
+      }
+
+      return acc;
+    }, []);
+
+    const intermediatePointsTest3 = [
+      { points: { p1: "X28", p2: "X4", p3: "X12", p4: "X20" } }
+    ];
+
+    const newDrawDevtaObjectTest3 = intermediatePointsTest3.reduce((acc, { points: { p1, p2, p3, p4 } }) => {
+      const filteredPoint1 = filteredData(p1, intermediatePoints2Test);
+      const filteredPoint2 = filteredData(p2, intermediatePoints2Test);
+      const filteredPoint3 = filteredData(p3, intermediatePoints2Test);
+      const filteredPoint4 = filteredData(p4, intermediatePoints2Test);
+
+      const newObject = {
+        point1: filteredPoint1[0]?.point || null,
+        point2: filteredPoint2[0]?.point || null,
+        point3: filteredPoint3[0]?.point || null,
+        point4: filteredPoint4[0]?.point || null
+      };
+
+      // Check if all points are not null
+      if (newObject.point1 && newObject.point2 && newObject.point3 && newObject.point4) {
+        acc.push(newObject);
+      }
+
+      return acc;
+    }, []);
+
+    const areas2 = newDrawDevtaObjectTest1.map((area, index) => ({
+      id: index + 33,
+      coordinates: convertPointsToCoordinates(area),
+      text: `Area ${index + 32 + 1}`,
+    }));
+
+    const areas3 = newDrawDevtaObjectTest2.map((area, index) => ({
+      id: index + 40 + 1,
+      coordinates: convertPointsToCoordinates1(area),
+      text: `Area ${index + 40 + 1}`,
+    }));
+
+    const areas4 = newDrawDevtaObjectTest3.map((area, index) => ({
+      id: index + 45,
+      coordinates: convertPointsToCoordinates(area),
+      text: `Area ${index + 45}`,
+    }));
+
+    setAreas([...areas1, ...areas2, ...areas3, ...areas4].reverse());
+    console.log("Area : ", areas)
+    setDrawDevtaObject(newDrawDevtaObject);
   }, [intersactMidIntermediatePoints]);
 
 
+  const HoverArea = ({ coordinates, hoverText }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Calculate the center position for the text and rectangle
+    const centerX = (coordinates[0].x + coordinates[2].x) / 2 + 15;
+    const centerY = (coordinates[0].y + coordinates[2].y) / 2 + 15;
+
+    // Measure text width and height (or use a fixed size if consistent)
+    const textWidth = hoverText.length * 8; // Estimate based on character count
+    const textHeight = 20; // Adjust based on your font size and padding
+
+    return (
+      <>
+        <polygon
+          points={coordinates.map((point) => `${point.x},${point.y}`).join(" ")}
+          fill={"transparent"}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        />
+
+        {isHovered && (
+          <>
+            {/* Background Rectangle */}
+            <rect
+              x={centerX - textWidth / 2} // Center the rectangle
+              y={centerY - textHeight / 2} // Center the rectangle
+              width={textWidth} // Set the width according to your text length
+              height={textHeight} // Set the height for the rectangle
+              fill="white" // Background color
+              rx="4" // Rounded corners
+              ry="4" // Rounded corners
+              style={{ cursor: 'none' }}
+            />
+            {/* Text with purple color and semi-bold */}
+            <text
+              x={centerX}
+              y={centerY}
+              fill="purple"
+              fontSize="14"
+              fontWeight="600" // Semi-bold weight
+              alignmentBaseline="central"
+              textAnchor="middle" // Center the text
+            >
+              {hoverText}
+            </text>
+          </>
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
-
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6">
         {/* File Upload Section */}
         <div
@@ -966,6 +1217,7 @@ const DrawingBoard = ({
             { id: "showDevtaIntersaction", label: "Show Devta Intersaction points", checked: showDevtaIntersaction, onChange: setShowDevtaIntersaction },
             { id: "hideMarmaLines", label: "Show Marma Lines", checked: hideMarmaLines, onChange: setHideMarmaLines },
             { id: "hideMarmapoints", label: "Show Marma Points", checked: hideMarmapoints, onChange: setHideMarmapoints },
+            { id: "disableDraw", label: "Done Drawing", checked: disableDraw, onChange: setDisableDraw },
           ].map(({ id, label, checked, onChange }) => (
             <div key={id} className="flex items-center gap-2">
               <input
@@ -1028,17 +1280,24 @@ const DrawingBoard = ({
         </button>
       </div>
 
+        {/* SVG */}
       <div className="flex-grow p-4" ref={printRef}>
         <div className="flex mb-1 ms-2.5">
           {Array.from({ length: 26 }, (_, i) => (
-            <div key={i} className="text-sm ms-2.5 w-4">{i + 1}</div>
+            <div key={i} className="text-sm ms-2.5 w-4" style={{
+              userSelect: 'none', // Prevent text selection
+              cursor: 'default' // Optional: Make the cursor non-interactive
+            }}>{i + 1}</div>
           ))}
         </div>
 
         <div className="relative flex">
           <div className="flex flex-col">
             {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
-              <div key={i} className="text-sm mb-1.5 w-4">{letter}</div>
+              <div key={i} className="text-sm mb-1.5 w-4" style={{
+                userSelect: 'none', // Prevent text selection
+                cursor: 'default' // Optional: Make the cursor non-interactive
+              }}>{letter}</div>
             ))}
           </div>
 
@@ -1094,17 +1353,19 @@ const DrawingBoard = ({
                     )}
 
                     {/* Draw points */}
-                    {points.map((point, i) => (
-                      <circle
-                        key={i}
-                        cx={point.x}
-                        cy={point.y}
-                        r="5"
-                        fill="red"
-                        stroke="white"
-                        strokeWidth="2"
-                      />
-                    ))}
+                    {!disableDraw && (
+                      points.map((point, i) => (
+                        <circle
+                          key={i}
+                          cx={point.x}
+                          cy={point.y}
+                          r="5"
+                          fill="red"
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                      ))
+                    )}
 
                     {centroid && (
                       <>
@@ -1235,20 +1496,20 @@ const DrawingBoard = ({
                                   fill="black"
                                   style={{ userSelect: 'none', cursor: 'default' }}
                                 >
-                                  P1-{i}
+                                  I-{i}
                                 </text> */}
 
                                 {/* Draw the second intermediate point (P2) */}
                                 {showDevtaIntersaction && <circle cx={point2.x} cy={point2.y} r="3" fill="blue" />}
                                 {/* <text
-        x={point2.x + 5}
-        y={point2.y - 5}
-        fontSize="10"
-        fill="black"
-        style={{ userSelect: 'none', cursor: 'default' }}
-      >
-        P2-{i}
-      </text> */}
+                                  x={point2.x + 5}
+                                  y={point2.y - 5}
+                                  fontSize="10"
+                                  fill="black"
+                                  style={{ userSelect: 'none', cursor: 'default' }}
+                                >
+                                  X-{i}
+                                </text> */}
                               </g>
                             );
                           })}
@@ -1284,6 +1545,16 @@ const DrawingBoard = ({
                               drawDevtaLineData(item.point1, item.point2)
                             )
                           })}
+                          {/* <polygon 
+                                  points="450,230 450,294.44 486.67,279.25 486.67,193.33"
+                                  fill="lightblue" 
+                                  stroke="blue" 
+                                  stroke-width="2" /> */}
+                          {/* <polygon 
+                                  points="450,230 550,230 550,330 450,330"
+                                  fill="lightblue" 
+                                  stroke="blue" 
+                                  stroke-width="2" /> */}
 
                           {/* {drawDevtaLineData()} */}
 
@@ -1327,18 +1598,29 @@ const DrawingBoard = ({
                             {intersectionsState.map((intersection, i) => (
                               <g key={i}>
                                 {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
-                                <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
+                                {/* <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
                                   userSelect: 'none', // Prevent text selection
                                   cursor: 'default' // Optional: Make the cursor non-interactive
                                 }}>
                                   {intersection.label}
-                                </text>
+                                </text> */}
                               </g>
                             ))}
                           </>}
                         </>}
                       </>
                     )}
+
+                    {areas.map((area, index) => {
+                      return (
+                        <HoverArea
+                          key={area.id}
+                          coordinates={area.coordinates}
+                          hoverText={(index + 1) + " " + devta[index]}
+                        />
+                      )
+                    })}
+
                     {hideMarmaLines && (
                       <>
                         {lines.map((line, index) => {
@@ -1367,6 +1649,7 @@ const DrawingBoard = ({
                         <g key="fixed-line-n2-e8">{drawLines("N2", "E8", "orange", 1)}</g>
                       </>
                     )}
+
                     {hideMarmapoints && <>
                       {intersectionPoints.map((point, idx) => (
                         <circle
@@ -1411,8 +1694,7 @@ const DrawingBoard = ({
                 <rect x={0} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
                 <rect x={0} y={649} width="676" height="27" fill="white" mask="url(#white-mask)" />
                 <rect x={649} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
-                {hideCircle &&
-                  Array.from({ length: totalLines }).map((_, index) => {
+                {hideCircle && Array.from({ length: totalLines }).map((_, index) => {
                     const rotationIndex = index % totalLines;
                     const angle = rotationIndex * angleIncrement + (270 + inputDegree);
                     const radian = (angle * Math.PI) / 180;
@@ -1463,7 +1745,7 @@ const DrawingBoard = ({
                         }
                       </g>
                     );
-                  })}
+                })}
                 {Array.from({ length: totalLines }).map((_, index) => {
                   const rotationIndex = index % totalLines;
                   const angle = rotationIndex * angleIncrement + (270 + inputDegree);
@@ -1569,14 +1851,20 @@ const DrawingBoard = ({
 
           <div className="flex flex-col ms-2">
             {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
-              <div key={i} className="text-sm mb-1.5 w-4">{letter}</div>
+              <div key={i} className="text-sm mb-1.5 w-4" style={{
+                userSelect: 'none', // Prevent text selection
+                cursor: 'default' // Optional: Make the cursor non-interactive
+              }}>{letter}</div>
             ))}
           </div>
         </div>
 
         <div className="flex mb-1 ms-2.5">
           {Array.from({ length: 26 }, (_, i) => (
-            <div key={i} className="text-sm ms-2.5 w-4">{i + 1}</div>
+            <div key={i} className="text-sm ms-2.5 w-4" style={{
+              userSelect: 'none', // Prevent text selection
+              cursor: 'default' // Optional: Make the cursor non-interactive
+            }}>{i + 1}</div>
           ))}
         </div>
       </div>
