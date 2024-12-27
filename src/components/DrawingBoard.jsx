@@ -4,9 +4,16 @@ import { DEFAULT_LINE_SETS } from '../constants/directions';
 import GridBackground from './GridBackground';
 import LineControls from './LineControls';
 import jsPDF from "jspdf";
+
 import html2canvas from 'html2canvas';
 import { Upload } from 'lucide-react';
 import PrintComponent from './printComponent';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf';
+// Set the worker source using a CDN
+GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js'; // Match this with your installed version
+// Adjust to the version you need
+
+
 const DEFAULT_POINTS = [
   { x: 120, y: 120 },
   { x: 560, y: 120 },
@@ -47,14 +54,14 @@ const DrawingBoard = ({
   const movingCentroidRef = useRef(false);
   useEffect(() => {
     if (snapToCentroid) {
-      if(!lockCentroid){
+      if (!lockCentroid) {
         setCentroid(calculateCentroid(points));
       }
     }
   }, [points, snapToCentroid]);
 
   useEffect(() => {
-    if(!lockCentroid){
+    if (!lockCentroid) {
       setCentroid(calculateCentroid(points));
     }
   }, []);
@@ -124,13 +131,13 @@ const DrawingBoard = ({
       ];
 
       extraText.forEach((line) => {
-      if (textY + 20 > a4Height) {
-        pdf.addPage(); // Add a new page if space runs out
-        textY = 40; // Reset Y position for the new page
-      }
-      pdf.text(line, textX, textY);
-      textY += 20; // Increment Y position for the next line
-    });
+        if (textY + 20 > a4Height) {
+          pdf.addPage(); // Add a new page if space runs out
+          textY = 40; // Reset Y position for the new page
+        }
+        pdf.text(line, textX, textY);
+        textY += 20; // Increment Y position for the next line
+      });
 
 
 
@@ -151,18 +158,49 @@ const DrawingBoard = ({
   };
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  const readFileData = (file) => {
+  // const readFileData = (file) => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       resolve(e.target.result);
+  //     };
+  //     reader.onerror = (err) => {
+  //       reject(err);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   });
+  // };
+
+
+  const readFileData = async (file) => {
+    const fileReader = new FileReader();
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        resolve(e.target.result);
+      fileReader.onload = async () => {
+        const typedArray = new Uint8Array(fileReader.result);
+        const pdf = await getDocument(typedArray).promise;
+        const images = [];
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1 });
+          const canvas = document.createElement('canvas');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const context = canvas.getContext('2d');
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          images.push(canvas.toDataURL()); // Convert canvas to image URL
+        }
+
+        resolve(images);
       };
-      reader.onerror = (err) => {
-        reject(err);
-      };
-      reader.readAsDataURL(file);
+      fileReader.onerror = reject;
+      fileReader.readAsArrayBuffer(file); // Read as ArrayBuffer for pdfjs
     });
   };
+
+  const [firstPdfImage, setFirstPdfImage] = useState(null); // State to hold the first image from PDF
+
 
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
@@ -179,9 +217,14 @@ const DrawingBoard = ({
         };
         reader.readAsDataURL(uploadedFile);
       } else if (fileType === "application/pdf") {
+        setFileUploaded(true)
         // const data = await readFileData(uploadedFile);
-        const images = [];
-        const data = await readFileData(uploadedFile);
+        // const images = [];
+        // const data = await readFileData(uploadedFile);
+        const images = await readFileData(uploadedFile);
+        if (images.length > 0) {
+          setFirstPdfImage(images[0]); // Set the first image extracted from the PDF
+        }
         // console.log("images : ", images)
 
       } else {
@@ -229,16 +272,45 @@ const DrawingBoard = ({
     }
   };
 
+  // const handleMouseMove = (e) => {
+  //   const position = getMousePosition(e);
+
+  //   if (movingCentroidRef.current) {
+  //     // Move the centroid freely if snapping is disabled
+  //     if (!snapToCentroid) {
+  //       const canvasBounds = { xMin: 0, xMax: width, yMin: 0, yMax: height };
+  //       const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, position.x));
+  //       const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, position.y));
+  //       if(!lockCentroid){
+  //         setCentroid({ x: clampedX, y: clampedY });
+  //       }
+  //     }
+  //   } else if (selectedPointRef.current !== null) {
+  //     // Move a specific point
+  //     if (!disableDraw) {
+  //       const newPoints = [...points];
+  //       newPoints[selectedPointRef.current] = position;
+  //       setPoints(newPoints);
+  //       // Recalculate centroid after point modification
+  //       if(!lockCentroid){
+  //         setCentroid(calculateCentroid(newPoints));
+  //       }
+  //     }
+  //   }
+  // };
+
   const handleMouseMove = (e) => {
     const position = getMousePosition(e);
+    const canvasBounds = { xMin: 35, xMax: 645, yMin: 35, yMax: 645 };
+
+    // Clamp the mouse position within the SVG boundaries
+    const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, position.x));
+    const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, position.y));
 
     if (movingCentroidRef.current) {
       // Move the centroid freely if snapping is disabled
       if (!snapToCentroid) {
-        const canvasBounds = { xMin: 0, xMax: width, yMin: 0, yMax: height };
-        const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, position.x));
-        const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, position.y));
-        if(!lockCentroid){
+        if (!lockCentroid) {
           setCentroid({ x: clampedX, y: clampedY });
         }
       }
@@ -246,15 +318,16 @@ const DrawingBoard = ({
       // Move a specific point
       if (!disableDraw) {
         const newPoints = [...points];
-        newPoints[selectedPointRef.current] = position;
+        newPoints[selectedPointRef.current] = { x: clampedX, y: clampedY }; // Use clamped position
         setPoints(newPoints);
         // Recalculate centroid after point modification
-        if(!lockCentroid){
+        if (!lockCentroid) {
           setCentroid(calculateCentroid(newPoints));
         }
       }
     }
   };
+
 
   const handleMouseUp = () => {
     movingCentroidRef.current = false;
@@ -272,7 +345,7 @@ const DrawingBoard = ({
         if (points.length > 3) {
           const newPoints = points.filter((_, i) => i !== clickedPointIndex);
           setPoints(newPoints);
-          if(!lockCentroid){
+          if (!lockCentroid) {
             setCentroid(calculateCentroid(newPoints));
           }
         }
@@ -282,7 +355,7 @@ const DrawingBoard = ({
           const newPoints = [...points];
           newPoints.splice(closestLineIndex + 1, 0, position);
           setPoints(newPoints);
-          if(!lockCentroid){
+          if (!lockCentroid) {
             setCentroid(calculateCentroid(newPoints));
           }
         }
@@ -743,19 +816,15 @@ const DrawingBoard = ({
       const distance = Math.sqrt(
         Math.pow(point.x - centroid.x, 2) + Math.pow(point.y - centroid.y, 2)
       );
-    
+
       // Update if label is not in uniqueIntersections or if this point is closer
       if (!uniqueIntersections[label] || uniqueIntersections[label].distance > distance) {
         uniqueIntersections[label] = { ...intersection, distance };
       }
     });
-    
+
     // Convert the uniqueIntersections object to an array
     const filteredIntersections = Object.values(uniqueIntersections).map(({ distance, ...rest }) => rest);
-    
-    // Log the filtered intersections
-    console.log(filteredIntersections);
-    
     // Update the state or use the filtered data as needed
     setIntersectionsState(filteredIntersections);
     // setIntersectionsState(newIntersections);
@@ -1314,16 +1383,14 @@ const DrawingBoard = ({
   // }
 
   const plotText = () => {
-    // Get centroid coordinates
     const cx = centroid.x;
     const cy = centroid.y;
 
-    const sideLength = 500; // You can adjust this value to change the size of the square
-    const halfSide = sideLength / 2; // Calculate half side length
+    const sideLength = 500;
+    const halfSide = sideLength / 2;
 
-    // Define text labels for each part (N, E, S, W)
     const labels = [];
-    const totalParts = 32; // Total number of labels
+    const totalParts = 32;
 
     // Create labels for each direction
     for (let i = 0; i < totalParts; i++) {
@@ -1354,16 +1421,14 @@ const DrawingBoard = ({
         textY = cy - halfSide; // Fixed y position
       } else if (index < 16) {
         // East side (right)
-        textX = cx + halfSide; // Fixed x position
-        textY = cy - (halfSide - (sideLength / 8) * (index - 8)) + 40; // Evenly spaced down the right
+        textX = cx + halfSide;
+        textY = cy - (halfSide - (sideLength / 8) * (index - 8)) + 40;
       } else if (index < 24) {
-        // South side (bottom)
-        textX = cx + (halfSide - (sideLength / 8) * (index - 16)) - 40; // Evenly spaced across the bottom
-        textY = cy + halfSide + 20; // Fixed y position
+        textX = cx + (halfSide - (sideLength / 8) * (index - 16)) - 40;
+        textY = cy + halfSide + 20;
       } else {
-        // West side (left)
-        textX = cx - halfSide - 20; // Fixed x position
-        textY = cy + (halfSide - (sideLength / 8) * (index - 24)) - 20; // Evenly spaced up the left
+        textX = cx - halfSide - 20;
+        textY = cy + (halfSide - (sideLength / 8) * (index - 24)) - 20;
       }
 
       // Return text element
@@ -1387,6 +1452,81 @@ const DrawingBoard = ({
     // Return the array of text elements
     return texts;
 
+    // const cx = centroid.x;
+    // const cy = centroid.y;
+
+    // const sideLength = 500;
+    // const halfSide = sideLength / 2;
+
+    // const labels = [];
+    // const totalParts = 32;
+
+    // // Create labels for each direction
+    // for (let i = 0; i < totalParts; i++) {
+    //   let label;
+
+    //   // Determine the label based on the index
+    //   if (i < 8) {
+    //     label = `N${i + 1}`; // North labels (N1 to N8)
+    //   } else if (i < 16) {
+    //     label = `E${i - 7}`; // East labels (E1 to E8)
+    //   } else if (i < 24) {
+    //     label = `S${i - 15}`; // South labels (S1 to S8)
+    //   } else {
+    //     label = `W${i - 23}`; // West labels (W1 to W8)
+    //   }
+
+    //   labels.push(label);
+    // }
+
+    // // Define canvas bounds
+    // const canvasBounds = { xMin: 45, xMax: 630, yMin: 45, yMax: 630 };
+
+    // // Calculate positions for each label in a square pattern
+    // const texts = labels.map((label, index) => {
+    //   let textX, textY;
+
+    //   // Determine position based on the index
+    //   if (index < 8) {
+    //     // North side (top)
+    //     textX = cx - (halfSide - (sideLength / 8) * index) + 20; // Evenly spaced across the top
+    //     textY = cy - halfSide; // Fixed y position
+    //   } else if (index < 16) {
+    //     // East side (right)
+    //     textX = cx + halfSide;
+    //     textY = cy - (halfSide - (sideLength / 8) * (index - 8)) + 40;
+    //   } else if (index < 24) {
+    //     textX = cx + (halfSide - (sideLength / 8) * (index - 16)) - 40;
+    //     textY = cy + halfSide + 20;
+    //   } else {
+    //     textX = cx - halfSide - 20;
+    //     textY = cy + (halfSide - (sideLength / 8) * (index - 24)) - 20;
+    //   }
+
+    //   // Clamp positions to canvas bounds
+    //   textX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, textX));
+    //   textY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, textY));
+
+    //   // Return text element
+    //   return (
+    //     <text
+    //       key={index}
+    //       x={textX}
+    //       y={textY}
+    //       fontSize="20"
+    //       fill="black"
+    //       style={{
+    //         userSelect: 'none',
+    //         cursor: 'default',
+    //       }}
+    //     >
+    //       {label}
+    //     </text>
+    //   );
+    // });
+
+    // // Return the array of text elements
+    // return texts;
   }
 
   return (
@@ -1575,29 +1715,34 @@ const DrawingBoard = ({
                 </defs>
 
                 <g clipPath="url(#svgViewBox)">
-                  {/* Layer 1: Uploaded File */}
-                  {/* <g className="file-layer"
-                    transform={`translate(${translate.x}, ${translate.y}) rotate(${rotation}, ${width / 2}, ${height / 2}) scale(${zoom})`}
-                  >
-
-                    <image
-                      href={previewUrl}
-                      style={{ maxWidth: "100%", maxHeight: "400px" }}
-                      width={width}
-                      height={height}
-                    />
-                  </g> */}
-
                   <g
                     className="file-layer"
                     transform={`translate(${translate.x + (width - width * zoom) / 2}, ${translate.y + (height - height * zoom) / 2}) rotate(${rotation}, ${width / 2}, ${height / 2}) scale(${zoom})`}
                   >
-                    <image
+
+{previewUrl ? (
+            <image
+            href={previewUrl}
+            style={{ maxWidth: "100%", maxHeight: "400px" }}
+            width={width}
+            height={height}
+          />
+          ) : firstPdfImage ? (
+            <image
+                        href={firstPdfImage}
+                        x={70} // Centering the PDF image
+                        y={170}
+                        width={676}
+                        height={676}
+                      />
+          ) : null}
+                    {/* <image
                       href={previewUrl}
                       style={{ maxWidth: "100%", maxHeight: "400px" }}
                       width={width}
                       height={height}
-                    />
+
+                    /> */}
                   </g>
 
 
@@ -1706,7 +1851,7 @@ const DrawingBoard = ({
                       </g>
                     ))} */}
                         {plotText()}
-                       
+
                         {showDevta ? <>
 
                           {intersectionsState.map((intersection, i) => {
@@ -1748,7 +1893,7 @@ const DrawingBoard = ({
                                     {intersection.label}
                                   </text>
                                 </>}
-                            {/* <circle cx={pointLookup["S1"].x} cy={pointLookup["S1"].y} r="3" fill="Black" /> */}
+                                {/* <circle cx={pointLookup["S1"].x} cy={pointLookup["S1"].y} r="3" fill="Black" /> */}
 
                                 {/* Draw the first intermediate point (P1) */}
                                 {showDevtaIntersaction && <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />}
@@ -1792,7 +1937,7 @@ const DrawingBoard = ({
                                     stroke="white"
                                     strokeWidth="2"
                                   />}
-                                 <text
+                                <text
                                   x={item.midpoint.x + 5}
                                   y={item.midpoint.y - 5}
                                   fontSize="10"
@@ -1823,7 +1968,7 @@ const DrawingBoard = ({
 
                           {/* {drawDevtaLineData()} */}
 
-                            {/* uncomment this */}
+                          {/* uncomment this */}
                           {drawLinesForDevta("A1", "A2", "red", 2)}
                           {drawLinesForDevta("A2", "A3", "red", 2)}
                           {drawLinesForDevta("A3", "A4", "red", 2)}

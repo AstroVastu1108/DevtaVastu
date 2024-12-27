@@ -12,7 +12,7 @@
   "dependencies": {
     "jspdf": "^2.5.2",
     "lucide-react": "^0.344.0",
-    "pdfjs-dist": "^4.9.155",
+    "pdfjs-dist": "^2.11.338",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "svg2pdf.js": "^2.2.4"
