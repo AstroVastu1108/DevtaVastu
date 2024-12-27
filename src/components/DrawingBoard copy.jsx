@@ -6,7 +6,6 @@ import LineControls from './LineControls';
 import jsPDF from "jspdf";
 import html2canvas from 'html2canvas';
 import { Upload } from 'lucide-react';
-import PrintComponent from './printComponent';
 const DEFAULT_POINTS = [
   { x: 120, y: 120 },
   { x: 560, y: 120 },
@@ -42,7 +41,6 @@ const DrawingBoard = ({
 
   const svgRef = useRef(null);
   const printRef = useRef(null);
-  const printRef1 = useRef(null);
   const selectedPointRef = useRef(null);
   const movingCentroidRef = useRef(false);
   useEffect(() => {
@@ -85,58 +83,67 @@ const DrawingBoard = ({
   //   });
   // };
 
+  // const downloadPDF = () => {
+  //   const scale = 5; // Adjust this value as needed for quality
+
+  //   // Set A4 size in points
+  //   const a4Width = 595.28; // A4 width in points
+  //   const a4Height = 841.89; // A4 height in points
+
+  //   html2canvas(printRef.current, { scale }).then((canvas) => {
+  //     const imgData = canvas.toDataURL('image/jpeg', 0.8); // Use JPEG for better compression
+  //     const pdf = new jsPDF('p', 'pt', 'a4'); // Create a PDF document with A4 size
+
+  //     // Calculate dimensions for the PDF
+  //     const imgWidth = a4Width; // Use full A4 width
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
+
+  //     const pageHeight = pdf.internal.pageSize.height;
+  //     let heightLeft = imgHeight;
+
+  //     let position = 0;
+
+  //     // Add the first page with the image
+  //     pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     // Add additional pages if the image height exceeds one page
+  //     while (heightLeft >= 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
   const downloadPDF = () => {
-    const scale = 5; // Adjust this value as needed for quality
+    const scale = 8; // Adjust this value as needed for quality
 
     // Set A4 size in points
-    const a4Width = 1000; // A4 width in points
+    const a4Width = 595.28; // A4 width in points
     const a4Height = 841.89; // A4 height in points
 
     html2canvas(printRef.current, { scale }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
-      const pdf = new jsPDF('p', 'pt', 'a4');
+      const imgData = canvas.toDataURL('image/jpeg', 0.8); // Use JPEG for better compression
+      const pdf = new jsPDF('p', 'pt', 'a4'); // Create a PDF document with A4 size
 
-      const imgWidth = a4Width;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Calculate dimensions for the PDF
+      const imgWidth = a4Width; // 60% of A4 width for the image
+      const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
 
-      const pageHeight = pdf.internal.pageSize.height;
-      let heightLeft = imgHeight;
+      const formX = imgWidth; // Starting x position for form (right side)
 
-      let position = 0;
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Add the image to the left side
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      const textX = 20;
-      let textY = imgHeight + 40; // Place text below the image
-      pdf.setFontSize(12);
-      const extraText = [
-        'Additional Text Example:',
-        '1. This is some extra content added after the image.',
-        '2. You can customize this content dynamically.',
-        '3. Ensure this text is visible in the PDF output.',
-      ];
-
-      extraText.forEach((line) => {
-      if (textY + 20 > a4Height) {
-        pdf.addPage(); // Add a new page if space runs out
-        textY = 40; // Reset Y position for the new page
-      }
-      pdf.text(line, textX, textY);
-      textY += 20; // Increment Y position for the next line
-    });
-
-
-
+      // Save the PDF
       pdf.save('download.pdf');
     });
   };
+
 
   const getMousePosition = (e) => {
     const svg = svgRef.current;
@@ -218,6 +225,7 @@ const DrawingBoard = ({
 
   const handleMouseDown = (e) => {
     const position = getMousePosition(e);
+
     // Check if the centroid is clicked
     if (centroid && isPointNear(position.x, position.y, centroid)) {
       movingCentroidRef.current = true;
@@ -737,28 +745,8 @@ const DrawingBoard = ({
         }
       }
     });
-    const uniqueIntersections = {};
-    newIntersections.forEach((intersection) => {
-      const { label, point } = intersection;
-      const distance = Math.sqrt(
-        Math.pow(point.x - centroid.x, 2) + Math.pow(point.y - centroid.y, 2)
-      );
-    
-      // Update if label is not in uniqueIntersections or if this point is closer
-      if (!uniqueIntersections[label] || uniqueIntersections[label].distance > distance) {
-        uniqueIntersections[label] = { ...intersection, distance };
-      }
-    });
-    
-    // Convert the uniqueIntersections object to an array
-    const filteredIntersections = Object.values(uniqueIntersections).map(({ distance, ...rest }) => rest);
-    
-    // Log the filtered intersections
-    console.log(filteredIntersections);
-    
-    // Update the state or use the filtered data as needed
-    setIntersectionsState(filteredIntersections);
-    // setIntersectionsState(newIntersections);
+
+    setIntersectionsState(newIntersections);
     // }
   }, [hideCircle, totalLines, angleIncrement, inputDegree, centroid, points]);
 
@@ -1313,11 +1301,110 @@ const DrawingBoard = ({
   //   )
   // }
 
-  const plotText = () => {
+  const plotText = (label1, label2, label) => {
+
+    // const cx = centroid.x; 
+    // const cy = centroid.y; 
+    // const distance = 300; 
+    // const angleBetweenTexts = 11.25; 
+    // const totalParts = 32; 
+    // const texts = [];
+
+    // for (let i = 0; i < totalParts; i++) {
+    //     const angle = angleBetweenTexts * i  + 11 +220;
+    //     const angleRadians = angle * (Math.PI / 180);
+
+    //     const textX = cx + distance * Math.cos(angleRadians);
+    //     const textY = cy + distance * Math.sin(angleRadians);
+
+    //     let label;
+    //     if (i >= 0 && i <= 7) {
+    //         label = `N${i + 1}`; // N1 to N8
+    //     } else if (i >= 8 && i <= 15) {
+    //         label = `E${i - 7}`; // E1 to E8
+    //     } else if (i >= 16 && i <= 23) {
+    //         label = `S${i - 15}`; // S1 to S8
+    //     } else if (i >= 24 && i <= 31) {
+    //         label = `W${i - 23}`; // W1 to W8
+    //     }
+
+    //     texts.push(
+    //         <text key={i} x={textX} y={textY} fontSize="16" fill="blue" style={{
+    //           userSelect: 'none',
+    //           cursor: 'default', 
+    //         }}>
+    //             {label}
+    //         </text>
+    //     );
+    // }
+    // return texts
+
+
+
+    // // working
+    // // Effective dimensions ensure the minimum size
+    // const effectiveWidth = 650;
+    // const effectiveHeight = 600;
+    // // const effectiveWidth = 650 < minWidth ? minWidth : 650;
+    // // const effectiveHeight = 600 < minHeight ? minHeight : 500;
+
+    // const cx = centroid.x;
+    // const cy = centroid.y;
+
+    // // Calculate dynamic distance based on effective dimensions
+    // const maxDistanceX = Math.min(cx, effectiveWidth - cx);
+    // const maxDistanceY = Math.min(cy, effectiveHeight - cy);
+    // const distance = Math.min(maxDistanceX, maxDistanceY); // Subtract padding
+
+    // const angleBetweenTexts = 11.25;
+    // const totalParts = 32;
+    // const texts = [];
+
+    // for (let i = 0; i < totalParts; i++) {
+    //   const angle = angleBetweenTexts * i + 11 + 220;
+    //   const angleRadians = angle * (Math.PI / 180);
+
+    //   const textX = cx + distance * Math.cos(angleRadians);
+    //   const textY = cy + distance * Math.sin(angleRadians);
+
+    //   let label;
+    //   if (i >= 0 && i <= 7) {
+    //     label = `N${i + 1}`; // N1 to N8
+    //   } else if (i >= 8 && i <= 15) {
+    //     label = `E${i - 7}`; // E1 to E8
+    //   } else if (i >= 16 && i <= 23) {
+    //     label = `S${i - 15}`; // S1 to S8
+    //   } else if (i >= 24 && i <= 31) {
+    //     label = `W${i - 23}`; // W1 to W8
+    //   }
+
+    //   texts.push(
+    //     <text
+    //       key={i}
+    //       x={textX}
+    //       y={textY}
+    //       fontSize="20"
+    //       fill="black"
+    //       style={{
+    //         userSelect: 'none',
+    //         cursor: 'default',
+    //       }}
+    //     >
+    //       {label}
+    //     </text>
+    //   );
+    // }
+    // return texts;
+
+    // Effective dimensions ensure the minimum size
+    const effectiveWidth = 650;
+    const effectiveHeight = 600;
+
     // Get centroid coordinates
     const cx = centroid.x;
     const cy = centroid.y;
 
+    // Define the side length of the square
     const sideLength = 500; // You can adjust this value to change the size of the square
     const halfSide = sideLength / 2; // Calculate half side length
 
@@ -1389,13 +1476,13 @@ const DrawingBoard = ({
 
   }
 
+
+
+
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6 h-[100vh] overflow-y-auto">
         {/* File Upload Section */}
-        {/* <div  ref={printRef1} style={{display:"none"}}>
-          <PrintComponent />
-        </div> */}
         <div
           className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
           onDragOver={(e) => e.preventDefault()}
@@ -1705,16 +1792,15 @@ const DrawingBoard = ({
                         </text>
                       </g>
                     ))} */}
-                        {plotText()}
+
                        
                         {showDevta ? <>
 
                           {intersectionsState.map((intersection, i) => {
-                            // console.log("intersectionsState : ",intersectionsState)
                             // Calculate the delta (difference) for x and y coordinates
                             const dx = (centroid.x - intersection.point.x) / 3;
                             const dy = (centroid.y - intersection.point.y) / 3;
-                            // console.log("lookup : ",pointLookup["S1"])
+                            console.log("lookup : ",pointLookup["S1"])
                             // Calculate the first intermediate point (P1)
                             const point1 = { x: intersection.point.x + dx, y: intersection.point.y + dy };
                             intermediatePoints1.push(point1); // Add P1 to the array
@@ -1734,7 +1820,7 @@ const DrawingBoard = ({
                                 {/* Draw the intersection point */}
                                 {hideCircle && <>
                                   {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
-                                  {/* <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="green" /> */}
+                                  {/* <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" /> */}
                                   <text
                                     x={intersection.point.x + 5}
                                     y={intersection.point.y - 5}
@@ -1748,7 +1834,7 @@ const DrawingBoard = ({
                                     {intersection.label}
                                   </text>
                                 </>}
-                            {/* <circle cx={pointLookup["S1"].x} cy={pointLookup["S1"].y} r="3" fill="Black" /> */}
+                            <circle cx={pointLookup["S1"].x} cy={pointLookup["S1"].y} r="3" fill="Black" />
 
                                 {/* Draw the first intermediate point (P1) */}
                                 {showDevtaIntersaction && <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />}
@@ -1778,7 +1864,7 @@ const DrawingBoard = ({
                           })}
 
                           {/* uncomment this */}
-                          {intersactMidIntermediatePoints.map((item, i) => {
+                          {/* {intersactMidIntermediatePoints.map((item, i) => {
                             return (
                               // console.log("Items : ",item)
                               <>
@@ -1803,13 +1889,13 @@ const DrawingBoard = ({
                                 </text>
                               </>
                             )
-                          })}
+                          })} */}
                           {/* uncomment this */}
-                          {drawDevtaObject && drawDevtaObject.map((item) => {
+                          {/* {drawDevtaObject && drawDevtaObject.map((item) => {
                             return (
                               drawDevtaLineData(item.point1, item.point2)
                             )
-                          })}
+                          })} */}
                           {/* <polygon 
                                   points="450,230 450,294.44 486.67,279.25 486.67,193.33"
                                   fill="lightblue" 
@@ -1824,7 +1910,7 @@ const DrawingBoard = ({
                           {/* {drawDevtaLineData()} */}
 
                             {/* uncomment this */}
-                          {drawLinesForDevta("A1", "A2", "red", 2)}
+                          {/* {drawLinesForDevta("A1", "A2", "red", 2)}
                           {drawLinesForDevta("A2", "A3", "red", 2)}
                           {drawLinesForDevta("A3", "A4", "red", 2)}
                           {drawLinesForDevta("A4", "A5", "red", 2)}
@@ -1840,7 +1926,7 @@ const DrawingBoard = ({
                           {drawLinesForDevta("A16", "A17", "red", 2)}
                           {drawLinesForDevta("A17", "A18", "red", 2)}
                           {drawLinesForDevta("A18", "A19", "red", 2)}
-                          {drawLinesForDevta("A19", "A20", "red", 2)}
+                          {drawLinesForDevta("A19", "A20", "red", 2)} */}
 
                           {intermediatePoints1.length > 1 && (
                             <polyline
@@ -1883,7 +1969,7 @@ const DrawingBoard = ({
 
 
 
-                            {/* {intersectionsState && plotText()} */}
+                            {intersectionsState && plotText("N1", "N2", "N1")}
                             {/* {intersectionsState.map((intersection, i) => {
                               const { point, label } = intersection;
                               const halfSize = 676/2;

@@ -6,7 +6,6 @@ import LineControls from './LineControls';
 import jsPDF from "jspdf";
 import html2canvas from 'html2canvas';
 import { Upload } from 'lucide-react';
-import PrintComponent from './printComponent';
 const DEFAULT_POINTS = [
   { x: 120, y: 120 },
   { x: 560, y: 120 },
@@ -42,7 +41,6 @@ const DrawingBoard = ({
 
   const svgRef = useRef(null);
   const printRef = useRef(null);
-  const printRef1 = useRef(null);
   const selectedPointRef = useRef(null);
   const movingCentroidRef = useRef(false);
   useEffect(() => {
@@ -85,58 +83,67 @@ const DrawingBoard = ({
   //   });
   // };
 
+  // const downloadPDF = () => {
+  //   const scale = 5; // Adjust this value as needed for quality
+
+  //   // Set A4 size in points
+  //   const a4Width = 595.28; // A4 width in points
+  //   const a4Height = 841.89; // A4 height in points
+
+  //   html2canvas(printRef.current, { scale }).then((canvas) => {
+  //     const imgData = canvas.toDataURL('image/jpeg', 0.8); // Use JPEG for better compression
+  //     const pdf = new jsPDF('p', 'pt', 'a4'); // Create a PDF document with A4 size
+
+  //     // Calculate dimensions for the PDF
+  //     const imgWidth = a4Width; // Use full A4 width
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
+
+  //     const pageHeight = pdf.internal.pageSize.height;
+  //     let heightLeft = imgHeight;
+
+  //     let position = 0;
+
+  //     // Add the first page with the image
+  //     pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     // Add additional pages if the image height exceeds one page
+  //     while (heightLeft >= 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
   const downloadPDF = () => {
-    const scale = 5; // Adjust this value as needed for quality
+    const scale = 8; // Adjust this value as needed for quality
 
     // Set A4 size in points
-    const a4Width = 1000; // A4 width in points
+    const a4Width = 595.28; // A4 width in points
     const a4Height = 841.89; // A4 height in points
 
     html2canvas(printRef.current, { scale }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
-      const pdf = new jsPDF('p', 'pt', 'a4');
+      const imgData = canvas.toDataURL('image/jpeg', 0.8); // Use JPEG for better compression
+      const pdf = new jsPDF('p', 'pt', 'a4'); // Create a PDF document with A4 size
 
-      const imgWidth = a4Width;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Calculate dimensions for the PDF
+      const imgWidth = a4Width; // 60% of A4 width for the image
+      const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
 
-      const pageHeight = pdf.internal.pageSize.height;
-      let heightLeft = imgHeight;
+      const formX = imgWidth; // Starting x position for form (right side)
 
-      let position = 0;
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Add the image to the left side
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      const textX = 20;
-      let textY = imgHeight + 40; // Place text below the image
-      pdf.setFontSize(12);
-      const extraText = [
-        'Additional Text Example:',
-        '1. This is some extra content added after the image.',
-        '2. You can customize this content dynamically.',
-        '3. Ensure this text is visible in the PDF output.',
-      ];
-
-      extraText.forEach((line) => {
-      if (textY + 20 > a4Height) {
-        pdf.addPage(); // Add a new page if space runs out
-        textY = 40; // Reset Y position for the new page
-      }
-      pdf.text(line, textX, textY);
-      textY += 20; // Increment Y position for the next line
-    });
-
-
-
+      // Save the PDF
       pdf.save('download.pdf');
     });
   };
+
 
   const getMousePosition = (e) => {
     const svg = svgRef.current;
@@ -218,6 +225,7 @@ const DrawingBoard = ({
 
   const handleMouseDown = (e) => {
     const position = getMousePosition(e);
+
     // Check if the centroid is clicked
     if (centroid && isPointNear(position.x, position.y, centroid)) {
       movingCentroidRef.current = true;
@@ -1393,9 +1401,6 @@ const DrawingBoard = ({
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6 h-[100vh] overflow-y-auto">
         {/* File Upload Section */}
-        {/* <div  ref={printRef1} style={{display:"none"}}>
-          <PrintComponent />
-        </div> */}
         <div
           className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
           onDragOver={(e) => e.preventDefault()}
