@@ -69,6 +69,32 @@ const DrawingBoard = ({
     }
   }, []);
 
+
+  // const downloadPDF = () => {
+  //   html2canvas(printRef.current).then((canvas) => {
+  //     const imgData = canvas.toDataURL('image/png');
+  //     const pdf = new jsPDF();
+  //     const imgWidth = 190; // Adjust the width according to your needs
+  //     const pageHeight = pdf.internal.pageSize.height;
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //     let heightLeft = imgHeight;
+
+  //     let position = 0;
+
+  //     pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     while (heightLeft >= 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
   const downloadPDF = () => {
     const scale = 5; // Adjust this value as needed for quality
 
@@ -147,26 +173,26 @@ const DrawingBoard = ({
 
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
-
+            
             // Increase the scale factor for higher resolution
             const scale = 4; // Adjust this as needed (e.g., 2 for 2x resolution)
             const viewport = page.getViewport({ scale });
-
+          
             // Create a canvas with updated dimensions
             const canvas = document.createElement('canvas');
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-
+          
             const context = canvas.getContext('2d');
-
+            
             // Render the page with higher quality
             await page.render({ canvasContext: context, viewport }).promise;
-
+          
             // Convert canvas to Base64
             const base64 = canvas.toDataURL();
             images.push(base64);
           }
-
+          
           resolve(images);
         } catch (error) {
           console.error("Error extracting images:", error);
@@ -181,6 +207,8 @@ const DrawingBoard = ({
 
       fileReader.readAsArrayBuffer(uploadedFile);
     });
+
+
   }
 
   const handleFileUpload = async (event) => {
@@ -270,22 +298,89 @@ const DrawingBoard = ({
     }
   };
 
+  // const handleMouseMove = (e) => {
+  //   const position = getMousePosition(e);
+  //   const canvasBounds = { xMin: 35, xMax: 645, yMin: 35, yMax: 645 };
+
+  //   // Clamp the mouse position within the SVG boundaries
+  //   const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, position.x));
+  //   const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, position.y));
+
+  //   if (movingCentroidRef.current) {
+  //     // Move the centroid freely if snapping is disabled
+  //     if (!snapToCentroid) {
+  //       if (!lockCentroid) {
+  //         setCentroid({ x: clampedX, y: clampedY });
+  //       }
+  //     }
+  //   } else if (selectedPointRef.current !== null) {
+  //     // Move a specific point
+  //     if (!disableDraw) {
+  //       const newPoints = [...points];
+  //       newPoints[selectedPointRef.current] = { x: clampedX, y: clampedY }; // Use clamped position
+  //       setPoints(newPoints);
+  //       // Recalculate centroid after point modification
+  //       if (!lockCentroid) {
+  //         setCentroid(calculateCentroid(newPoints));
+  //       }
+  //     }
+  //   }
+  // };
+
+
+  // const handleMouseMove = (e) => {
+  //   const position = getMousePosition(e);
+  //   const canvasBounds = { xMin: 35, xMax: 645, yMin: 35, yMax: 645 };
+  //   const gridSize = 10; // Define the grid size for snapping
+  
+  //   // Clamp the mouse position within the SVG boundaries
+  //   const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, position.x));
+  //   const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, position.y));
+  
+  //   // Function to snap the position to the nearest grid point
+  //   const snapToGrid = (value) => Math.round(value / gridSize) * gridSize;
+  
+  //   // Apply snapping after clamping
+  //   const snappedX = snapToGrid(clampedX);
+  //   const snappedY = snapToGrid(clampedY);
+  
+  //   if (movingCentroidRef.current) {
+  //     // Move the centroid freely if snapping is disabled
+  //     if (!snapToCentroid) {
+  //       if (!lockCentroid) {
+  //         setCentroid({ x: snappedX, y: snappedY }); // Use snapped position
+  //       }
+  //     }
+  //   } else if (selectedPointRef.current !== null) {
+  //     // Move a specific point
+  //     if (!disableDraw) {
+  //       const newPoints = [...points];
+  //       newPoints[selectedPointRef.current] = { x: snappedX, y: snappedY }; // Use snapped position
+  //       setPoints(newPoints);
+  //       // Recalculate centroid after point modification
+  //       if (!lockCentroid) {
+  //         setCentroid(calculateCentroid(newPoints));
+  //       }
+  //     }
+  //   }
+  // };
+  
   const handleMouseMove = (e) => {
     const position = getMousePosition(e);
     const canvasBounds = { xMin: 35, xMax: 645, yMin: 35, yMax: 645 };
     const gridSize = 10; // Define the grid size for snapping
-
+    
     // Clamp the mouse position within the SVG boundaries
     const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, position.x));
     const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, position.y));
-
+  
     // Function to snap the position to the nearest grid point
     const snapToGrid = (value) => Math.round(value / gridSize) * gridSize;
 
     // Use snapped position only if Shift key is pressed, otherwise use clamped position
     const snappedX = e.shiftKey ? snapToGrid(clampedX) : clampedX;
     const snappedY = e.shiftKey ? snapToGrid(clampedY) : clampedY;
-
+  
     if (movingCentroidRef.current) {
       // Move the centroid freely if snapping is disabled
       if (!snapToCentroid) {
@@ -306,7 +401,7 @@ const DrawingBoard = ({
       }
     }
   };
-
+  
 
 
   const handleMouseUp = () => {
@@ -320,6 +415,8 @@ const DrawingBoard = ({
 
       const position = getMousePosition(e);
       const clickedPointIndex = findNearestPoint(position.x, position.y);
+      // console.log("position : ",position)
+      // console.log("clickedPointIndex : ",clickedPointIndex)
       if (clickedPointIndex !== -1) {
         if (points.length > 3) {
           const newPoints = points.filter((_, i) => i !== clickedPointIndex);
@@ -330,6 +427,7 @@ const DrawingBoard = ({
         }
       } else {
         const closestLineIndex = findClosestLine(position.x, position.y);
+        // console.log("closestLineIndex : ",closestLineIndex)
         if (closestLineIndex !== -1) {
           const newPoints = [...points];
           newPoints.splice(closestLineIndex + 1, 0, position);
@@ -825,11 +923,11 @@ const DrawingBoard = ({
     setTooltip({ ...tooltip, visible: false });
   };
 
-  const intermediatePoints1 = []; 
-  const intermediatePoints1Test = []; 
-  const intermediatePoints2 = []; 
-  const intermediatePoints2Test = []; 
-  const [intersactMidIntermediatePoints, setIntersactMidIntermediatePoints] = useState([]); 
+  const intermediatePoints1 = []; // Array to store the first intermediate points (P1)
+  const intermediatePoints1Test = []; // Array to store the first intermediate points (P1)
+  const intermediatePoints2 = []; // Array to store the second intermediate points (P2)
+  const intermediatePoints2Test = []; // Array to store the second intermediate points (P2)
+  const [intersactMidIntermediatePoints, setIntersactMidIntermediatePoints] = useState([]); // Array to store the second intermediate points (P2)
 
   const calculateMidpoint = (pointA, pointB) => {
     return {
@@ -837,7 +935,6 @@ const DrawingBoard = ({
       y: (pointA.y + pointB.y) / 2,
     };
   };
-
   const labelsToExtract = ["I2", "I3", "I4", "I5", "I6", "I10", "I11", "I12", "I13", "I14", "I18", "I19", "I20", "I21", "I22", "I26", "I27", "I28", "I29", "I30"];
   const labelsToExtract1 = ["X2", "X3", "X4", "X5", "X6", "X10", "X11", "X12", "X13", "X14", "X18", "X19", "X20", "X21", "X22", "X26", "X27", "X28", "X29", "X30"];
 
@@ -846,11 +943,11 @@ const DrawingBoard = ({
     const filteredData = intermediatePoints1Test.filter((item) =>
       labelsToExtract.includes(item.label)
     );
-
+    // console.log("filteredData : ",filteredData)
     const filteredData1 = intermediatePoints2Test.filter((item) =>
       labelsToExtract1.includes(item.label)
     );
-
+    // console.log("filteredData1 : ",filteredData1)
     const midpoints = filteredData.map((item1, index) => {
       const item2 = filteredData1[index];
       const midpoint = calculateMidpoint(item1.point, item2.point);
@@ -860,6 +957,8 @@ const DrawingBoard = ({
       };
     });
     setIntersactMidIntermediatePoints(midpoints)
+    // intersactMidIntermediatePoints.push(midpoints)
+    // console.log(midpoints);
   }, [showDevta, points, intersectionPoints])
 
   const drawLinesForDevta = (label1, label2, stroke, strokeWidth) => {
@@ -869,9 +968,13 @@ const DrawingBoard = ({
     const point2filteredData = intersactMidIntermediatePoints.filter((item) =>
       label2 == item.label
     );
-
+    // console.log('point1filteredData : ', point1filteredData[0]?.midpoint)
+    // console.log('point2filteredData : ', point2filteredData[0]?.midpoint)
     const point1 = point1filteredData[0]?.midpoint;
     const point2 = point2filteredData[0]?.midpoint;
+    // console.log('point1 : ', point1)
+    // console.log('point2 : ', point2)
+
     if (!point1 || !point2) return null;
 
     return (
@@ -881,6 +984,8 @@ const DrawingBoard = ({
         y1={point1.y}
         x2={point2.x}
         y2={point2.y}
+        //  stroke="blue"
+        //   strokeWidth="2"
         stroke={stroke}
         strokeWidth={strokeWidth}
       />
@@ -916,6 +1021,8 @@ const DrawingBoard = ({
         y1={point1?.y}
         x2={point2?.x}
         y2={point2?.y}
+        //  stroke="blue"
+        //   strokeWidth="2"
         stroke={"red"}
         strokeWidth={2}
       />
@@ -1382,6 +1489,7 @@ const DrawingBoard = ({
     return texts;
   }
 
+
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [initialPosition, setInitialPosition] = useState({ x: 0, y: 0 });
@@ -1389,14 +1497,18 @@ const DrawingBoard = ({
   const handleMouseDown1 = (e) => {
     e.preventDefault();
     setIsDragging(true);
+
+    // Get the starting mouse position
     setDragStart({ x: e.clientX, y: e.clientY });
+
+    // Record the initial position of the image
     setInitialPosition({ x: translate.x, y: translate.y });
   };
 
   const handleMouseMove1 = (e) => {
     if (!isDragging) return;
 
-    if (imageDragDone) return;
+    if(imageDragDone) return;
     // Calculate the new position
     const dx = e.clientX - dragStart.x;
     const dy = e.clientY - dragStart.y;
@@ -1414,6 +1526,10 @@ const DrawingBoard = ({
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6 h-[100vh] overflow-y-auto">
+        {/* File Upload Section */}
+        {/* <div  ref={printRef1} style={{display:"none"}}>
+          <PrintComponent />
+        </div> */}
         <div
           className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
           onDragOver={(e) => e.preventDefault()}
@@ -1606,7 +1722,7 @@ const DrawingBoard = ({
                     {previewUrl ? (
                       <image
                         href={previewUrl}
-                        style={{ maxWidth: "100%", maxHeight: "400px", imageRendering: "auto", }}
+                        style={{ maxWidth: "100%", maxHeight: "400px",imageRendering: "auto", }}
                         width={width}
                         height={height}
                         onMouseDown={handleMouseDown1}
@@ -1615,6 +1731,13 @@ const DrawingBoard = ({
                         onMouseLeave={handleMouseUp1}
                       />
                     ) : null}
+                    {/* <image
+                      href={previewUrl}
+                      style={{ maxWidth: "100%", maxHeight: "400px" }}
+                      width={width}
+                      height={height}
+
+                    /> */}
                   </g>
 
 
@@ -1751,7 +1874,7 @@ const DrawingBoard = ({
                                 {/* Draw the intersection point */}
                                 {hideCircle && <>
                                   {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
-
+                                  {/* <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="green" /> */}
                                   <text
                                     x={intersection.point.x + 5}
                                     y={intersection.point.y - 5}
@@ -1765,6 +1888,7 @@ const DrawingBoard = ({
                                     {intersection.label}
                                   </text>
                                 </>}
+                                {/* <circle cx={pointLookup["S1"].x} cy={pointLookup["S1"].y} r="3" fill="Black" /> */}
 
                                 {/* Draw the first intermediate point (P1) */}
                                 {showDevtaIntersaction && <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />}
@@ -2151,6 +2275,88 @@ const DrawingBoard = ({
                     </g>
                   );
                 })}
+                {/* if something wrong with direction then uncomment this */}
+                {/* {Array.from({ length: totalLines }).map((_, index) => {
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 670;
+                  const halfSize = squareSize / 2;
+                  const margin = 26;
+                  const canvasBounds = { xMin: 0, xMax: 676, yMin: 0, yMax: 676 };
+                  const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, 0));
+                  const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, 0));
+
+                  const slope = Math.tan(radian);
+                  const rightBoundary = clampedX + halfSize - margin;
+                  const leftBoundary = clampedX - halfSize + margin;
+                  const topBoundary = clampedY - halfSize + margin;
+                  const bottomBoundary = clampedY + halfSize - margin;
+                  const direction = index % 2 === 0 ? DIRECTION_DATA[index / 2] : null;
+
+                  let endX, endY;
+                  let labelX, labelY;
+                  const labelOffset = 1.04; // Label position offset
+
+                  if (Math.abs(slope) <= 1) {
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = clampedY + slope * (endX - clampedX);
+                    labelX = clampedX + (endX - clampedX) * labelOffset + 340;
+                    labelY = clampedY + (endY - clampedY) * labelOffset + 340;
+
+                    return (
+                      <g key={index}>
+                        {direction && (
+                          <text
+                            x={labelX}
+                            y={labelY}
+                            fontSize="18"
+                            fontWeight="500"
+                            fill="purple"
+                            transform={Math.cos(radian) > 0 ? `rotate(90, ${labelX}, ${labelY})` : `rotate(-90, ${labelX}, ${labelY})`}
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            style={{
+                              userSelect: 'none', // Prevent text selection
+                              cursor: 'default' // Optional: Make the cursor non-interactive
+                            }}
+                          >
+                            {direction}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  } else {
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = clampedX + (1 / slope) * (endY - clampedY);
+                    labelX = clampedX + (endX - clampedX) * labelOffset + 340;
+                    labelY = clampedY + (endY - clampedY) * labelOffset + 340;
+
+                    return (
+                      <g key={index}>
+                        {direction && (
+                          <text
+                            x={labelX}
+                            y={labelY}
+                            fontSize="18"
+                            fontWeight="500"
+                            fill="purple"
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            style={{
+                              userSelect: 'none', // Prevent text selection
+                              cursor: 'default' // Optional: Make the cursor non-interactive
+                            }}
+                          >
+                            {direction}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  }
+                })} */}
+                {/* changes applied on 25th Dec 2024 */}
                 {Array.from({ length: totalLines }).map((_, index) => {
                   const rotationIndex = index % totalLines;
                   const angle = rotationIndex * angleIncrement + (270 + inputDegree);
@@ -2276,6 +2482,472 @@ const DrawingBoard = ({
                   }
 
                 })}
+
+                {/* {Array.from({ length: totalLines }).map((_, index) => {
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + (0 + inputDegree) + 8;
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 605;
+                  const halfSize = squareSize / 2;
+                  const margin = 26;
+                  const canvasBounds = { xMin: 0, xMax: 676, yMin: 0, yMax: 676 };
+                  const clampedX = Math.max(canvasBounds.xMin, Math.min(canvasBounds.xMax, 0));
+                  const clampedY = Math.max(canvasBounds.yMin, Math.min(canvasBounds.yMax, 0));
+
+                  const slope = Math.tan(radian);
+                  const rightBoundary = clampedX + halfSize - margin;
+                  const leftBoundary = clampedX - halfSize + margin;
+                  const topBoundary = clampedY - halfSize + margin;
+                  const bottomBoundary = clampedY + halfSize - margin;
+                  const direction = intersectionsState[index].label;
+                  console.log("intersectionsState : ", intersectionsState[index].label)
+                  let endX, endY;
+                  let labelX, labelY;
+                  const labelOffset = 1.04; // Label position offset
+
+                  if (Math.abs(slope) <= 1) {
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = clampedY + slope * (endX - clampedX);
+                    labelX = Math.cos(radian) > 0 ? (clampedX + (endX - clampedX) * labelOffset + 340) : (clampedX + (endX - clampedX) * labelOffset + 340);
+                    labelY = Math.cos(radian) > 0 ? (clampedY + (endY - clampedY) * labelOffset + 330) : (clampedY + (endY - clampedY) * labelOffset + 360);
+
+                    return (
+                      <g key={index}>
+                        {direction && (
+                          <text
+                            x={labelX}
+                            y={labelY}
+                            fontSize="18"
+                            fontWeight="500"
+                            fill="black"
+                            // transform={Math.cos(radian) > 0 ? `rotate(90, ${labelX}, ${labelY})` : `rotate(-90, ${labelX}, ${labelY})`}
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            style={{
+                              userSelect: 'none', // Prevent text selection
+                              cursor: 'default' // Optional: Make the cursor non-interactive
+                            }}
+                          >
+                            {direction}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  } else {
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = clampedX + (1 / slope) * (endY - clampedY);
+                    labelX = Math.sin(radian) > 0 ? (clampedX + (endX - clampedX) * labelOffset + 358) : clampedX + (endX - clampedX) * labelOffset + 330;
+                    labelY = Math.sin(radian) > 0 ? (clampedY + (endY - clampedY) * labelOffset + 320) : clampedY + (endY - clampedY) * labelOffset + 340;
+
+                    return (
+                      <g key={index}>
+                        {direction && (
+                          <text
+                            x={labelX}
+                            y={labelY}
+                            fontSize="18"
+                            fontWeight="500"
+                            fill="black"
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            style={{
+                              userSelect: 'none', // Prevent text selection
+                              cursor: 'default' // Optional: Make the cursor non-interactive
+                            }}
+                          >
+                            {direction}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  }
+                })} */}
+                {/* {Array.from({ length: totalLines }).map((_, index) => {
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + (0 + inputDegree) + 8;
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 605;
+                  const halfSize = squareSize / 2;
+                  const margin = 26;
+
+                  // Your centroid
+                  const centroidX = centroid.x;
+                  const centroidY = centroid.y;
+
+                  const slope = Math.tan(radian);
+                  const rightBoundary = centroidX + halfSize - margin;
+                  const leftBoundary = centroidX - halfSize + margin;
+                  const topBoundary = centroidY - halfSize + margin;
+                  const bottomBoundary = centroidY + halfSize - margin;
+                  const direction = intersectionsState[index].label;
+
+                  let endX, endY;
+                  let labelX, labelY;
+                  const labelOffset = 1.04; // Label position offset
+
+                  if (Math.abs(slope) <= 1) {
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = centroidY + slope * (endX - centroidX);
+                    labelX = centroidX + (endX - centroidX) * labelOffset;
+                    labelY = centroidY + (endY - centroidY) * labelOffset;
+                  } else {
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = centroidX + (1 / slope) * (endY - centroidY);
+                    labelX = centroidX + (endX - centroidX) * labelOffset;
+                    labelY = centroidY + (endY - centroidY) * labelOffset;
+                  }
+
+                  return (
+                    <g key={index}>
+                      {direction && (
+                        <>
+                          <text
+                            x={labelX}
+                            y={labelY}
+                            fontSize="18"
+                            fontWeight="500"
+                            fill="black"
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            style={{
+                              userSelect: 'none', 
+                              cursor: 'default'
+                            }}
+                          >
+                            {direction}
+                          </text>
+                        </>
+                      )}
+                    </g>
+                  );
+                })} */}
+                {/* {Array.from({ length: totalLines }).map((_, index) => {
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + inputDegree + 8; // Adjusted base angle
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 662; // Total SVG size
+                  const margin = 75;
+
+                  // Centroid position
+                  const centroidX = centroid.x;
+                  const centroidY = centroid.y;
+
+                  const slope = Math.tan(radian);
+                  const rightBoundary = squareSize - margin; // Right boundary of the SVG
+                  const leftBoundary = margin; // Left boundary of the SVG
+                  const topBoundary = margin; // Top boundary of the SVG
+                  const bottomBoundary = squareSize - margin; // Bottom boundary of the SVG
+                  console.log("intersectionsState : ",intersectionsState)
+                  const direction = intersectionsState[index]?.label;
+
+                  let endX, endY;
+                  let labelX, labelY;
+                  const labelOffset = 1.04; // Factor to position labels slightly beyond the endpoint
+
+                  if (Math.abs(slope) <= 1) {
+                    // Shallow angles: Intersect with left or right boundary
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = centroidY + slope * (endX - centroidX);
+                  } else {
+                    // Steep angles: Intersect with top or bottom boundary
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = centroidX + (1 / slope) * (endY - centroidY);
+                  }
+
+                  // Clamp endpoint positions within boundaries
+                  const clampedEndX = Math.max(leftBoundary, Math.min(rightBoundary, endX));
+                  const clampedEndY = Math.max(topBoundary, Math.min(bottomBoundary, endY));
+
+                  // Calculate label positions relative to clamped endpoints
+                  labelX = centroidX + (clampedEndX - centroidX) * labelOffset;
+                  labelY = centroidY + (clampedEndY - centroidY) * labelOffset;
+
+                  // Clamp labels to ensure they stay within SVG boundaries
+                  const clampedLabelX = Math.max(leftBoundary, Math.min(rightBoundary, labelX));
+                  const clampedLabelY = Math.max(topBoundary, Math.min(bottomBoundary, labelY));
+
+                  return (
+                    <g key={index}>
+                      {direction && (
+                        <>
+                          <text
+                            x={clampedLabelX}
+                            y={clampedLabelY}
+                            fontSize="18"
+                            fontWeight="500"
+                            fill="black"
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            style={{
+                              userSelect: 'none',
+                              cursor: 'default',
+                            }}
+                          >
+                            {direction}
+                          </text>
+                        </>
+                      )}
+                    </g>
+                  );
+                })} */}
+                {/* 
+                {Array.from({ length: totalLines }).map((_, index) => {
+                  const direction = intersectionsState[index]?.label; // Get the label from intersectionsState
+
+                  // Get the centroid position and other parameters
+                  const centroidX = centroid.x;
+                  const centroidY = centroid.y;
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + inputDegree + 8; // Adjusted base angle
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 662; // Total SVG size
+                  const margin = 75;
+
+                  const rightBoundary = squareSize - margin; // Right boundary of the SVG
+                  const leftBoundary = margin; // Left boundary of the SVG
+                  const topBoundary = margin; // Top boundary of the SVG
+                  const bottomBoundary = squareSize - margin; // Bottom boundary of the SVG
+
+                  let endX, endY;
+
+                  // Calculate intersection point with boundaries
+                  const slope = Math.tan(radian);
+                  if (Math.abs(slope) <= 1) {
+                    // Shallow angles: Intersect with left or right boundary
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = centroidY + slope * (endX - centroidX);
+                  } else {
+                    // Steep angles: Intersect with top or bottom boundary
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = centroidX + (1 / slope) * (endY - centroidY);
+                  }
+
+                  // Clamp endpoint positions within boundaries
+                  const clampedEndX = Math.max(leftBoundary, Math.min(rightBoundary, endX));
+                  const clampedEndY = Math.max(topBoundary, Math.min(bottomBoundary, endY));
+
+                  // Offset for positioning the text slightly outside the intersection point
+                  const labelOffset = 10; // Adjust this value as needed
+
+                  // Calculate direction vector for the offset
+                  const directionX = clampedEndX - centroidX;
+                  const directionY = clampedEndY - centroidY;
+                  const distance = Math.sqrt(directionX ** 2 + directionY ** 2);
+
+                  // Normalize direction vector and apply the offset
+                  const textX = clampedEndX + (directionX / distance) * labelOffset;
+                  const textY = clampedEndY + (directionY / distance) * labelOffset;
+
+                  return (
+                    <g key={index}>
+                      {direction && (
+                        <text
+                          x={textX}
+                          y={textY}
+                          fontSize="18"
+                          fontWeight="500"
+                          fill="black"
+                          textAnchor="middle"
+                          alignmentBaseline="middle"
+                          style={{
+                            userSelect: 'none',
+                            cursor: 'default',
+                          }}
+                        >
+                          {direction}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })} */}
+                {/* {Array.from({ length: totalLines }).map((_, index) => {
+                  const direction = intersectionsState[index]?.label; // Get the label from intersectionsState
+
+                  // Get the centroid position and other parameters
+                  const centroidX = centroid.x;
+                  const centroidY = centroid.y;
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + inputDegree + 8; // Adjusted base angle
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 662; // Total SVG size
+                  const margin = 75;
+
+                  const rightBoundary = squareSize - margin; // Right boundary of the SVG
+                  const leftBoundary = margin; // Left boundary of the SVG
+                  const topBoundary = margin; // Top boundary of the SVG
+                  const bottomBoundary = squareSize - margin; // Bottom boundary of the SVG
+
+                  let endX, endY;
+
+                  // Calculate intersection point with boundaries
+                  const slope = Math.tan(radian);
+                  if (Math.abs(slope) <= 1) {
+                    // Shallow angles: Intersect with left or right boundary
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = centroidY + slope * (endX - centroidX);
+                  } else {
+                    // Steep angles: Intersect with top or bottom boundary
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = centroidX + (1 / slope) * (endY - centroidY);
+                  }
+
+                  // Clamp endpoint positions within boundaries
+                  const clampedEndX = Math.max(leftBoundary, Math.min(rightBoundary, endX));
+                  const clampedEndY = Math.max(topBoundary, Math.min(bottomBoundary, endY));
+
+                  // Offset for positioning the text slightly outside the intersection point
+                  const labelOffset = 10; // Adjust this value as needed
+
+                  // Calculate direction vector for the offset
+                  const directionX = clampedEndX - centroidX;
+                  const directionY = clampedEndY - centroidY;
+                  const distance = Math.sqrt(directionX ** 2 + directionY ** 2);
+
+                  let textX, textY;
+
+                  // Normalize direction vector and apply the offset if distance is greater than zero
+                  if (distance > 0) {
+                    textX = clampedEndX + (directionX / distance) * labelOffset;
+                    textY = clampedEndY + (directionY / distance) * labelOffset;
+                  } else {
+                    // Handle case where distance is 0
+                    textX = clampedEndX + labelOffset;
+                    textY = clampedEndY + labelOffset;
+                  }
+
+                  // Debugging logs
+                  console.log(`Index: ${index}, Angle: ${angle}, Clamped End: (${clampedEndX}, ${clampedEndY}), Text Position: (${textX}, ${textY}), Label : ${direction} `);
+
+                  return (
+                    <g key={index}>
+                      {direction && (
+                        <text
+                          x={textX}
+                          y={textY}
+                          fontSize="18"
+                          fontWeight="500"
+                          fill="black"
+                          textAnchor="middle"
+                          alignmentBaseline="middle"
+                          style={{
+                            userSelect: 'none',
+                            cursor: 'default',
+                          }}
+                        >
+                          {direction}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })} */}
+                {/* {Array.from({ length: totalLines }).map((_, index) => {
+                  const direction = intersectionsState[index]?.label; // Get the label from intersectionsState
+
+                  // Get the centroid position and other parameters
+                  const centroidX = centroid.x;
+                  const centroidY = centroid.y;
+                  const rotationIndex = index % totalLines;
+                  const angle = rotationIndex * angleIncrement + inputDegree + 8; // Adjusted base angle
+                  const radian = (angle * Math.PI) / 180;
+
+                  const squareSize = 662; // Total SVG size
+                  const margin = 75;
+
+                  const rightBoundary = squareSize - margin; // Right boundary of the SVG
+                  const leftBoundary = margin; // Left boundary of the SVG
+                  const topBoundary = margin; // Top boundary of the SVG
+                  const bottomBoundary = squareSize - margin; // Bottom boundary of the SVG
+
+                  let endX, endY;
+
+                  // Calculate intersection point with boundaries
+                  const slope = Math.tan(radian);
+                  if (Math.abs(slope) <= 1) {
+                    // Shallow angles: Intersect with left or right boundary
+                    endX = Math.cos(radian) > 0 ? rightBoundary : leftBoundary;
+                    endY = centroidY + slope * (endX - centroidX);
+                  } else {
+                    // Steep angles: Intersect with top or bottom boundary
+                    endY = Math.sin(radian) > 0 ? bottomBoundary : topBoundary;
+                    endX = centroidX + (1 / slope) * (endY - centroidY);
+                  }
+
+                  // Clamp endpoint positions within boundaries
+                  const clampedEndX = Math.max(leftBoundary, Math.min(rightBoundary, endX));
+                  const clampedEndY = Math.max(topBoundary, Math.min(bottomBoundary, endY));
+
+                  // Offset for positioning the text slightly outside the intersection point
+                  const labelOffset = 10; // Adjust this value as needed
+
+                  // Calculate direction vector for the offset
+                  const directionX = clampedEndX - centroidX;
+                  const directionY = clampedEndY - centroidY;
+                  const distance = Math.sqrt(directionX ** 2 + directionY ** 2);
+
+                  let textX, textY;
+
+                  // Normalize direction vector and apply the offset if distance is greater than zero
+                  if (distance > 0) {
+                    // Always place text to the right of the intersection point
+                    textX = clampedEndX + labelOffset; // Move text to the right
+                    textY = clampedEndY; // Keep the vertical position aligned with the intersection point
+
+                    // Adjust for corner cases
+                    if (clampedEndX === rightBoundary && clampedEndY === topBoundary) {
+                      // Top-right corner
+                      textY += 15; // Move text down for better visibility
+                    } else if (clampedEndX === rightBoundary && clampedEndY === bottomBoundary) {
+                      // Bottom-right corner
+                      textY -= 15; // Move text up for better visibility
+                    } else if (clampedEndX === leftBoundary && clampedEndY === topBoundary) {
+                      // Top-left corner
+                      textY += 15; // Move text down for better visibility
+                    } else if (clampedEndX === leftBoundary && clampedEndY === bottomBoundary) {
+                      // Bottom-left corner
+                      textY -= 15; // Move text up for better visibility
+                    }
+                  } else {
+                    // Handle case where distance is 0
+                    textX = clampedEndX + labelOffset;
+                    textY = clampedEndY;
+                  }
+
+                  // Debugging logs
+                  console.log(`Index: ${index}, Angle: ${angle}, Clamped End: (${clampedEndX}, ${clampedEndY}), Text Position: (${textX}, ${textY}), Label: ${direction}`);
+
+                  return (
+                    <g key={index}>
+                      {direction && (
+                        <text
+                          x={textX}
+                          y={textY}
+                          fontSize="18"
+                          fontWeight="500"
+                          fill="black"
+                          textAnchor="start" // Align text to the start for better positioning
+                          alignmentBaseline="middle"
+                          style={{
+                            userSelect: 'none',
+                            cursor: 'default',
+                          }}
+                        >
+                          {direction}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })} */}
+
+
+
+
+
+
               </>
             }
 
