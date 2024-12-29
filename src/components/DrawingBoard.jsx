@@ -474,8 +474,13 @@ const DrawingBoard = ({
   }
 
   const lines = [
-    ["N7", "E3"],
+    // right marma lines N x E
+    ["N8", "W2"],
+    ["E1", "W1"],
+    ["E2", "S8"],
+    // other points
     ["N8", "E2"],
+    ["N7", "E3"],
     ["N6", "E4"],
     ["N5", "E5"],
     ["N5", "E5"],
@@ -490,13 +495,30 @@ const DrawingBoard = ({
     ["W5", "S5"],
     ["W4", "S6"],
     ["W3", "S7"],
-    ["W2", "S8"],
-    ["N8", "W2"],
-    ["E1", "W1"],
-    ["E2", "S8"],
+    ["W2", "S8"]
+  ];
+  const newLeftLines = [
+    // left marma lines
     ["W8", "S2"],
     ["N1", "S1"],
     ["N2", "E8"],
+    // other points
+
+    ["W8", "N2"],
+    ["W7", "N3"],
+    ["W6", "N4"],
+    ["W5", "N5"],
+    ["W4", "N6"],
+    ["W3", "N7"],
+    ["W2", "N8"],
+    ["W1", "E1"],
+    ["S8", "E2"],
+    ["S7", "E3"],
+    ["S6", "E4"],
+    ["S5", "E5"],
+    ["S4", "E6"],
+    ["S3", "E7"],
+    ["S2", "E8"],
     // new points
     // ["W8", "N2"],
     // ["W7", "N3"],
@@ -515,12 +537,11 @@ const DrawingBoard = ({
     // ["S2", "E8"],
   ];
   const linesLeft = [
-    ["N7", "E3"],
     ["N8", "E2"],
+    ["N7", "E3"],
     ["N6", "E4"],
     ["N5", "E5"],
     ["N5", "E5"],
-    ["N4", "E6"],
     ["N4", "E6"],
     ["N3", "E7"],
     ["N2", "E8"],
@@ -612,66 +633,566 @@ const DrawingBoard = ({
   }
 
   const [intersectionPoints, setIntersectionPoints] = useState([]);
+  const [newLeftintersectionPoints, setNewLeftIntersectionPoints] = useState([]);
   const [leftIntersectionPoints, setLeftIntersectionPoints] = useState([]);
   const [MarmaintersectionPoints, setMarmaIntersectionPoints] = useState([]);
 
+  const roundTo = (value, decimals) =>
+    Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+
+  const marmaDevta = [
+    { value: "", color: "gray",line:1 },
+    { value: "", color: "gray",line:1 },
+    { value: "2L", color: "gray" ,line:1 },
+    { value: "3L", color: "gray" ,line:1 },
+    { value: "", color: "gray" ,line:1 },
+    { value: "5L", color: "gray" ,line:1 },
+    { value: "", color: "gray" ,line:1 },
+    { value: "7L", color: "gray" ,line:1 },
+    { value: "8L", color: "red",line:1  },
+    { value: "9L", color: "red" ,line:1 },
+    { value: "10L", color: "red" ,line:1 },
+    { value: "", color: "gray" ,line:1 },
+    { value: "12L", color: "green" ,line:1 },
+    { value: "", color: "gray" ,line:1 },
+    { value: "", color: "gray" ,line:1 },
+    { value: "15L", color: "gray" ,line:1 },
+    { value: "", color: "gray" ,line:1 },
+    { value: "1", color: "red" ,line:2 },
+    { value: "2", color: "red" ,line:2},
+    { value: "3", color: "red" ,line:2},
+    { value: "4", color: "red" ,line:2},
+    { value: "5", color: "gray" ,line:2},
+    { value: "6", color: "gray" ,line:2},
+    { value: "7", color: "gray" ,line:2},
+    { value: "8", color: "red" ,line:2},
+    { value: "9", color: "red" ,line:2},
+    { value: "10", color: "red" ,line:2},
+    { value: "11", color: "red" ,line:2},
+    { value: "12", color: "red" ,line:2},
+    { value: "13", color: "gray" ,line:2},
+    { value: "14", color: "red" ,line:2},
+    { value: "15", color: "gray" ,line:2},
+    { value: "16", color: "gray" ,line:2},
+    { value: "17", color: "gray" ,line:2},
+    { value: "2R", color: "gray" ,line:3},
+    { value: "3R", color: "gray" ,line:3},
+    { value: "", color: "gray" ,line:3},
+    { value: "5R", color: "gray" ,line:3},
+    { value: "", color: "gray" ,line:3},
+    { value: "7R", color: "gray" ,line:3},
+    { value: "8R", color: "red" ,line:3},
+    { value: "9R", color: "red" ,line:3},
+    { value: "10R", color: "red" ,line:3},
+    { value: "", color: "gray" ,line:3},
+    { value: "12R", color: "green" ,line:3},
+    { value: "", color: "gray" ,line:3},
+    { value: "", color: "gray" ,line:3},
+    { value: "15R", color: "gray" ,line:3},
+    { value: "", color: "gray" ,line:3},
+  ]
+  const marmaLeftDevta = [
+    { value: "", color: "gray" },
+    { value: "10LN", color: "gray" },
+    { value: "", color: "green" },
+    { value: "", color: "gray" },
+    { value: "", color: "green" },
+    { value: "", color: "gray" },
+    { value: "10LT", color: "green" },
+    { value: "10L", color: "red" },
+    { value: "10", color: "red" },
+    { value: "10R", color: "red" },
+    { value: "10RT", color: "green" },
+    { value: "", color: "gray" },
+    { value: "", color: "green" },
+    { value: "", color: "gray" },
+    { value: "", color: "green" },
+    { value: "10RN", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "9L", color: "red" },
+    { value: "9", color: "red" },
+    { value: "9R", color: "red" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "8L", color: "red" },
+    { value: "8", color: "red" },
+    { value: "8R", color: "red" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" }
+  ]
+
   useEffect(() => {
     if (intersectionsState.length > 0) {
-      const newIntersectionPoints = [];
-      for (let i = 0; i < lines.length; i++) {
-        const line1 = [
-          pointLookup[lines[i][0]],
-          pointLookup[lines[i][1]]
-        ];
 
-        for (let j = i + 1; j < lines.length; j++) {
+      // test code 29th Dec
+
+      // const intersectionNumbers = {};
+      // let counter = 1;
+
+      const specificLines = [
+        ["N8", "W2"],
+        ["E1", "W1"],
+        ["E2", "S8"]
+      ];
+
+      const targetLines = [
+        ["N8", "E2"],
+        ["N7", "E3"],
+        ["N6", "E4"],
+        ["N5", "E5"],
+        ["N4", "E6"],
+        ["N3", "E7"],
+        ["N2", "E8"],
+        ["N1", "S1"],
+        ["W8", "S2"],
+        ["W7", "S3"],
+        ["W6", "S4"],
+        ["W5", "S5"],
+        ["W4", "S6"],
+        ["W3", "S7"],
+        ["W2", "S8"]
+      ];
+
+      const newIntersectionPoints1 = [];
+      const numberedPoints = [];
+      let counter = 1; // Start the counter at 1
+
+      for (const specificLine of specificLines) {
+        const start = pointLookup[specificLine[0]];
+        const end = pointLookup[specificLine[1]];
+
+        // Save the numbered start point
+        numberedPoints.push({ x: start.x, y: start.y, line: specificLine, number: counter++ });
+
+        const line1 = [start, end];
+
+        for (const targetLine of targetLines) {
           const line2 = [
-            pointLookup[lines[j][0]],
-            pointLookup[lines[j][1]]
+            pointLookup[targetLine[0]],
+            pointLookup[targetLine[1]]
           ];
 
           const intersection = calculateIntersectionPoins(line1, line2);
 
           if (intersection) {
-            newIntersectionPoints.push(intersection);
+            // Save the intersection point with the next number
+            newIntersectionPoints1.push({
+              x: intersection.x,
+              y: intersection.y,
+              line: specificLine,
+              number: counter++
+            });
           }
         }
+
+        // Save the numbered end point
+        numberedPoints.push({ x: end.x, y: end.y, line: specificLine, number: counter++ });
       }
 
-      setIntersectionPoints(newIntersectionPoints);
+      // Remove points from numberedPoints that are also in newIntersectionPoints1
+      const uniqueNumberedPoints = numberedPoints.filter(np =>
+        !newIntersectionPoints1.some(ni =>
+          np.x == ni.x && np.y == ni.y
+        )
+      );
+
+      // Combine the unique points from numberedPoints and all points from newIntersectionPoints1
+      const combinedPoints = [...uniqueNumberedPoints, ...newIntersectionPoints1];
+
+      // Sort by their number property
+      combinedPoints.sort((a, b) => a.number - b.number);
+
+      combinedPoints.forEach((point, index) => {
+        point.newNumber = index + 1;
+      });
+      setIntersectionPoints(combinedPoints);
+
+      // work upon that
+      // const specificLines = [
+      //   ["N8", "W2"],
+      //   ["E1", "W1"],
+      //   ["E2", "S8"]
+      // ];
+      
+      // const targetLines = [
+      //   ["N8", "E2"],
+      //   ["N7", "E3"],
+      //   ["N6", "E4"],
+      //   ["N5", "E5"],
+      //   ["N4", "E6"],
+      //   ["N3", "E7"],
+      //   ["N2", "E8"],
+      //   ["N1", "S1"],
+      //   ["W8", "S2"],
+      //   ["W7", "S3"],
+      //   ["W6", "S4"],
+      //   ["W5", "S5"],
+      //   ["W4", "S6"],
+      //   ["W3", "S7"],
+      //   ["W2", "S8"]
+      // ];
+      
+      // const newIntersectionPoints1 = [];
+      // const numberedPoints = [];
+      // let pointCounter = 1; // Counter for start and end points
+      // let line = 1;
+      // for (const specificLine of specificLines) {
+      //   var lineData = line++
+      //   const start = pointLookup[specificLine[0]];
+      //   const end = pointLookup[specificLine[1]];
+      //   pointCounter = 1;
+      //   // Save the numbered start point
+      //   numberedPoints.push({ x: start.x, y: start.y, line: specificLine, newNumber: pointCounter++,lineNo: lineData });
+      
+      //   const line1 = [start, end];
+      //   // let intersectionCounter = 1; // Reset counter for intersections of the current specific line
+      
+      //   for (const targetLine of targetLines) {
+      //     const line2 = [
+      //       pointLookup[targetLine[0]],
+      //       pointLookup[targetLine[1]]
+      //     ];
+      
+      //     const intersection = calculateIntersectionPoins(line1, line2);
+      
+      //     if (intersection) {
+      //       // Save the intersection point with the specific intersection counter
+      //       newIntersectionPoints1.push({
+      //         x: intersection.x,
+      //         y: intersection.y,
+      //         line: specificLine,
+      //         newNumber: pointCounter++,
+      //         lineNo: lineData // Increment for each intersection found
+      //       });
+      //     }
+      //   }
+      
+      //   // Save the numbered end point
+      //   numberedPoints.push({ x: end.x, y: end.y, line: specificLine, newNumber: pointCounter++,lineNo: lineData });
+      // }
+      
+      // // Remove points from numberedPoints that are also in newIntersectionPoints1
+      // const uniqueNumberedPoints = numberedPoints.filter(np =>
+      //   !newIntersectionPoints1.some(ni =>
+      //     np.x === ni.x && np.y === ni.y
+      //   )
+      // );
+      
+      // // Combine the unique points from numberedPoints and all points from newIntersectionPoints1
+      // const combinedPoints = [...uniqueNumberedPoints, ...newIntersectionPoints1];
+      
+      // // Sort by their number property
+      // combinedPoints.sort((a, b) => a.number - b.number);
+      
+      // // Assign newNumber for display or further use
+      // // combinedPoints.forEach((point, index) => {
+      // //   point.newNumber = index + 1; // This will re-number all combined points starting from 1
+      // // });
+      
+      // // Update state or handle the result as needed
+      // setIntersectionPoints(combinedPoints);
+      // // done work
+      
+      // console.log("Combined Points:", combinedPoints);
+      
+
+
+
+      const specificLeftLines = [
+        ["W8", "S2"],
+        ["N1", "S1"],
+        ["N2", "E8"]
+      ];
+
+      const targetLeftLines = [
+        ["W8", "N2"],
+        ["W7", "N3"],
+        ["W6", "N4"],
+        ["W5", "N5"],
+        ["W4", "N6"],
+        ["W3", "N7"],
+        ["W2", "N8"],
+        ["W1", "E1"],
+        ["S8", "E2"],
+        ["S7", "E3"],
+        ["S6", "E4"],
+        ["S5", "E5"],
+        ["S4", "E6"],
+        ["S3", "E7"],
+        ["S2", "E8"]
+      ];
+
+      const newIntersectionPoints2 = [];
+      const numberedPoints1 = [];
+      let counter1 = 1; // Start the counter at 1
+
+      for (const specificLine of specificLeftLines) {
+        const start = pointLookup[specificLine[0]];
+        const end = pointLookup[specificLine[1]];
+
+        // Save the numbered start point
+        numberedPoints1.push({ x: start.x, y: start.y, line: specificLine, number: counter1++ });
+
+        const line1 = [start, end];
+
+        for (const targetLine of targetLeftLines) {
+          const line2 = [
+            pointLookup[targetLine[0]],
+            pointLookup[targetLine[1]]
+          ];
+
+          const intersection = calculateIntersectionPoins(line1, line2);
+
+          if (intersection) {
+            // Save the intersection point with the next number
+            newIntersectionPoints2.push({
+              x: intersection.x,
+              y: intersection.y,
+              line: specificLine,
+              number: counter1++
+            });
+          }
+        }
+
+        // Save the numbered end point
+        numberedPoints1.push({ x: end.x, y: end.y, line: specificLine, number: counter1++ });
+      }
+
+      // Remove points from numberedPoints that are also in newIntersectionPoints1
+      const uniqueNumberedPoints1 = numberedPoints1.filter(np =>
+        !newIntersectionPoints2.some(ni =>
+          np.x == ni.x && np.y == ni.y
+        )
+      );
+
+      // Combine the unique points from numberedPoints and all points from newIntersectionPoints1
+      const combinedPoints1 = [...uniqueNumberedPoints1, ...newIntersectionPoints2];
+
+      // Sort by their number property
+      combinedPoints1.sort((a, b) => a.number - b.number);
+
+      combinedPoints1.forEach((point, index) => {
+        point.newNumber = index + 1;
+      });
+      setNewLeftIntersectionPoints(combinedPoints1);
+
+
+
+
+      // end test code 
+      // something wrong then un comment this
+      // const newIntersectionPoints = [];
+      // for (let i = 0; i < lines.length; i++) {
+      //   const line1 = [
+      //     pointLookup[lines[i][0]],
+      //     pointLookup[lines[i][1]]
+      //   ];
+
+      //   for (let j = i + 1; j < lines.length; j++) {
+      //     const line2 = [
+      //       pointLookup[lines[j][0]],
+      //       pointLookup[lines[j][1]]
+      //     ];
+
+      //     const intersection = calculateIntersectionPoins(line1, line2);
+
+      //     if (intersection) {
+      //       newIntersectionPoints.push(intersection);
+      //     }
+      //   }
+      // }
+      // console.log("newIntersectionPoints : ", newIntersectionPoints)
+      // setIntersectionPoints(newIntersectionPoints);
+      // to here
+
+
+      // just for left intersaction points
+      // const newLeftIntersectionPoints = [];
+      // for (let i = 0; i < newLeftLines.length; i++) {
+      //   const line1 = [
+      //     pointLookup[newLeftLines[i][0]],
+      //     pointLookup[newLeftLines[i][1]]
+      //   ];
+
+      //   for (let j = i + 1; j < newLeftLines.length; j++) {
+      //     const line2 = [
+      //       pointLookup[newLeftLines[j][0]],
+      //       pointLookup[newLeftLines[j][1]]
+      //     ];
+
+      //     const intersection = calculateIntersectionPoins(line1, line2);
+
+      //     if (intersection) {
+      //       newLeftIntersectionPoints.push(intersection);
+      //     }
+      //   }
+      // }
+      // // console.log("newIntersectionPoints : ",newLeftIntersectionPoints)
+      // setNewLeftIntersectionPoints(newLeftIntersectionPoints);
     }
   }, [intersectionsState, points]);
 
   useEffect(() => {
     if (intersectionsState.length > 0) {
       const newLeftIntersectionPoints = [];
+  
+      const specificLeftLines = [
+        ["N8", "E2"],
+        ["N7", "E3"],
+        ["N6", "E4"],
+        ["N5", "E5"],
+        ["N5", "E5"],
+        ["N4", "E6"],
+        ["N3", "E7"],
+        ["N2", "E8"],
+        ["N1", "S1"],
+        ["W8", "S2"],
+        ["W7", "S3"],
+        ["W6", "S4"],
+        ["W5", "S5"],
+        ["W4", "S6"],
+        ["W3", "S7"],
+        ["W2", "S8"],
+        ["N8", "W2"],
+        ["E1", "W1"],
+        ["E2", "S8"],
+        ["W8", "S2"],
+        ["N1", "S1"],
+        ["N2", "E8"]
+      ];
 
-      for (let i = 0; i < linesLeft.length; i++) {
-        const line1 = [
-          pointLookup[linesLeft[i][0]],
-          pointLookup[linesLeft[i][1]],
-        ];
+      const targetLeftLines = [
+        ["W8", "N2"],
+        ["W7", "N3"],
+        ["W6", "N4"],
+        ["W5", "N5"],
+        ["W4", "N6"],
+        ["W3", "N7"],
+        ["W2", "N8"],
+        ["W1", "E1"],
+        ["S8", "E2"],
+        ["S7", "E3"],
+        ["S6", "E4"],
+        ["S5", "E5"],
+        ["S4", "E6"],
+        ["S3", "E7"],
+        ["S2", "E8"]
+      ];
 
-        for (let j = i + 1; j < linesLeft.length; j++) {
+      const newIntersectionPoints3 = [];
+      const numberedPoints2 = [];
+      let counter1 = 1; // Start the counter at 1
+
+      for (const specificLine of specificLeftLines) {
+        const start = pointLookup[specificLine[0]];
+        const end = pointLookup[specificLine[1]];
+
+        // Save the numbered start point
+        numberedPoints2.push({ x: start.x, y: start.y, line: specificLine, number: counter1++ });
+
+        const line1 = [start, end];
+
+        for (const targetLine of targetLeftLines) {
           const line2 = [
-            pointLookup[linesLeft[j][0]],
-            pointLookup[linesLeft[j][1]],
+            pointLookup[targetLine[0]],
+            pointLookup[targetLine[1]]
           ];
 
           const intersection = calculateIntersectionPoins(line1, line2);
 
           if (intersection) {
-            newLeftIntersectionPoints.push(intersection);
+            // Save the intersection point with the next number
+            newIntersectionPoints3.push({
+              x: intersection.x,
+              y: intersection.y,
+              line: specificLine,
+              number: counter1++
+            });
           }
         }
+
+        // Save the numbered end point
+        numberedPoints2.push({ x: end.x, y: end.y, line: specificLine, number: counter1++ });
       }
-      const filteredLeftIntersectionPoints = newLeftIntersectionPoints.filter(
-        (newPoint) =>
-          !intersectionPoints.some((existingPoint) =>
-            existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
-          )
+      const uniqueNumberedPoints2 = numberedPoints2.filter(np =>
+        !newIntersectionPoints3.some(ni =>
+          np.x == ni.x && np.y == ni.y
+        )
       );
 
+      // Combine the unique points from numberedPoints and all points from newIntersectionPoints1
+      const combinedPoints2 = [...uniqueNumberedPoints2, ...newIntersectionPoints3];
+
+      // Sort by their number property
+      combinedPoints2.sort((a, b) => a.number - b.number);
+
+      // combinedPoints2.forEach((point, index) => {
+      //   point.newNumber = index + 1;
+      // });
+      // for (let i = 0; i < linesLeft.length; i++) {
+      //   const line1 = [
+      //     pointLookup[linesLeft[i][0]],
+      //     pointLookup[linesLeft[i][1]],
+      //   ];
+
+      //   for (let j = i + 1; j < linesLeft.length; j++) {
+      //     const line2 = [
+      //       pointLookup[linesLeft[j][0]],
+      //       pointLookup[linesLeft[j][1]],
+      //     ];
+
+      //     const intersection = calculateIntersectionPoins(line1, line2);
+
+      //     if (intersection) {
+      //       newLeftIntersectionPoints.push(intersection);
+      //     }
+      //   }
+      // }
+      // const filteredLeftIntersectionPoints = newLeftIntersectionPoints.filter(
+      //   (newPoint) =>
+      //     !intersectionPoints.some((existingPoint) =>
+      //       existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+      //     )
+      // );
+      // Filter newLeftIntersectionPoints to exclude points in leftIntersectionPoints and intersectionPoints
+
+      const filteredLeftIntersectionPoints = combinedPoints2.filter((newPoint) => {
+        const isInLeftIntersection = intersectionPoints.some(
+          (existingPoint) => existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+        );
+
+        const isInIntersectionPoints = newLeftintersectionPoints.some(
+          (existingPoint) => existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+        );
+
+        return !isInLeftIntersection && !isInIntersectionPoints; // Exclude if found in either array
+      });
+      filteredLeftIntersectionPoints.forEach((point, index) => {
+        point.newNumber = index + 1;
+      });
+      console.log("filteredLeftIntersectionPoints : ",filteredLeftIntersectionPoints)
+      // // Set the filtered points
       setLeftIntersectionPoints(filteredLeftIntersectionPoints);
     }
   }, [intersectionsState, points, intersectionPoints]);
@@ -811,13 +1332,17 @@ const DrawingBoard = ({
     // }
   }, [hideCircle, totalLines, angleIncrement, inputDegree, centroid, points]);
 
-  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: "" });
 
-  const handleMouseEnter = (event, point) => {
+  const handleMouseEnter = (event, point, text, type) => {
+    console.log("text : ", text)
+
+    var visibility = text ? type[text].value ? true : false : false
     setTooltip({
-      visible: true,
+      visible: visibility,
       x: point.x,
       y: point.y,
+      text: text ? type[text] ? type[text].value : "" : ""
     });
   };
 
@@ -825,11 +1350,11 @@ const DrawingBoard = ({
     setTooltip({ ...tooltip, visible: false });
   };
 
-  const intermediatePoints1 = []; 
-  const intermediatePoints1Test = []; 
-  const intermediatePoints2 = []; 
-  const intermediatePoints2Test = []; 
-  const [intersactMidIntermediatePoints, setIntersactMidIntermediatePoints] = useState([]); 
+  const intermediatePoints1 = [];
+  const intermediatePoints1Test = [];
+  const intermediatePoints2 = [];
+  const intermediatePoints2Test = [];
+  const [intersactMidIntermediatePoints, setIntersactMidIntermediatePoints] = useState([]);
 
   const calculateMidpoint = (pointA, pointB) => {
     return {
@@ -1305,10 +1830,17 @@ const DrawingBoard = ({
   };
 
   const handleSave = () => {
+    const payload = {
+      centroid: centroid,
+      points: points,
+      rotation: rotation,
+      zoom: zoom
+    }
     console.log("centroid : ", centroid)
     console.log("points : ", points)
     console.log("image rotation : ", rotation)
     console.log("image zoom in : ", zoom)
+    console.log("payload : ", payload)
   }
 
   const plotText = () => {
@@ -1880,7 +2412,7 @@ const DrawingBoard = ({
                             {intersectionsState.map((intersection, i) => (
                               <g key={i}>
                                 {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
-                                {/* <text
+                                <text
                                   x={intersection.point.x}
                                   y={intersection.point.y}
                                   fontSize="16"
@@ -1893,7 +2425,7 @@ const DrawingBoard = ({
                                     cursor: 'default' // Optional: Make the cursor non-interactive
                                   }}>
                                   {intersection.label}
-                                </text> */}
+                                </text>
                               </g>
                             ))}
 
@@ -2025,7 +2557,25 @@ const DrawingBoard = ({
                         />
                       )
                     })}
-
+                    {/*                  
+ <circle
+                          cx={"458.9167293323738"}
+                          cy={"150.2650693794946"}
+                          r={4}
+                          fill="black"
+                          stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          // onMouseLeave={handleMouseLeave}
+                        />
+                 <circle
+                          cx={"434.88520100613255"}
+                          cy={"174.29699416316885"}
+                          r={4}
+                          fill="black"
+                          stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          // onMouseLeave={handleMouseLeave}
+                        /> */}
                     {hideMarmaLines && (
                       <>
                         {lines.map((line, index) => {
@@ -2055,20 +2605,23 @@ const DrawingBoard = ({
                       </>
                     )}
 
+
                     {hideMarmapoints && <>
+                      {/* {console.log("marmaDevta[point.newNumber].color : ",point.newNumber,marmaDevta[10].color)} */}
                       {intersectionPoints.map((point, idx) => (
                         <circle
                           key={idx}
                           cx={point.x}
                           cy={point.y}
                           r={4}
-                          fill="green"
+                          fill={point.newNumber ? marmaDevta[point.newNumber] ? marmaDevta[point.newNumber].color : "gray" : "green"}
                           stroke="black"
-                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta)}
                           onMouseLeave={handleMouseLeave}
                         />
                       ))}
-                      {leftIntersectionPoints.map((point, idx) => (
+
+                      {/* {leftIntersectionPoints.map((point, idx) => (
                         <circle
                           key={idx}
                           cx={point.x}
@@ -2076,11 +2629,25 @@ const DrawingBoard = ({
                           r={4}
                           fill="blue"
                           stroke="black"
-                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                        onMouseEnter={(e) => handleMouseEnter(e, point,point.newNumber)}
+                        onMouseLeave={handleMouseLeave}
+                        />
+                      ))} */}
+                      {/* uncomment this */}
+                      {newLeftintersectionPoints.map((point, idx) => (
+                        <circle
+                          key={idx}
+                          cx={point.x}
+                          cy={point.y}
+                          r={4}
+                          fill={point.newNumber ? marmaLeftDevta[point.newNumber] ? marmaLeftDevta[point.newNumber].color : "gray" : "green"}
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaLeftDevta)}
                           onMouseLeave={handleMouseLeave}
                         />
                       ))}
-                      {MarmaintersectionPoints.map((point, idx) => (
+
+                      {/* {MarmaintersectionPoints.map((point, idx) => (
                         <circle
                           key={idx}
                           cx={point.x}
@@ -2091,7 +2658,8 @@ const DrawingBoard = ({
                           onMouseEnter={(e) => handleMouseEnter(e, point)}
                           onMouseLeave={handleMouseLeave}
                         />
-                      ))}
+                      ))} */}
+                      {/* uncomment this  till this*/}
                     </>}
                   </g>
                 </g>
@@ -2295,7 +2863,10 @@ const DrawingBoard = ({
                 fontSize: '12px',
               }}
             >
-              x: {tooltip.x}, y: {tooltip.y}
+              {/* x: {tooltip.x}, y: {tooltip.y}, Text :  */}
+              {tooltip.text}
+              {/* { console.log("tooltip : ",tool)}
+              {tooltip.text ? marmaDevta[tooltip.text] ? marmaDevta[tooltip.text].value : "":""} */}
             </div>
           )}
 
