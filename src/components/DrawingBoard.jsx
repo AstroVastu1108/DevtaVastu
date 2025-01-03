@@ -2828,22 +2828,22 @@ const DrawingBoard = ({
                         /> */}
                     {hideMarmaLines && (
                       <>
-                        {lines.map((line, index) => {
+                        {/* {lines.map((line, index) => {
                           const [startPoint, endPoint] = line;
                           return (
                             <g key={`marma-line-${index}`}>
                               {drawLines(startPoint, endPoint, "purple", 1)}
                             </g>
                           );
-                        })}
-                        {linesLeft.map((line, index) => {
+                        })} */}
+                        {/* {linesLeft.map((line, index) => {
                           const [startPoint, endPoint] = line;
                           return (
                             <g key={`marma-line-${index}`}>
                               {drawLines(startPoint, endPoint, "orange", 1)}
                             </g>
                           );
-                        })}
+                        })} */}
 
                         {/* Direction fixed lines */}
                         <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
