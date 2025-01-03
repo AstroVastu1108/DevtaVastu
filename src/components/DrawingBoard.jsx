@@ -80,7 +80,7 @@ const DrawingBoard = ({
       const imgData = canvas.toDataURL('image/jpeg', 0.8);
       const pdf = new jsPDF('p', 'pt', 'a4');
 
-      const imgWidth = a4Width;
+      const imgWidth = a4Width-200;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       const pageHeight = pdf.internal.pageSize.height;
@@ -101,10 +101,10 @@ const DrawingBoard = ({
       let textY = imgHeight + 40; // Place text below the image
       pdf.setFontSize(12);
       const extraText = [
-        'Additional Text Example:',
-        '1. This is some extra content added after the image.',
-        '2. You can customize this content dynamically.',
-        '3. Ensure this text is visible in the PDF output.',
+        // 'Additional Text Example:',
+        // '1. This is some extra content added after the image.',
+        // '2. You can customize this content dynamically.',
+        // '3. Ensure this text is visible in the PDF output.',
       ];
 
       extraText.forEach((line) => {
