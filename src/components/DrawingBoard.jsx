@@ -988,88 +988,92 @@ const DrawingBoard = ({
       };
 
       for (let i = 0; i < specificLines.length; i++) {
-        const specificLine = specificLines[i];
-        let globalPointCounter = 1;
-        const lineData = line++;
-        const maxPoints = linePointLimits1[i]; // Maximum points allowed for this line
-
-        const start = pointLookup[specificLine[0]];
-        const end = pointLookup[specificLine[1]];
-
-        const linePoints = [];
-
-        linePoints.push({
-          x: start.x,
-          y: start.y,
-          line: specificLine,
-          newNumber: globalPointCounter++,
-          lineNo: lineData,
-          name: specificLine.join("_") == "N8_W2" ? "2L" : specificLine.join("_") == "E1_W1" ? "1" : specificLine.join("_") == "E2_S8" ? "2R" : "",
-          color: specificLine.join("_") == "N8_W2" ? "gray" : specificLine.join("_") == "E1_W1" ? "red" : specificLine.join("_") == "E2_S8" ? "gray" : "gray",
-        });
-
-        const line1 = [start, end];
-
-        for (const targetLine of targetLines) {
-          const line2 = [
-            pointLookup[targetLine[0]],
-            pointLookup[targetLine[1]],
-          ];
-
-          const intersection = calculateIntersectionPoins(line1, line2);
-
-          if (intersection) {
-            const isDuplicatePoint = (intersection, start, end) => {
-              return (
-                (intersection.x.toFixed(8) === start.x.toFixed(8) && intersection.y.toFixed(8) === start.y.toFixed(8)) ||
-                (intersection.x.toFixed(8) === end.x.toFixed(8) && intersection.y.toFixed(8) === end.y.toFixed(8))
-              );
-            };
-
-            if (!isDuplicatePoint(intersection, start, end)) {
-              const specificLineKey = specificLine.join('_');
-              const targetLineKey = targetLine.join('_');
-
-              const criteria = intersectionCriteria[specificLineKey]?.[targetLineKey] || {};
-
-              linePoints.push({
-                x: intersection.x,
-                y: intersection.y,
-                line: specificLine,
-                newNumber: globalPointCounter++,
-                lineNo: lineData,
-                specificLineKey: specificLineKey,
-                targetLineKey: targetLineKey,
-                criteria: criteria,
-                name: criteria.name,
-                color: criteria.color, // Default color if not specified
-              });
+        try {
+          const specificLine = specificLines[i];
+          let globalPointCounter = 1;
+          const lineData = line++;
+          const maxPoints = linePointLimits1[i]; // Maximum points allowed for this line
+  
+          const start = pointLookup[specificLine[0]];
+          const end = pointLookup[specificLine[1]];
+  
+          const linePoints = [];
+  
+          linePoints.push({
+            x: start.x,
+            y: start.y,
+            line: specificLine,
+            newNumber: globalPointCounter++,
+            lineNo: lineData,
+            name: specificLine.join("_") == "N8_W2" ? "2L" : specificLine.join("_") == "E1_W1" ? "1" : specificLine.join("_") == "E2_S8" ? "2R" : "",
+            color: specificLine.join("_") == "N8_W2" ? "gray" : specificLine.join("_") == "E1_W1" ? "red" : specificLine.join("_") == "E2_S8" ? "gray" : "gray",
+          });
+  
+          const line1 = [start, end];
+  
+          for (const targetLine of targetLines) {
+            const line2 = [
+              pointLookup[targetLine[0]],
+              pointLookup[targetLine[1]],
+            ];
+  
+            const intersection = calculateIntersectionPoins(line1, line2);
+  
+            if (intersection) {
+              const isDuplicatePoint = (intersection, start, end) => {
+                return (
+                  (intersection.x.toFixed(8) === start.x.toFixed(8) && intersection.y.toFixed(8) === start.y.toFixed(8)) ||
+                  (intersection.x.toFixed(8) === end.x.toFixed(8) && intersection.y.toFixed(8) === end.y.toFixed(8))
+                );
+              };
+  
+              if (!isDuplicatePoint(intersection, start, end)) {
+                const specificLineKey = specificLine.join('_');
+                const targetLineKey = targetLine.join('_');
+  
+                const criteria = intersectionCriteria[specificLineKey]?.[targetLineKey] || {};
+  
+                linePoints.push({
+                  x: intersection.x,
+                  y: intersection.y,
+                  line: specificLine,
+                  newNumber: globalPointCounter++,
+                  lineNo: lineData,
+                  specificLineKey: specificLineKey,
+                  targetLineKey: targetLineKey,
+                  criteria: criteria,
+                  name: criteria.name,
+                  color: criteria.color, // Default color if not specified
+                });
+              }
             }
           }
-        }
-
-        linePoints.push({
-          x: end.x,
-          y: end.y,
-          line: specificLine,
-          newNumber: globalPointCounter++,
-          lineNo: lineData,
-          name: specificLine.join("_") == "N8_W2" ? "" : specificLine.join("_") == "E1_W1" ? "17" : specificLine.join("_") == "E2_S8" ? "" : "",
-          color: specificLine.join("_") == "N8_W2" ? "gray" : specificLine.join("_") == "E1_W1" ? "gray" : specificLine.join("_") == "E2_S8" ? "gray" : "gray",
-        });
-
-        const selectedPoints = [];
-
-        let index = 0;
-        while (selectedPoints.length < maxPoints) {
-          selectedPoints.push({
-            ...linePoints[index % linePoints.length],
-            newNumber: selectedPoints.length + 1,
+  
+          linePoints.push({
+            x: end.x,
+            y: end.y,
+            line: specificLine,
+            newNumber: globalPointCounter++,
+            lineNo: lineData,
+            name: specificLine.join("_") == "N8_W2" ? "" : specificLine.join("_") == "E1_W1" ? "17" : specificLine.join("_") == "E2_S8" ? "" : "",
+            color: specificLine.join("_") == "N8_W2" ? "gray" : specificLine.join("_") == "E1_W1" ? "gray" : specificLine.join("_") == "E2_S8" ? "gray" : "gray",
           });
-          index++;
+  
+          const selectedPoints = [];
+  
+          let index = 0;
+          while (selectedPoints.length < maxPoints) {
+            selectedPoints.push({
+              ...linePoints[index % linePoints.length],
+              newNumber: selectedPoints.length + 1,
+            });
+            index++;
+          }
+  
+          numberedPoints.push(...selectedPoints);
+        } catch (error) {
+          
         }
-
-        numberedPoints.push(...selectedPoints);
       }
 
       const counts2 = numberedPoints.reduce((acc, point) => {
@@ -1161,89 +1165,93 @@ const DrawingBoard = ({
       };
 
       for (let i = 0; i < specificLeftLines.length; i++) {
-        const specificLine = specificLeftLines[i];
-        let globalPointCounter = 1;
-        const lineData = leftline++;
-        const maxPoints = linePointLimits1[i];
-
-        const start = pointLookup[specificLine[0]];
-        const end = pointLookup[specificLine[1]];
-
-        const linePoints = [];
-
-        linePoints.push({
-          x: start.x,
-          y: start.y,
-          line: specificLine,
-          newNumber: globalPointCounter++,
-          lineNo: lineData,
-          name: specificLine.join("_") == "W8_S2" ? "10LN" : specificLine.join("_") == "N1_S1" ? "" : specificLine.join("_") == "N2_E8" ? "" : "",
-          color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "red" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
-        });
-
-        const line1 = [start, end];
-
-        for (const targetLine of targetLeftLines) {
-          const line2 = [
-            pointLookup[targetLine[0]],
-            pointLookup[targetLine[1]],
-          ];
-
-          const intersection = calculateIntersectionPoins(line1, line2);
-
-          if (intersection) {
-            const isDuplicatePoint = (intersection, start, end) => {
-              return (
-                (intersection.x.toFixed(8) === start.x.toFixed(8) && intersection.y.toFixed(8) === start.y.toFixed(8)) ||
-                (intersection.x.toFixed(8) === end.x.toFixed(8) && intersection.y.toFixed(8) === end.y.toFixed(8))
-              );
-            };
-
-            if (!isDuplicatePoint(intersection, start, end)) {
-              const specificLineKey = specificLine.join('_');
-              const targetLineKey = targetLine.join('_');
-
-              const criteria = leftintersectionCriteria[specificLineKey]?.[targetLineKey] || {};
-
-              linePoints.push({
-                x: intersection.x,
-                y: intersection.y,
-                line: specificLine,
-                newNumber: globalPointCounter++,
-                lineNo: lineData,
-                specificLineKey: specificLineKey,
-                targetLineKey: targetLineKey,
-                criteria: criteria,
-                name: criteria.name,
-                color: criteria.color,
-              });
+        try {
+          const specificLine = specificLeftLines[i];
+          let globalPointCounter = 1;
+          const lineData = leftline++;
+          const maxPoints = linePointLimits1[i];
+  
+          const start = pointLookup[specificLine[0]];
+          const end = pointLookup[specificLine[1]];
+  
+          const linePoints = [];
+  
+          linePoints.push({
+            x: start.x,
+            y: start.y,
+            line: specificLine,
+            newNumber: globalPointCounter++,
+            lineNo: lineData,
+            name: specificLine.join("_") == "W8_S2" ? "10LN" : specificLine.join("_") == "N1_S1" ? "" : specificLine.join("_") == "N2_E8" ? "" : "",
+            color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "red" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
+          });
+  
+          const line1 = [start, end];
+  
+          for (const targetLine of targetLeftLines) {
+            const line2 = [
+              pointLookup[targetLine[0]],
+              pointLookup[targetLine[1]],
+            ];
+  
+            const intersection = calculateIntersectionPoins(line1, line2);
+  
+            if (intersection) {
+              const isDuplicatePoint = (intersection, start, end) => {
+                return (
+                  (intersection.x.toFixed(8) === start.x.toFixed(8) && intersection.y.toFixed(8) === start.y.toFixed(8)) ||
+                  (intersection.x.toFixed(8) === end.x.toFixed(8) && intersection.y.toFixed(8) === end.y.toFixed(8))
+                );
+              };
+  
+              if (!isDuplicatePoint(intersection, start, end)) {
+                const specificLineKey = specificLine.join('_');
+                const targetLineKey = targetLine.join('_');
+  
+                const criteria = leftintersectionCriteria[specificLineKey]?.[targetLineKey] || {};
+  
+                linePoints.push({
+                  x: intersection.x,
+                  y: intersection.y,
+                  line: specificLine,
+                  newNumber: globalPointCounter++,
+                  lineNo: lineData,
+                  specificLineKey: specificLineKey,
+                  targetLineKey: targetLineKey,
+                  criteria: criteria,
+                  name: criteria.name,
+                  color: criteria.color,
+                });
+              }
             }
           }
-        }
-
-        linePoints.push({
-          x: end.x,
-          y: end.y,
-          line: specificLine,
-          newNumber: globalPointCounter++,
-          lineNo: lineData,
-          name: specificLine.join("_") == "W8_S2" ? "10RN" : specificLine.join("_") == "N1_S1" ? "17" : specificLine.join("_") == "N2_E8" ? "" : "",
-          color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "gray" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
-        });
-
-        const selectedPoints = [];
-
-        let index = 0;
-        while (selectedPoints.length < maxPoints) {
-          selectedPoints.push({
-            ...linePoints[index % linePoints.length],
-            newNumber: selectedPoints.length + 1,
+  
+          linePoints.push({
+            x: end.x,
+            y: end.y,
+            line: specificLine,
+            newNumber: globalPointCounter++,
+            lineNo: lineData,
+            name: specificLine.join("_") == "W8_S2" ? "10RN" : specificLine.join("_") == "N1_S1" ? "17" : specificLine.join("_") == "N2_E8" ? "" : "",
+            color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "gray" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
           });
-          index++;
+  
+          const selectedPoints = [];
+  
+          let index = 0;
+          while (selectedPoints.length < maxPoints) {
+            selectedPoints.push({
+              ...linePoints[index % linePoints.length],
+              newNumber: selectedPoints.length + 1,
+            });
+            index++;
+          }
+  
+          // Add to the global numberedPoints array
+          leftnumberedPoints.push(...selectedPoints);
+        } catch (error) {
+          
         }
-
-        // Add to the global numberedPoints array
-        leftnumberedPoints.push(...selectedPoints);
       }
 
       const counts3 = leftnumberedPoints.reduce((acc, point) => {
@@ -2800,7 +2808,7 @@ const DrawingBoard = ({
                       )
                     })}
                     {/*                  
- <circle
+                  <circle
                           cx={"458.9167293323738"}
                           cy={"150.2650693794946"}
                           r={4}
