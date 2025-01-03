@@ -1177,7 +1177,7 @@ const DrawingBoard = ({
           line: specificLine,
           newNumber: globalPointCounter++,
           lineNo: lineData,
-          name: specificLine.join("_") == "W8_S2" ? "10LN" : specificLine.join("_") == "N1_S1" ? "" : specificLine.join("_") == "N2_E8" ? "2R" : "",
+          name: specificLine.join("_") == "W8_S2" ? "10LN" : specificLine.join("_") == "N1_S1" ? "" : specificLine.join("_") == "N2_E8" ? "" : "",
           color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "red" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
         });
 
@@ -1227,7 +1227,7 @@ const DrawingBoard = ({
           line: specificLine,
           newNumber: globalPointCounter++,
           lineNo: lineData,
-          name: specificLine.join("_") == "W8_S2" ? "" : specificLine.join("_") == "N1_S1" ? "17" : specificLine.join("_") == "N2_E8" ? "" : "",
+          name: specificLine.join("_") == "W8_S2" ? "10RN" : specificLine.join("_") == "N1_S1" ? "17" : specificLine.join("_") == "N2_E8" ? "" : "",
           color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "gray" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
         });
 
@@ -1256,26 +1256,26 @@ const DrawingBoard = ({
 
       // Custom marma points for left of 5L
       const newIntersectionPoints = [];
-      const line5L1 = [pointLookup["N5"],pointLookup["E5"]]
-      const line5L2 = [pointLookup["N7"],pointLookup["W3"]]
-      const line5R2 = [pointLookup["E3"],pointLookup["S7"]]
-      
+      const line5L1 = [pointLookup["N5"], pointLookup["E5"]]
+      const line5L2 = [pointLookup["N7"], pointLookup["W3"]]
+      const line5R2 = [pointLookup["E3"], pointLookup["S7"]]
+
       const intersection_5LL = calculateIntersectionPoins(line5L1, line5L2);
-      if(intersection_5LL){
+      if (intersection_5LL) {
         newIntersectionPoints.push({
           x: intersection_5LL.x,
           y: intersection_5LL.y,
-          name:"",
-          color:"blue"
+          name: "",
+          color: "blue"
         });
       }
       const intersection_5RR = calculateIntersectionPoins(line5L1, line5R2);
-      if(intersection_5RR){
+      if (intersection_5RR) {
         newIntersectionPoints.push({
           x: intersection_5RR.x,
           y: intersection_5RR.y,
-          name:"",
-          color:"blue"
+          name: "",
+          color: "blue"
         });
       }
       setLeftIntersectionPoints(newIntersectionPoints)
@@ -2652,7 +2652,8 @@ const DrawingBoard = ({
                             {intersectionsState.map((intersection, i) => (
                               <g key={i}>
                                 {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
-                                <text
+                                {/*      
+                              <text
                                   x={intersection.point.x}
                                   y={intersection.point.y}
                                   fontSize="16"
@@ -2666,6 +2667,7 @@ const DrawingBoard = ({
                                   }}>
                                   {intersection.label}
                                 </text>
+                              */}
                               </g>
                             ))}
 
@@ -2879,16 +2881,17 @@ const DrawingBoard = ({
                           cx={point.x}
                           cy={point.y}
                           r={4}
-                        //   fill="blue"
-                        //   stroke="black"
-                        // onMouseEnter={(e) => handleMouseEnter(e, point,point.newNumber)}
-                        // onMouseLeave={handleMouseLeave}
-                        fill={point.color}
-                        stroke="black"
-                        onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
-                        onMouseLeave={handleMouseLeave}
+                          //   fill="blue"
+                          //   stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point,point.newNumber)}
+                          // onMouseLeave={handleMouseLeave}
+                          fill={point.color}
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
+                          onMouseLeave={handleMouseLeave}
                         />
-                      ))} 
+                      ))}
+
                       {/* uncomment this */}
                       {newLeftintersectionPoints.map((point, idx) => (
                         <circle
