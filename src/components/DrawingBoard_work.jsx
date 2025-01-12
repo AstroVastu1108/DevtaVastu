@@ -5,7 +5,7 @@ import GridBackground from './GridBackground';
 import LineControls from './LineControls';
 import jsPDF from "jspdf";
 import * as pdfjsLib from 'pdfjs-dist';
-import './DrawingBoard.css'
+
 
 import html2canvas from 'html2canvas';
 import { Upload } from 'lucide-react';
@@ -49,7 +49,6 @@ const DrawingBoard = ({
   const [showDevtaIntersaction, setShowDevtaIntersaction] = useState(false);
   const [disableDraw, setDisableDraw] = useState(false);
   const [lockCentroid, setLockCentroid] = useState(false);
-  const [graphDraw, setGraphDraw] = useState(false);
 
   const svgRef = useRef(null);
   const printRef = useRef(null);
@@ -71,39 +70,53 @@ const DrawingBoard = ({
   }, []);
 
   const downloadPDF = () => {
-    const scale = 5;
+    const scale = 5; // Adjust this value as needed for quality
 
-    const a4Width = 841.89;
-    const a4Height = 595.28;
+    // Set A4 size in points
+    const a4Width = 1000; // A4 width in points
+    const a4Height = 841.89; // A4 height in points
 
-    const leftDivRef = document.getElementById('hiddenDiv');
-    const rightDivRef = printRef.current;
+    html2canvas(printRef.current, { scale }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+      const pdf = new jsPDF('p', 'pt', 'a4');
 
-    Promise.all([
-      html2canvas(leftDivRef, { scale }),
-      html2canvas(rightDivRef, { scale }),
-    ]).then(([leftCanvas, rightCanvas]) => {
-      const pdf = new jsPDF('l', 'pt', 'a4');
+      const imgWidth = a4Width-200;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
-      const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+      const pageHeight = pdf.internal.pageSize.height;
+      let heightLeft = imgHeight;
 
-      const leftOriginalWidth = leftCanvas.width;
-      const leftOriginalHeight = leftCanvas.height;
-      const leftImgWidth = a4Width * 0.3;
-      const leftImgHeight = leftOriginalHeight + 50;
+      let position = 0;
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
 
-      const rightOriginalWidth = rightCanvas.width;
-      const rightOriginalHeight = rightCanvas.height;
-      const rightImgWidth = a4Width;
-      const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
 
-      const leftY = (a4Height - leftImgHeight) / 2;
-      const rightY = (a4Height - rightImgHeight) / 2;
+      const textX = 20;
+      let textY = imgHeight + 40; // Place text below the image
+      pdf.setFontSize(12);
+      const extraText = [
+        // 'Additional Text Example:',
+        // '1. This is some extra content added after the image.',
+        // '2. You can customize this content dynamically.',
+        // '3. Ensure this text is visible in the PDF output.',
+      ];
 
-      pdf.addImage(leftImgData, 'JPEG', 0, leftY, leftImgWidth, leftImgHeight);
+      extraText.forEach((line) => {
+        if (textY + 20 > a4Height) {
+          pdf.addPage(); // Add a new page if space runs out
+          textY = 40; // Reset Y position for the new page
+        }
+        pdf.text(line, textX, textY);
+        textY += 20; // Increment Y position for the next line
+      });
 
-      pdf.addImage(rightImgData, 'JPEG', leftImgWidth, rightY, rightImgWidth, rightImgHeight);
+
 
       pdf.save('download.pdf');
     });
@@ -120,7 +133,6 @@ const DrawingBoard = ({
     const transformed = point.matrixTransform(CTM.inverse());
     return { x: transformed.x, y: transformed.y };
   };
-
   const [previewUrl, setPreviewUrl] = useState(null);
 
   async function readFileData(uploadedFile) {
@@ -295,6 +307,8 @@ const DrawingBoard = ({
     }
   };
 
+
+
   const handleMouseUp = () => {
     movingCentroidRef.current = false;
     selectedPointRef.current = null;
@@ -336,6 +350,52 @@ const DrawingBoard = ({
     );
   };
 
+  const exportToPDF = async () => {
+    const svgElement = svgRef.current;
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const doc = new jsPDF();
+
+    // Create a high-resolution canvas
+    const canvas = document.createElement('canvas');
+    const scaleFactor = 2; // Reduced scale factor
+    const width = 676 * scaleFactor;
+    const height = 676 * scaleFactor;
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+
+    // Fill the canvas with white
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const img = new Image();
+    img.onload = function () {
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert the canvas to a data URL
+      const imgData = canvas.toDataURL('image/png'); // Use PNG for better compression
+
+      // Add image to PDF with compression
+      doc.addImage(imgData, 'PNG', 0, 0, 100, 100, undefined, 'FAST'); // Adjust size
+
+      // Save the PDF
+      doc.save('download.pdf');
+
+      // Clean up the object URL
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  };
+
+
   const DIRECTION_DATA = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
   const [inputDegree, setInputDegree] = useState(0);
@@ -346,6 +406,7 @@ const DrawingBoard = ({
     if (value > 360) value = 360;
     setInputDegree(value);
   };
+
 
   const totalLines = 32;
   const angleIncrement = 360 / totalLines;
@@ -369,6 +430,7 @@ const DrawingBoard = ({
 
     return { x, y };
   };
+
 
   const edges = [];
 
@@ -410,6 +472,110 @@ const DrawingBoard = ({
       />
     );
   }
+
+  const lines = [
+    // right marma lines N x E
+    ["N8", "W2"],
+    ["E1", "W1"],
+    ["E2", "S8"],
+    // other points
+    ["N8", "E2"],
+    ["N7", "E3"],
+    ["N6", "E4"],
+    ["N5", "E5"],
+    ["N5", "E5"],
+    ["N4", "E6"],
+    ["N4", "E6"],
+    ["N3", "E7"],
+    ["N2", "E8"],
+    ["N1", "S1"],
+    ["W8", "S2"],
+    ["W7", "S3"],
+    ["W6", "S4"],
+    ["W5", "S5"],
+    ["W4", "S6"],
+    ["W3", "S7"],
+    ["W2", "S8"]
+  ];
+  const newLeftLines = [
+    // left marma lines
+    ["W8", "S2"],
+    ["N1", "S1"],
+    ["N2", "E8"],
+    // other points
+
+    ["W8", "N2"],
+    ["W7", "N3"],
+    ["W6", "N4"],
+    ["W5", "N5"],
+    ["W4", "N6"],
+    ["W3", "N7"],
+    ["W2", "N8"],
+    ["W1", "E1"],
+    ["S8", "E2"],
+    ["S7", "E3"],
+    ["S6", "E4"],
+    ["S5", "E5"],
+    ["S4", "E6"],
+    ["S3", "E7"],
+    ["S2", "E8"],
+    // new points
+    // ["W8", "N2"],
+    // ["W7", "N3"],
+    // ["W6", "N4"],
+    // ["W5", "N5"],
+    // ["W4", "N6"],
+    // ["W3", "N7"],
+    // ["W2", "N8"],
+    // ["W1", "E1"],
+    // ["S8", "E2"],
+    // ["S7", "E3"],
+    // ["S6", "E4"],
+    // ["S5", "E5"],
+    // ["S4", "E6"],
+    // ["S3", "E7"],
+    // ["S2", "E8"],
+  ];
+  const linesLeft = [
+    ["N8", "E2"],
+    ["N7", "E3"],
+    ["N6", "E4"],
+    ["N5", "E5"],
+    ["N5", "E5"],
+    ["N4", "E6"],
+    ["N3", "E7"],
+    ["N2", "E8"],
+    ["N1", "S1"],
+    ["W8", "S2"],
+    ["W7", "S3"],
+    ["W6", "S4"],
+    ["W5", "S5"],
+    ["W4", "S6"],
+    ["W3", "S7"],
+    ["W2", "S8"],
+    ["N8", "W2"],
+    ["E1", "W1"],
+    ["E2", "S8"],
+    ["W8", "S2"],
+    ["N1", "S1"],
+    ["N2", "E8"],
+    // new points
+    ["W8", "N2"],
+    ["W7", "N3"],
+    ["W6", "N4"],
+    ["W5", "N5"],
+    ["W4", "N6"],
+    ["W3", "N7"],
+    ["W2", "N8"],
+    ["W1", "E1"],
+    ["S8", "E2"],
+    ["S7", "E3"],
+    ["S6", "E4"],
+    ["S5", "E5"],
+    ["S4", "E6"],
+    ["S3", "E7"],
+    ["S2", "E8"],
+  ];
 
   const Marmalines = [
     ["N8", "W2"],
@@ -470,6 +636,9 @@ const DrawingBoard = ({
   const [newLeftintersectionPoints, setNewLeftIntersectionPoints] = useState([]);
   const [leftIntersectionPoints, setLeftIntersectionPoints] = useState([]);
   const [MarmaintersectionPoints, setMarmaIntersectionPoints] = useState([]);
+
+  const roundTo = (value, decimals) =>
+    Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
   const marmaDevta = [
     { value: "", color: "gray", line: 1 },
@@ -625,7 +794,56 @@ const DrawingBoard = ({
     { value: "15R", color: "gray", line: 3 },
     { value: "", color: "gray", line: 3 },
   ]
- 
+  const marmaLeftDevta = [
+    // { value: "", color: "gray" },
+    // { value: "10LN", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "10LT", color: "green" },
+    // { value: "10L", color: "red" },
+    // { value: "10", color: "red" },
+    // { value: "10R", color: "red" },
+    // { value: "10RT", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "10RN", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "9L", color: "red" },
+    // { value: "9", color: "red" },
+    // { value: "9R", color: "red" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "8L", color: "red" },
+    { value: "8", color: "red" },
+    { value: "8R", color: "red" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" }
+  ]
   const leftlinemarmaDevta_1 = [
     { value: "", color: "gray", line: 1 },
     { value: "10LN", color: "gray", line: 1 },
@@ -775,12 +993,12 @@ const DrawingBoard = ({
           let globalPointCounter = 1;
           const lineData = line++;
           const maxPoints = linePointLimits1[i]; // Maximum points allowed for this line
-
+  
           const start = pointLookup[specificLine[0]];
           const end = pointLookup[specificLine[1]];
-
+  
           const linePoints = [];
-
+  
           linePoints.push({
             x: start.x,
             y: start.y,
@@ -790,17 +1008,17 @@ const DrawingBoard = ({
             name: specificLine.join("_") == "N8_W2" ? "2L" : specificLine.join("_") == "E1_W1" ? "1" : specificLine.join("_") == "E2_S8" ? "2R" : "",
             color: specificLine.join("_") == "N8_W2" ? "gray" : specificLine.join("_") == "E1_W1" ? "red" : specificLine.join("_") == "E2_S8" ? "gray" : "gray",
           });
-
+  
           const line1 = [start, end];
-
+  
           for (const targetLine of targetLines) {
             const line2 = [
               pointLookup[targetLine[0]],
               pointLookup[targetLine[1]],
             ];
-
+  
             const intersection = calculateIntersectionPoins(line1, line2);
-
+  
             if (intersection) {
               const isDuplicatePoint = (intersection, start, end) => {
                 return (
@@ -808,13 +1026,13 @@ const DrawingBoard = ({
                   (intersection.x.toFixed(8) === end.x.toFixed(8) && intersection.y.toFixed(8) === end.y.toFixed(8))
                 );
               };
-
+  
               if (!isDuplicatePoint(intersection, start, end)) {
                 const specificLineKey = specificLine.join('_');
                 const targetLineKey = targetLine.join('_');
-
+  
                 const criteria = intersectionCriteria[specificLineKey]?.[targetLineKey] || {};
-
+  
                 linePoints.push({
                   x: intersection.x,
                   y: intersection.y,
@@ -830,7 +1048,7 @@ const DrawingBoard = ({
               }
             }
           }
-
+  
           linePoints.push({
             x: end.x,
             y: end.y,
@@ -840,9 +1058,9 @@ const DrawingBoard = ({
             name: specificLine.join("_") == "N8_W2" ? "" : specificLine.join("_") == "E1_W1" ? "17" : specificLine.join("_") == "E2_S8" ? "" : "",
             color: specificLine.join("_") == "N8_W2" ? "gray" : specificLine.join("_") == "E1_W1" ? "gray" : specificLine.join("_") == "E2_S8" ? "gray" : "gray",
           });
-
+  
           const selectedPoints = [];
-
+  
           let index = 0;
           while (selectedPoints.length < maxPoints) {
             selectedPoints.push({
@@ -851,10 +1069,10 @@ const DrawingBoard = ({
             });
             index++;
           }
-
+  
           numberedPoints.push(...selectedPoints);
         } catch (error) {
-
+          
         }
       }
 
@@ -952,12 +1170,12 @@ const DrawingBoard = ({
           let globalPointCounter = 1;
           const lineData = leftline++;
           const maxPoints = linePointLimits1[i];
-
+  
           const start = pointLookup[specificLine[0]];
           const end = pointLookup[specificLine[1]];
-
+  
           const linePoints = [];
-
+  
           linePoints.push({
             x: start.x,
             y: start.y,
@@ -967,17 +1185,17 @@ const DrawingBoard = ({
             name: specificLine.join("_") == "W8_S2" ? "10LN" : specificLine.join("_") == "N1_S1" ? "" : specificLine.join("_") == "N2_E8" ? "" : "",
             color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "red" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
           });
-
+  
           const line1 = [start, end];
-
+  
           for (const targetLine of targetLeftLines) {
             const line2 = [
               pointLookup[targetLine[0]],
               pointLookup[targetLine[1]],
             ];
-
+  
             const intersection = calculateIntersectionPoins(line1, line2);
-
+  
             if (intersection) {
               const isDuplicatePoint = (intersection, start, end) => {
                 return (
@@ -985,13 +1203,13 @@ const DrawingBoard = ({
                   (intersection.x.toFixed(8) === end.x.toFixed(8) && intersection.y.toFixed(8) === end.y.toFixed(8))
                 );
               };
-
+  
               if (!isDuplicatePoint(intersection, start, end)) {
                 const specificLineKey = specificLine.join('_');
                 const targetLineKey = targetLine.join('_');
-
+  
                 const criteria = leftintersectionCriteria[specificLineKey]?.[targetLineKey] || {};
-
+  
                 linePoints.push({
                   x: intersection.x,
                   y: intersection.y,
@@ -1007,7 +1225,7 @@ const DrawingBoard = ({
               }
             }
           }
-
+  
           linePoints.push({
             x: end.x,
             y: end.y,
@@ -1017,9 +1235,9 @@ const DrawingBoard = ({
             name: specificLine.join("_") == "W8_S2" ? "10RN" : specificLine.join("_") == "N1_S1" ? "17" : specificLine.join("_") == "N2_E8" ? "" : "",
             color: specificLine.join("_") == "W8_S2" ? "gray" : specificLine.join("_") == "N1_S1" ? "gray" : specificLine.join("_") == "N2_E8" ? "gray" : "gray",
           });
-
+  
           const selectedPoints = [];
-
+  
           let index = 0;
           while (selectedPoints.length < maxPoints) {
             selectedPoints.push({
@@ -1028,11 +1246,11 @@ const DrawingBoard = ({
             });
             index++;
           }
-
+  
           // Add to the global numberedPoints array
           leftnumberedPoints.push(...selectedPoints);
         } catch (error) {
-
+          
         }
       }
 
@@ -1072,6 +1290,150 @@ const DrawingBoard = ({
     }
   }, [intersectionsState, points]);
 
+  // useEffect(() => {
+  //   if (intersectionsState.length > 0) {
+  //     const newLeftIntersectionPoints = [];
+
+  //     const specificLeftLines = [
+  //       ["N8", "E2"],
+  //       ["N7", "E3"],
+  //       ["N6", "E4"],
+  //       ["N5", "E5"],
+  //       ["N5", "E5"],
+  //       ["N4", "E6"],
+  //       ["N3", "E7"],
+  //       ["N2", "E8"],
+  //       ["N1", "S1"],
+  //       ["W8", "S2"],
+  //       ["W7", "S3"],
+  //       ["W6", "S4"],
+  //       ["W5", "S5"],
+  //       ["W4", "S6"],
+  //       ["W3", "S7"],
+  //       ["W2", "S8"],
+  //       ["N8", "W2"],
+  //       ["E1", "W1"],
+  //       ["E2", "S8"],
+  //       ["W8", "S2"],
+  //       ["N1", "S1"],
+  //       ["N2", "E8"]
+  //     ];
+
+  //     const targetLeftLines = [
+  //       ["W8", "N2"],
+  //       ["W7", "N3"],
+  //       ["W6", "N4"],
+  //       ["W5", "N5"],
+  //       ["W4", "N6"],
+  //       ["W3", "N7"],
+  //       ["W2", "N8"],
+  //       ["W1", "E1"],
+  //       ["S8", "E2"],
+  //       ["S7", "E3"],
+  //       ["S6", "E4"],
+  //       ["S5", "E5"],
+  //       ["S4", "E6"],
+  //       ["S3", "E7"],
+  //       ["S2", "E8"]
+  //     ];
+
+  //     const newIntersectionPoints3 = [];
+  //     const numberedPoints2 = [];
+  //     let counter1 = 1; // Start the counter at 1
+
+  //     for (const specificLine of specificLeftLines) {
+  //       const start = pointLookup[specificLine[0]];
+  //       const end = pointLookup[specificLine[1]];
+
+  //       // Save the numbered start point
+  //       numberedPoints2.push({ x: start.x, y: start.y, line: specificLine, number: counter1++ });
+
+  //       const line1 = [start, end];
+
+  //       for (const targetLine of targetLeftLines) {
+  //         const line2 = [
+  //           pointLookup[targetLine[0]],
+  //           pointLookup[targetLine[1]]
+  //         ];
+
+  //         const intersection = calculateIntersectionPoins(line1, line2);
+
+  //         if (intersection) {
+  //           // Save the intersection point with the next number
+  //           newIntersectionPoints3.push({
+  //             x: intersection.x,
+  //             y: intersection.y,
+  //             line: specificLine,
+  //             number: counter1++
+  //           });
+  //         }
+  //       }
+
+  //       // Save the numbered end point
+  //       numberedPoints2.push({ x: end.x, y: end.y, line: specificLine, number: counter1++ });
+  //     }
+  //     const uniqueNumberedPoints2 = numberedPoints2.filter(np =>
+  //       !newIntersectionPoints3.some(ni =>
+  //         np.x == ni.x && np.y == ni.y
+  //       )
+  //     );
+
+  //     // Combine the unique points from numberedPoints and all points from newIntersectionPoints1
+  //     const combinedPoints2 = [...uniqueNumberedPoints2, ...newIntersectionPoints3];
+
+  //     // Sort by their number property
+  //     combinedPoints2.sort((a, b) => a.number - b.number);
+
+  //     // combinedPoints2.forEach((point, index) => {
+  //     //   point.newNumber = index + 1;
+  //     // });
+  //     // for (let i = 0; i < linesLeft.length; i++) {
+  //     //   const line1 = [
+  //     //     pointLookup[linesLeft[i][0]],
+  //     //     pointLookup[linesLeft[i][1]],
+  //     //   ];
+
+  //     //   for (let j = i + 1; j < linesLeft.length; j++) {
+  //     //     const line2 = [
+  //     //       pointLookup[linesLeft[j][0]],
+  //     //       pointLookup[linesLeft[j][1]],
+  //     //     ];
+
+  //     //     const intersection = calculateIntersectionPoins(line1, line2);
+
+  //     //     if (intersection) {
+  //     //       newLeftIntersectionPoints.push(intersection);
+  //     //     }
+  //     //   }
+  //     // }
+  //     // const filteredLeftIntersectionPoints = newLeftIntersectionPoints.filter(
+  //     //   (newPoint) =>
+  //     //     !intersectionPoints.some((existingPoint) =>
+  //     //       existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+  //     //     )
+  //     // );
+  //     // Filter newLeftIntersectionPoints to exclude points in leftIntersectionPoints and intersectionPoints
+
+  //     const filteredLeftIntersectionPoints = combinedPoints2.filter((newPoint) => {
+  //       const isInLeftIntersection = intersectionPoints.some(
+  //         (existingPoint) => existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+  //       );
+
+  //       const isInIntersectionPoints = newLeftintersectionPoints.some(
+  //         (existingPoint) => existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+  //       );
+
+  //       return !isInLeftIntersection && !isInIntersectionPoints; // Exclude if found in either array
+  //     });
+  //     filteredLeftIntersectionPoints.forEach((point, index) => {
+  //       point.newNumber = index + 1;
+  //     });
+  //     console.log("filteredLeftIntersectionPoints : ", filteredLeftIntersectionPoints)
+  //     // // Set the filtered points
+  //     setLeftIntersectionPoints(filteredLeftIntersectionPoints);
+  //   }
+  // }, [intersectionsState, points, intersectionPoints]);
+
   useEffect(() => {
     if (intersectionsState.length > 0) {
       const newMarmaIntersectionPoints = [];
@@ -1098,6 +1460,7 @@ const DrawingBoard = ({
       setMarmaIntersectionPoints(newMarmaIntersectionPoints);
     }
   }, [intersectionsState, points]);
+
 
   useEffect(() => {
     // if (hideCircle) {
@@ -1219,6 +1582,17 @@ const DrawingBoard = ({
     });
   };
 
+  const handleLeftMouseEnter = (event, point, text, type, line) => {
+    console.log("text : ", text)
+    var typeData = line == 1 ? leftlinemarmaDevta_1 : line == 2 ? leftlinemarmaDevta_2 : line == 3 ? leftlinemarmaDevta_3 : marmaDevta
+    var visibility = text ? typeData[text].value ? true : false : false
+    setTooltip({
+      visible: visibility,
+      x: point.x,
+      y: point.y,
+      text: text ? typeData[text] ? typeData[text]?.value : "" : ""
+    });
+  };
 
   const handleMouseLeave = () => {
     setTooltip({ ...tooltip, visible: false });
@@ -1285,6 +1659,7 @@ const DrawingBoard = ({
       />
     );
   }
+
 
   const [zoom, setZoom] = useState(1); // Initial zoom level
   const [rotation, setRotation] = useState(0); // Initial rotation angle
@@ -1816,104 +2191,9 @@ const DrawingBoard = ({
     setIsDragging(false);
   };
 
-  const getPointsBetween = (point1Key, point2Key, returnParameterName, color) => {
-    try {
-      const p11 = pointLookup[point1Key];
-      const p22 = pointLookup[point2Key];
-
-      if (!p11 || !p22) {
-        return [];
-      }
-
-      const [start, end] = p11.x <= p22.x ? [p11, p22] : [p22, p11];
-      // Validate inputs
-      if (!start || !end || !points || points.length === 0) {
-        return [];
-      }
-
-
-      // Define bounding box
-      const minX = Math.min(start.x, end.x);
-      const maxX = Math.max(start.x, end.x);
-      const minY = Math.min(start.y, end.y);
-      const maxY = Math.max(start.y, end.y);
-
-      // Check if a point is inside the bounding box
-      const isInsideBoundingBox = (point) => {
-        const inside = point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY;
-        return inside;
-      };
-
-      // Filter polygon points
-      const pointsBetween = points.filter(isInsideBoundingBox);
-      const result = [start, ...pointsBetween, end, centroid]
-      const calculateArea = (points) => {
-        let area = 0;
-        for (let i = 0; i < points.length; i++) {
-          const j = (i + 1) % points.length; // Next vertex
-          area += points[i].x * points[j].y - points[j].x * points[i].y;
-        }
-        return Math.abs(area) / 2;
-      };
-
-      const area = calculateArea(result);
-
-      return { result: result, area: area, label: returnParameterName, color: color };
-      // return [start, ...pointsBetween, end,centroid];
-    } catch (error) {
-      return [];
-    }
-  };
-
-  const data = [
-    // fire element 
-    ["E4", "E6", "E", "green"],
-    ["E6", "E8", "ESE", "green"],
-    ["E8", "S2", "SE", "red"],
-    ["S2", "S4", "SSE", "red"],
-    ["S4", "S6", "S", "red"],
-    ["S6", "S8", "SSW", "yellow"],
-    // air element 
-    ["S8", "W2", "SW", "yellow"],
-    ["W2", "W4", "WSW", "gray"],
-    ["W4", "W6", "W", "gray"],
-    ["W6", "W8", "WNW", "gray"],
-    ["W8", "N2", "NW", "gray"],
-    // water element
-    ["N2", "N4", "NNW", "blue"],
-    ["N4", "N6", "N", "blue"],
-    ["N6", "N8", "NNE", "blue"],
-    ["N8", "E2", "NE", "blue"],
-    ["E2", "E4", "ENE", "green"],
-  ];
-
-  const processData = (polygon, data) => {
-    try {
-      const results = data.map(([point1Key, point2Key, returnParameterName, color]) => {
-        const result = getPointsBetween(point1Key, point2Key, returnParameterName, color);
-        // console.log("result : ",result)
-        return result; // Extract the result array by dynamic key
-      });
-
-      return results; // Returns an array of all result arrays
-    } catch (error) {
-      console.error("Error processing data:", error);
-      return [];
-    }
-  };
-
-
-  const allResults = processData(points, data);
-  const maxValue = Math.max(...allResults.map(item => item.area)); // Find the maximum value for scaling
-
-
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6 h-[100vh] overflow-y-auto">
-        <div id="hiddenDiv" className="hidden-print">
-          <h1>Hidden Content</h1>
-        </div>
-
         <div
           className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
           onDragOver={(e) => e.preventDefault()}
@@ -1978,7 +2258,6 @@ const DrawingBoard = ({
             { id: "hideMarmapoints", label: "Show Marma Points", checked: hideMarmapoints, onChange: setHideMarmapoints },
             { id: "disableDraw", label: "Done Drawing", checked: disableDraw, onChange: setDisableDraw },
             { id: "lockCentroid", label: "Lock Centroid", checked: lockCentroid, onChange: setLockCentroid },
-            { id: "graphDraw", label: "Graph Drawing", checked: graphDraw, onChange: setGraphDraw },
           ].map(({ id, label, checked, onChange }) => (
             <div key={id} className="flex items-center gap-2">
               <input
@@ -2032,8 +2311,10 @@ const DrawingBoard = ({
           </div>
         )}
 
+        {/* Export Button */}
         <button
           onClick={downloadPDF}
+          // onClick={exportToPDF}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition w-full"
         >
           Download SVG
@@ -2379,8 +2660,8 @@ const DrawingBoard = ({
                             {intersectionsState.map((intersection, i) => (
                               <g key={i}>
                                 {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
-
-                                {/* <text
+                                {/*      
+                              <text
                                   x={intersection.point.x}
                                   y={intersection.point.y}
                                   fontSize="16"
@@ -2389,319 +2670,14 @@ const DrawingBoard = ({
                                   textAnchor="middle"
                                   alignmentBaseline="middle"
                                   style={{
-                                    userSelect: 'none', 
-                                    cursor: 'default' 
+                                    userSelect: 'none', // Prevent text selection
+                                    cursor: 'default' // Optional: Make the cursor non-interactive
                                   }}>
                                   {intersection.label}
-                                </text> */}
-
+                                </text>
+                              */}
                               </g>
                             ))}
-
-                            {/* {intersectionsState.map((intersection, i) => {
-                              const dx = intersection.point.x - centroid.x;
-                              const dy = intersection.point.y - centroid.y;
-                              const distance = Math.sqrt(dx ** 2 + dy ** 2);
-                            
-                              // Define a minimum distance
-                              const minDistance = 100;
-                            
-                              // Adjust the position to maintain the minimum distance
-                              let adjustedX = intersection.point.x;
-                              let adjustedY = intersection.point.y;
-                            
-                              if (distance < minDistance) {
-                                // Scale the delta values to extend the distance to the minimum
-                                const scale = minDistance / distance;
-                                adjustedX = centroid.x + dx * scale;
-                                adjustedY = centroid.y + dy * scale;
-                              }
-
-                              if (intersection.label === "S1") {
-                                adjustedX -= 20; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "E8") {
-                                adjustedX += 30; 
-                                adjustedY += 55; 
-                              }
-
-                              if (intersection.label === "E7") {
-                                adjustedX += 30; 
-                                adjustedY += 45; 
-                              }
-
-                              if (intersection.label === "E6") {
-                                adjustedX += 30; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "E5") {
-                                adjustedX += 30; 
-                                adjustedY += 25; 
-                              }
-
-                              if (intersection.label === "E4") {
-                                adjustedX += 30; 
-                                adjustedY += 20;
-                              }
-                              
-                              if (intersection.label === "E3") {
-                                adjustedX += 30; 
-                                adjustedY += 15; 
-                              }
-
-                              if (intersection.label === "E2") {
-                                adjustedX += 30; 
-                                adjustedY += 15; 
-                              }
-
-                              if (intersection.label === "E1") {
-                                adjustedX += 30; 
-                                adjustedY += 15; 
-                              }
-
-                              if (intersection.label === "N8") {
-                                adjustedX += 60; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N7") {
-                                adjustedX += 45; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N6") {
-                                adjustedX += 35; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N5") {
-                                adjustedX += 25; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N4") {
-                                adjustedX += 20; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N3") {
-                                adjustedX += 15; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N2") {
-                                adjustedX += 15; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "N1") {
-                                adjustedX += 15; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "W8") {
-                                adjustedX -= 30; 
-                                adjustedY -= 55; 
-                              }
-
-                              if (intersection.label === "W7") {
-                                adjustedX -= 30; 
-                                adjustedY -= 45; 
-                              }
-
-                              if (intersection.label === "W6") {
-                                adjustedX -= 30; 
-                                adjustedY -= 30; 
-                              }
-
-                              if (intersection.label === "W5") {
-                                adjustedX -= 30; 
-                                adjustedY -= 25; 
-                              }
-
-                              if (intersection.label === "W4") {
-                                adjustedX -= 30; 
-                                adjustedY -= 15; 
-                              }
-
-                              if (intersection.label === "W3") {
-                                adjustedX -= 30; 
-                                adjustedY -= 15; 
-                              }
-
-                              if (intersection.label === "W2") {
-                                adjustedX -= 30; 
-                                adjustedY -= 15; 
-                              }
-
-                              if (intersection.label === "W1") {
-                                adjustedX -= 30; 
-                                adjustedY -= 15; 
-                              }
-
-                              if (intersection.label === "S8") {
-                                adjustedX -= 55; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "S7") {
-                                adjustedX -= 40; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "S6") {
-                                adjustedX -= 30; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "S5") {
-                                adjustedX -= 25; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "S4") {
-                                adjustedX -= 20; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "S3") {
-                                adjustedX -= 15; 
-                                adjustedY += 30; 
-                              }
-
-                              if (intersection.label === "S2") {
-                                adjustedX -= 15; 
-                                adjustedY += 30; 
-                              }
-
-                              return (
-                                <g key={i}>
-                                  {hideCircleIntersaction && (
-                                    <circle
-                                      cx={intersection.point.x}
-                                      cy={intersection.point.y}
-                                      r="3"
-                                      fill="red"
-                                    />
-                                  )}
-
-                                  <text
-                                    x={adjustedX}
-                                    y={adjustedY}
-                                    fontSize="16"
-                                    fontWeight="500"
-                                    fill="black"
-                                    textAnchor="middle"
-                                    alignmentBaseline="middle"
-                                    style={{
-                                      userSelect: "none",
-                                      cursor: "default",
-                                    }}
-                                  >
-                                    {intersection.label}
-                                  </text>
-                                </g>
-                              );
-                            })} */}
-
-                            {/* {intersectionsState.map((intersection, i) => {
-                              const dx = intersection.point.x - centroid.x;
-                              const dy = intersection.point.y - centroid.y;
-                              const distance = Math.sqrt(dx ** 2 + dy ** 2);
-
-                              // Define a minimum distance
-                              const minDistance = 200;
-
-                              // Adjust the position to maintain the minimum distance
-                              let adjustedX = intersection.point.x;
-                              let adjustedY = intersection.point.y;
-
-                              if (distance < minDistance) {
-                                // Scale the delta values to extend the distance to the minimum
-                                const scale = minDistance / distance;
-                                adjustedX = centroid.x + dx * scale;
-                                adjustedY = centroid.y + dy * scale;
-                              }
-
-                              // Define offsets for specific labels
-                              const labelOffsets = {
-                                S1: { x: -20, y: 30 },
-                                E8: { x: 30, y: 55 },
-                                E7: { x: 30, y: 45 },
-                                E6: { x: 30, y: 30 },
-                                E5: { x: 30, y: 25 },
-                                E4: { x: 30, y: 20 },
-                                E3: { x: 30, y: 15 },
-                                E2: { x: 30, y: 15 },
-                                E1: { x: 30, y: 15 },
-                                N8: { x: 60, y: -30 },
-                                N7: { x: 45, y: -30 },
-                                N6: { x: 35, y: -30 },
-                                N5: { x: 25, y: -30 },
-                                N4: { x: 20, y: -30 },
-                                N3: { x: 15, y: -30 },
-                                N2: { x: 15, y: -30 },
-                                N1: { x: 15, y: -30 },
-                                W8: { x: -30, y: -55 },
-                                W7: { x: -30, y: -45 },
-                                W6: { x: -30, y: -30 },
-                                W5: { x: -30, y: -25 },
-                                W4: { x: -30, y: -15 },
-                                W3: { x: -30, y: -15 },
-                                W2: { x: -30, y: -15 },
-                                W1: { x: -30, y: -15 },
-                                S8: { x: -55, y: 30 },
-                                S7: { x: -40, y: 30 },
-                                S6: { x: -30, y: 30 },
-                                S5: { x: -25, y: 30 },
-                                S4: { x: -20, y: 30 },
-                                S3: { x: -15, y: 30 },
-                                S2: { x: -15, y: 30 },
-                              };
-
-                              // Apply specific label offsets if defined
-                              if (labelOffsets[intersection.label]) {
-                                adjustedX += labelOffsets[intersection.label].x;
-                                adjustedY += labelOffsets[intersection.label].y;
-                              }
-
-                              return (
-                                <g key={i}>
-                                  <rect
-                                    x={adjustedX - 5} // Center the square (10x10) at adjustedX, adjustedY
-                                    y={adjustedY - 5}
-                                    width="10"
-                                    height="10"
-                                    fill="blue" // You can change the color as needed
-                                  />
-
-                                  {hideCircleIntersaction && (
-                                    <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
-                                  )}
-
-                                  <text
-                                    x={adjustedX}
-                                    y={adjustedY}
-                                    fontSize="16"
-                                    fontWeight="500"
-                                    fill="black"
-                                    textAnchor="middle"
-                                    alignmentBaseline="middle"
-                                    style={{
-                                      userSelect: "none",
-                                      cursor: "default",
-                                    }}
-                                  >
-                                    {intersection.label}
-                                  </text>
-                                </g>
-                              );
-                            })} */}
-
-
 
 
 
@@ -2831,9 +2807,44 @@ const DrawingBoard = ({
                         />
                       )
                     })}
-
+                    {/*                  
+                  <circle
+                          cx={"458.9167293323738"}
+                          cy={"150.2650693794946"}
+                          r={4}
+                          fill="black"
+                          stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          // onMouseLeave={handleMouseLeave}
+                        />
+                 <circle
+                          cx={"434.88520100613255"}
+                          cy={"174.29699416316885"}
+                          r={4}
+                          fill="black"
+                          stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          // onMouseLeave={handleMouseLeave}
+                        /> */}
                     {hideMarmaLines && (
                       <>
+                        {/* {lines.map((line, index) => {
+                          const [startPoint, endPoint] = line;
+                          return (
+                            <g key={`marma-line-${index}`}>
+                              {drawLines(startPoint, endPoint, "purple", 1)}
+                            </g>
+                          );
+                        })} */}
+                        {/* {linesLeft.map((line, index) => {
+                          const [startPoint, endPoint] = line;
+                          return (
+                            <g key={`marma-line-${index}`}>
+                              {drawLines(startPoint, endPoint, "orange", 1)}
+                            </g>
+                          );
+                        })} */}
+
                         {/* Direction fixed lines */}
                         <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
                         <g key="fixed-line-e1-w1">{drawLines("E1", "W1", "orange", 1)}</g>
@@ -2846,13 +2857,26 @@ const DrawingBoard = ({
 
 
                     {hideMarmapoints && <>
+                      {/* {console.log("marmaDevta[point.newNumber].color : ",point.newNumber,marmaDevta[10].color)} */}
                       {intersectionPoints.map((point, idx) => (
+                        // console.log("point : ",point)
                         <circle
                           key={idx}
                           cx={point.x}
                           cy={point.y}
                           r={4}
                           fill={point.color}
+                          // fill={
+                          //   point.newNumber
+                          //     ? point.lineNo == 1
+                          //       ? linemarmaDevta_1[point.newNumber]?.color || "gray"
+                          //       : point.lineNo == 2
+                          //         ? linemarmaDevta_2[point.newNumber]?.color || "gray"
+                          //         : point.lineNo == 3
+                          //           ? linemarmaDevta_3[point.newNumber]?.color || "gray"
+                          //           : "gray"
+                          //     : "green"
+                          // }
                           stroke="black"
                           onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
                           onMouseLeave={handleMouseLeave}
@@ -2865,6 +2889,10 @@ const DrawingBoard = ({
                           cx={point.x}
                           cy={point.y}
                           r={4}
+                          //   fill="blue"
+                          //   stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point,point.newNumber)}
+                          // onMouseLeave={handleMouseLeave}
                           fill={point.color}
                           stroke="black"
                           onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
@@ -2880,11 +2908,41 @@ const DrawingBoard = ({
                           cy={point.y}
                           r={4}
                           fill={point.color}
+                          // fill={
+                          //   point.newNumber
+                          //     ? point.lineNo == 1
+                          //       ? leftlinemarmaDevta_1[point.newNumber]?.color || "gray"
+                          //       : point.lineNo == 2
+                          //         ? leftlinemarmaDevta_2[point.newNumber]?.color || "gray"
+                          //         : point.lineNo == 3
+                          //           ? leftlinemarmaDevta_3[point.newNumber]?.color || "gray"
+                          //           : "gray"
+                          //     : "green"
+                          // }
+                          // stroke="black"
+                          // onMouseEnter={(e) => handleLeftMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo)}
+
+                          // fill={point.newNumber ? marmaLeftDevta[point.newNumber] ? marmaLeftDevta[point.newNumber].color : "gray" : "green"}
+                          // stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaLeftDevta)}
                           stroke="black"
                           onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
                           onMouseLeave={handleMouseLeave}
                         />
                       ))}
+
+                      {/* {MarmaintersectionPoints.map((point, idx) => (
+                        <circle
+                          key={idx}
+                          cx={point.x}
+                          cy={point.y}
+                          r={4}
+                          fill="red"
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          onMouseLeave={handleMouseLeave}
+                        />
+                      ))} */}
                       {/* uncomment this  till this*/}
                     </>}
                   </g>
@@ -3070,91 +3128,6 @@ const DrawingBoard = ({
                   }
 
                 })}
-                {/* {(
-                  allResults.map((item) => {
-                    console.log("item : ", item)
-                    return (
-                      <polygon
-                        points={item.result.map((p) => `${p.x},${p.y}`).join(" ")}
-                        fill="pink"
-                        stroke="green"
-                      />
-                    )
-                  })
-                )} */}
-                {graphDraw &&
-                  allResults.map((item, index) => {
-                    const width = 200; // Width of the SVG container
-                    const height = 150;
-                    const barWidth = 20; // Width of each bar
-                    const barPadding = 20;
-                    const barHeight = (item.area / maxValue) * (height - 20); // Scale the bar height
-                    const x = index * (barWidth + barPadding) + 20; // Calculate x position
-                    const y = height - barHeight; // Calculate y position
-                    // console.log("item : ",item)
-                    let additionalText = "";
-                    if (item.label === "ESE") additionalText = "Fire";
-                    if (item.label === "W") additionalText = "Air";
-                    if (item.label === "NNE") additionalText = "Water";
-
-                    return (
-                      <g key={index}>
-                        <rect
-                          x={x}
-                          y={y + 450}
-                          width={barWidth}
-                          height={barHeight}
-                          fill={item.color}
-                          onMouseEnter={(e) => handleMouseEnter(e, item.area)}
-                          onMouseLeave={handleMouseLeave}
-                        />
-                        <text x={x + barWidth / 2} y={height - 5 + 480}
-                          textAnchor="middle"
-                          fontSize="14"
-                          fontWeight="500"
-                          fill="purple"
-                          alignmentBaseline="middle"
-                          style={{
-                            userSelect: 'none',
-                            cursor: 'default'
-                          }}
-                        >
-                          {item.label}
-                        </text>
-                        {additionalText && (
-                          <text
-                            x={x + barWidth / 2 + 20}
-                            y={height + 10 + 480}
-                            textAnchor="middle"
-                            fontSize="15"
-                            fontWeight="500"
-                            fill="purple"
-                            alignmentBaseline="middle"
-                            style={{
-                              userSelect: 'none', // Prevent text selection
-                              cursor: 'default', // Optional: Make the cursor non-interactive
-                            }}
-                          >
-                            {additionalText}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  })
-                }
-
-                {tooltip.visible && (
-                  <text
-                    x={tooltip.x}
-                    y={tooltip.y - 10}
-                    fill="black"
-                    fontSize="14"
-                    textAnchor="middle"
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    {tooltip.value}
-                  </text>
-                )}
               </>
             }
 

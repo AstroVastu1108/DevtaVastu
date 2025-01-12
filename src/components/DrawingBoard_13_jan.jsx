@@ -70,6 +70,205 @@ const DrawingBoard = ({
     }
   }, []);
 
+  // const downloadPDF = () => {
+  //   const scale = 5; // Adjust this value as needed for quality
+
+  //   // Set A4 size in points
+  //   const a4Width = 1000; // A4 width in points
+  //   const a4Height = 841.89; // A4 height in points
+
+  //   html2canvas(printRef.current, { scale }).then((canvas) => {
+  //     const imgData = canvas.toDataURL('image/jpeg', 0.8);
+  //     const pdf = new jsPDF('p', 'pt', 'a4');
+
+  //     const imgWidth = a4Width - 200;
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  //     const pageHeight = pdf.internal.pageSize.height;
+  //     let heightLeft = imgHeight;
+
+  //     let position = 0;
+  //     pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     while (heightLeft >= 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     const textX = 20;
+  //     let textY = imgHeight + 40; // Place text below the image
+  //     pdf.setFontSize(12);
+  //     const extraText = [
+  //       // 'Additional Text Example:',
+  //       // '1. This is some extra content added after the image.',
+  //       // '2. You can customize this content dynamically.',
+  //       // '3. Ensure this text is visible in the PDF output.',
+  //     ];
+
+  //     extraText.forEach((line) => {
+  //       if (textY + 20 > a4Height) {
+  //         pdf.addPage(); // Add a new page if space runs out
+  //         textY = 40; // Reset Y position for the new page
+  //       }
+  //       pdf.text(line, textX, textY);
+  //       textY += 20; // Increment Y position for the next line
+  //     });
+
+
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
+  // const downloadPDF = () => {
+  //   const scale = 5; // Adjust this value as needed for quality
+
+  //   // Set A4 size in points for landscape
+  //   const a4Width = 841.89; // A4 width in points (landscape)
+  //   const a4Height = 1000; // A4 height in points (landscape)
+
+  //   html2canvas(printRef.current, { scale }).then((canvas) => {
+  //     const imgData = canvas.toDataURL('image/jpeg', 0.8);
+  //     const pdf = new jsPDF('l', 'pt', 'a4'); // Set orientation to 'landscape'
+
+  //     const imgWidth = a4Width - 200; // Adjust image width
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  //     const pageHeight = pdf.internal.pageSize.height;
+  //     let heightLeft = imgHeight;
+
+  //     let position = 0;
+  //     pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+
+  //     while (heightLeft >= 0) {
+  //       position = heightLeft - imgHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
+
+  //     const textX = 20;
+  //     let textY = imgHeight + 40; // Place text below the image
+  //     pdf.setFontSize(12);
+  //     const extraText = [
+  //       // Add extra text dynamically if needed
+  //     ];
+
+  //     extraText.forEach((line) => {
+  //       if (textY + 20 > a4Height) {
+  //         pdf.addPage(); // Add a new page if space runs out
+  //         textY = 40; // Reset Y position for the new page
+  //       }
+  //       pdf.text(line, textX, textY);
+  //       textY += 20; // Increment Y position for the next line
+  //     });
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
+  // const downloadPDF = () => {
+  //   const scale = 5; // Adjust this value for quality
+
+  //   // A4 size for landscape
+  //   const a4Width = 841.89; // A4 width in points (landscape)
+  //   const a4Height = 595.28; // A4 height in points (landscape)
+
+  //   const leftDivRef = document.getElementById('hiddenDiv'); // Reference to left-side div
+  //   const rightDivRef = printRef.current; // Reference to right-side content
+
+  //   Promise.all([
+  //     html2canvas(leftDivRef), // Capture left div as canvas
+  //     html2canvas(rightDivRef, { scale }), // Capture right div as canvas
+  //   ]).then(([leftCanvas, rightCanvas]) => {
+  //     const pdf = new jsPDF('l', 'pt', 'a4'); // Landscape orientation
+
+  //     // Convert canvases to images
+  //     const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
+  //     const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+
+  //     // Calculate dimensions for images
+  //     // const imgHeight = (a4Height * 0.9); // Use 90% of the page height for images
+  //     // const leftImgWidth = (a4Width / 2) - 20; // Half the page width minus padding
+  //     // const rightImgWidth = (a4Width / 2) - 20;
+
+  //     // // Add left image
+  //     // pdf.addImage(leftImgData, 'JPEG', 20, 20, leftImgWidth, imgHeight);
+
+  //     // // Add right image
+  //     // pdf.addImage(rightImgData, 'JPEG', a4Width / 2, 20, rightImgWidth, imgHeight);
+
+  //     // Calculate dimensions for images
+  //     const imgHeight = a4Height - 40; // Use 90% of the page height for images
+  //     const leftImgWidth = (a4Width * 0.3) - 20; // 40% of page width minus padding
+  //     const rightImgWidth = (a4Width * 0.7) - 20; // 60% of page width minus padding
+
+  //     // Add left image (40% width)
+  //     pdf.addImage(leftImgData, 'JPEG', 20, 20, leftImgWidth, imgHeight);
+
+  //     // Add right image (60% width)
+  //     pdf.addImage(rightImgData, 'JPEG', leftImgWidth + 40, 20, rightImgWidth, imgHeight);
+
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
+  // const downloadPDF = () => {
+  //   const scale = 5; // Adjust this value for quality
+
+  //   // A4 size for landscape
+  //   const a4Width = 841.89; // A4 width in points (landscape)
+  //   const a4Height = 595.28; // A4 height in points (landscape)
+
+  //   const leftDivRef = document.getElementById('hiddenDiv'); // Reference to hidden div
+  //   const rightDivRef = printRef.current; // Reference to visible content
+
+  //   Promise.all([
+  //     html2canvas(leftDivRef, { scale }), // Capture hidden div
+  //     html2canvas(rightDivRef, { scale }), // Capture visible content
+  //   ]).then(([leftCanvas, rightCanvas]) => {
+  //     const pdf = new jsPDF('l', 'pt', 'a4'); // Landscape orientation
+
+  //     // Convert canvases to images
+  //     const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
+  //     const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+
+  //     // Calculate dimensions for left content (40% width)
+  //     const leftOriginalWidth = leftCanvas.width;
+  //     const leftOriginalHeight = leftCanvas.height;
+
+  //     const leftImgWidth = a4Width * 0.3; // 40% of page width
+  //     const leftImgHeight = (leftOriginalHeight / leftOriginalWidth) * leftImgWidth;
+
+  //     // Calculate dimensions for right content (60% width)
+  //     const rightOriginalWidth = rightCanvas.width;
+  //     const rightOriginalHeight = rightCanvas.height;
+
+  //     const rightImgWidth = a4Width * 0.7; // 60% of page width
+  //     const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
+
+  //     const scaledLeftImgHeight = leftImgHeight;
+  //     const scaledRightImgHeight = rightImgHeight;
+
+  //     // Adjust Y positions to center content vertically
+  //     const leftY = (a4Height - scaledLeftImgHeight) / 2;
+  //     const rightY = (a4Height - scaledRightImgHeight) / 2;
+
+  //     // Add left image (40% width)
+  //     pdf.addImage(leftImgData, 'JPEG', 20, leftY, leftImgWidth, scaledLeftImgHeight);
+
+  //     // Add right image (60% width)
+  //     pdf.addImage(rightImgData, 'JPEG', leftImgWidth + 40, rightY, rightImgWidth, scaledRightImgHeight);
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
   const downloadPDF = () => {
     const scale = 5;
 
@@ -120,7 +319,7 @@ const DrawingBoard = ({
     const transformed = point.matrixTransform(CTM.inverse());
     return { x: transformed.x, y: transformed.y };
   };
-
+  
   const [previewUrl, setPreviewUrl] = useState(null);
 
   async function readFileData(uploadedFile) {
@@ -295,6 +494,8 @@ const DrawingBoard = ({
     }
   };
 
+
+
   const handleMouseUp = () => {
     movingCentroidRef.current = false;
     selectedPointRef.current = null;
@@ -336,6 +537,52 @@ const DrawingBoard = ({
     );
   };
 
+  const exportToPDF = async () => {
+    const svgElement = svgRef.current;
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const doc = new jsPDF();
+
+    // Create a high-resolution canvas
+    const canvas = document.createElement('canvas');
+    const scaleFactor = 2; // Reduced scale factor
+    const width = 676 * scaleFactor;
+    const height = 676 * scaleFactor;
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+
+    // Fill the canvas with white
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const img = new Image();
+    img.onload = function () {
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert the canvas to a data URL
+      const imgData = canvas.toDataURL('image/png'); // Use PNG for better compression
+
+      // Add image to PDF with compression
+      doc.addImage(imgData, 'PNG', 0, 0, 100, 100, undefined, 'FAST'); // Adjust size
+
+      // Save the PDF
+      doc.save('download.pdf');
+
+      // Clean up the object URL
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  };
+
+
   const DIRECTION_DATA = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
   const [inputDegree, setInputDegree] = useState(0);
@@ -346,6 +593,7 @@ const DrawingBoard = ({
     if (value > 360) value = 360;
     setInputDegree(value);
   };
+
 
   const totalLines = 32;
   const angleIncrement = 360 / totalLines;
@@ -369,6 +617,7 @@ const DrawingBoard = ({
 
     return { x, y };
   };
+
 
   const edges = [];
 
@@ -410,6 +659,110 @@ const DrawingBoard = ({
       />
     );
   }
+
+  const lines = [
+    // right marma lines N x E
+    ["N8", "W2"],
+    ["E1", "W1"],
+    ["E2", "S8"],
+    // other points
+    ["N8", "E2"],
+    ["N7", "E3"],
+    ["N6", "E4"],
+    ["N5", "E5"],
+    ["N5", "E5"],
+    ["N4", "E6"],
+    ["N4", "E6"],
+    ["N3", "E7"],
+    ["N2", "E8"],
+    ["N1", "S1"],
+    ["W8", "S2"],
+    ["W7", "S3"],
+    ["W6", "S4"],
+    ["W5", "S5"],
+    ["W4", "S6"],
+    ["W3", "S7"],
+    ["W2", "S8"]
+  ];
+  const newLeftLines = [
+    // left marma lines
+    ["W8", "S2"],
+    ["N1", "S1"],
+    ["N2", "E8"],
+    // other points
+
+    ["W8", "N2"],
+    ["W7", "N3"],
+    ["W6", "N4"],
+    ["W5", "N5"],
+    ["W4", "N6"],
+    ["W3", "N7"],
+    ["W2", "N8"],
+    ["W1", "E1"],
+    ["S8", "E2"],
+    ["S7", "E3"],
+    ["S6", "E4"],
+    ["S5", "E5"],
+    ["S4", "E6"],
+    ["S3", "E7"],
+    ["S2", "E8"],
+    // new points
+    // ["W8", "N2"],
+    // ["W7", "N3"],
+    // ["W6", "N4"],
+    // ["W5", "N5"],
+    // ["W4", "N6"],
+    // ["W3", "N7"],
+    // ["W2", "N8"],
+    // ["W1", "E1"],
+    // ["S8", "E2"],
+    // ["S7", "E3"],
+    // ["S6", "E4"],
+    // ["S5", "E5"],
+    // ["S4", "E6"],
+    // ["S3", "E7"],
+    // ["S2", "E8"],
+  ];
+  const linesLeft = [
+    ["N8", "E2"],
+    ["N7", "E3"],
+    ["N6", "E4"],
+    ["N5", "E5"],
+    ["N5", "E5"],
+    ["N4", "E6"],
+    ["N3", "E7"],
+    ["N2", "E8"],
+    ["N1", "S1"],
+    ["W8", "S2"],
+    ["W7", "S3"],
+    ["W6", "S4"],
+    ["W5", "S5"],
+    ["W4", "S6"],
+    ["W3", "S7"],
+    ["W2", "S8"],
+    ["N8", "W2"],
+    ["E1", "W1"],
+    ["E2", "S8"],
+    ["W8", "S2"],
+    ["N1", "S1"],
+    ["N2", "E8"],
+    // new points
+    ["W8", "N2"],
+    ["W7", "N3"],
+    ["W6", "N4"],
+    ["W5", "N5"],
+    ["W4", "N6"],
+    ["W3", "N7"],
+    ["W2", "N8"],
+    ["W1", "E1"],
+    ["S8", "E2"],
+    ["S7", "E3"],
+    ["S6", "E4"],
+    ["S5", "E5"],
+    ["S4", "E6"],
+    ["S3", "E7"],
+    ["S2", "E8"],
+  ];
 
   const Marmalines = [
     ["N8", "W2"],
@@ -470,6 +823,9 @@ const DrawingBoard = ({
   const [newLeftintersectionPoints, setNewLeftIntersectionPoints] = useState([]);
   const [leftIntersectionPoints, setLeftIntersectionPoints] = useState([]);
   const [MarmaintersectionPoints, setMarmaIntersectionPoints] = useState([]);
+
+  const roundTo = (value, decimals) =>
+    Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
 
   const marmaDevta = [
     { value: "", color: "gray", line: 1 },
@@ -625,7 +981,56 @@ const DrawingBoard = ({
     { value: "15R", color: "gray", line: 3 },
     { value: "", color: "gray", line: 3 },
   ]
- 
+  const marmaLeftDevta = [
+    // { value: "", color: "gray" },
+    // { value: "10LN", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "10LT", color: "green" },
+    // { value: "10L", color: "red" },
+    // { value: "10", color: "red" },
+    // { value: "10R", color: "red" },
+    // { value: "10RT", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "green" },
+    // { value: "10RN", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "9L", color: "red" },
+    // { value: "9", color: "red" },
+    // { value: "9R", color: "red" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    // { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "8L", color: "red" },
+    { value: "8", color: "red" },
+    { value: "8R", color: "red" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" },
+    { value: "", color: "gray" }
+  ]
   const leftlinemarmaDevta_1 = [
     { value: "", color: "gray", line: 1 },
     { value: "10LN", color: "gray", line: 1 },
@@ -1072,6 +1477,150 @@ const DrawingBoard = ({
     }
   }, [intersectionsState, points]);
 
+  // useEffect(() => {
+  //   if (intersectionsState.length > 0) {
+  //     const newLeftIntersectionPoints = [];
+
+  //     const specificLeftLines = [
+  //       ["N8", "E2"],
+  //       ["N7", "E3"],
+  //       ["N6", "E4"],
+  //       ["N5", "E5"],
+  //       ["N5", "E5"],
+  //       ["N4", "E6"],
+  //       ["N3", "E7"],
+  //       ["N2", "E8"],
+  //       ["N1", "S1"],
+  //       ["W8", "S2"],
+  //       ["W7", "S3"],
+  //       ["W6", "S4"],
+  //       ["W5", "S5"],
+  //       ["W4", "S6"],
+  //       ["W3", "S7"],
+  //       ["W2", "S8"],
+  //       ["N8", "W2"],
+  //       ["E1", "W1"],
+  //       ["E2", "S8"],
+  //       ["W8", "S2"],
+  //       ["N1", "S1"],
+  //       ["N2", "E8"]
+  //     ];
+
+  //     const targetLeftLines = [
+  //       ["W8", "N2"],
+  //       ["W7", "N3"],
+  //       ["W6", "N4"],
+  //       ["W5", "N5"],
+  //       ["W4", "N6"],
+  //       ["W3", "N7"],
+  //       ["W2", "N8"],
+  //       ["W1", "E1"],
+  //       ["S8", "E2"],
+  //       ["S7", "E3"],
+  //       ["S6", "E4"],
+  //       ["S5", "E5"],
+  //       ["S4", "E6"],
+  //       ["S3", "E7"],
+  //       ["S2", "E8"]
+  //     ];
+
+  //     const newIntersectionPoints3 = [];
+  //     const numberedPoints2 = [];
+  //     let counter1 = 1; // Start the counter at 1
+
+  //     for (const specificLine of specificLeftLines) {
+  //       const start = pointLookup[specificLine[0]];
+  //       const end = pointLookup[specificLine[1]];
+
+  //       // Save the numbered start point
+  //       numberedPoints2.push({ x: start.x, y: start.y, line: specificLine, number: counter1++ });
+
+  //       const line1 = [start, end];
+
+  //       for (const targetLine of targetLeftLines) {
+  //         const line2 = [
+  //           pointLookup[targetLine[0]],
+  //           pointLookup[targetLine[1]]
+  //         ];
+
+  //         const intersection = calculateIntersectionPoins(line1, line2);
+
+  //         if (intersection) {
+  //           // Save the intersection point with the next number
+  //           newIntersectionPoints3.push({
+  //             x: intersection.x,
+  //             y: intersection.y,
+  //             line: specificLine,
+  //             number: counter1++
+  //           });
+  //         }
+  //       }
+
+  //       // Save the numbered end point
+  //       numberedPoints2.push({ x: end.x, y: end.y, line: specificLine, number: counter1++ });
+  //     }
+  //     const uniqueNumberedPoints2 = numberedPoints2.filter(np =>
+  //       !newIntersectionPoints3.some(ni =>
+  //         np.x == ni.x && np.y == ni.y
+  //       )
+  //     );
+
+  //     // Combine the unique points from numberedPoints and all points from newIntersectionPoints1
+  //     const combinedPoints2 = [...uniqueNumberedPoints2, ...newIntersectionPoints3];
+
+  //     // Sort by their number property
+  //     combinedPoints2.sort((a, b) => a.number - b.number);
+
+  //     // combinedPoints2.forEach((point, index) => {
+  //     //   point.newNumber = index + 1;
+  //     // });
+  //     // for (let i = 0; i < linesLeft.length; i++) {
+  //     //   const line1 = [
+  //     //     pointLookup[linesLeft[i][0]],
+  //     //     pointLookup[linesLeft[i][1]],
+  //     //   ];
+
+  //     //   for (let j = i + 1; j < linesLeft.length; j++) {
+  //     //     const line2 = [
+  //     //       pointLookup[linesLeft[j][0]],
+  //     //       pointLookup[linesLeft[j][1]],
+  //     //     ];
+
+  //     //     const intersection = calculateIntersectionPoins(line1, line2);
+
+  //     //     if (intersection) {
+  //     //       newLeftIntersectionPoints.push(intersection);
+  //     //     }
+  //     //   }
+  //     // }
+  //     // const filteredLeftIntersectionPoints = newLeftIntersectionPoints.filter(
+  //     //   (newPoint) =>
+  //     //     !intersectionPoints.some((existingPoint) =>
+  //     //       existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+  //     //     )
+  //     // );
+  //     // Filter newLeftIntersectionPoints to exclude points in leftIntersectionPoints and intersectionPoints
+
+  //     const filteredLeftIntersectionPoints = combinedPoints2.filter((newPoint) => {
+  //       const isInLeftIntersection = intersectionPoints.some(
+  //         (existingPoint) => existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+  //       );
+
+  //       const isInIntersectionPoints = newLeftintersectionPoints.some(
+  //         (existingPoint) => existingPoint.x === newPoint.x && existingPoint.y === newPoint.y
+  //       );
+
+  //       return !isInLeftIntersection && !isInIntersectionPoints; // Exclude if found in either array
+  //     });
+  //     filteredLeftIntersectionPoints.forEach((point, index) => {
+  //       point.newNumber = index + 1;
+  //     });
+  //     console.log("filteredLeftIntersectionPoints : ", filteredLeftIntersectionPoints)
+  //     // // Set the filtered points
+  //     setLeftIntersectionPoints(filteredLeftIntersectionPoints);
+  //   }
+  // }, [intersectionsState, points, intersectionPoints]);
+
   useEffect(() => {
     if (intersectionsState.length > 0) {
       const newMarmaIntersectionPoints = [];
@@ -1098,6 +1647,7 @@ const DrawingBoard = ({
       setMarmaIntersectionPoints(newMarmaIntersectionPoints);
     }
   }, [intersectionsState, points]);
+
 
   useEffect(() => {
     // if (hideCircle) {
@@ -1219,6 +1769,17 @@ const DrawingBoard = ({
     });
   };
 
+  const handleLeftMouseEnter = (event, point, text, type, line) => {
+    console.log("text : ", text)
+    var typeData = line == 1 ? leftlinemarmaDevta_1 : line == 2 ? leftlinemarmaDevta_2 : line == 3 ? leftlinemarmaDevta_3 : marmaDevta
+    var visibility = text ? typeData[text].value ? true : false : false
+    setTooltip({
+      visible: visibility,
+      x: point.x,
+      y: point.y,
+      text: text ? typeData[text] ? typeData[text]?.value : "" : ""
+    });
+  };
 
   const handleMouseLeave = () => {
     setTooltip({ ...tooltip, visible: false });
@@ -1285,6 +1846,7 @@ const DrawingBoard = ({
       />
     );
   }
+
 
   const [zoom, setZoom] = useState(1); // Initial zoom level
   const [rotation, setRotation] = useState(0); // Initial rotation angle
@@ -1816,6 +2378,288 @@ const DrawingBoard = ({
     setIsDragging(false);
   };
 
+  // polygon graph calculation
+
+  // const isPointOnPolygonBorder = (polygon, point, tolerance = 1e-6) => {
+  //   for (let i = 0; i < polygon.length; i++) {
+  //     const p1 = polygon[i];
+  //     const p2 = polygon[(i + 1) % polygon.length];
+
+  //     // Check if the point lies on the line segment
+  //     const crossProduct =
+  //       (point.y - p1.y) * (p2.x - p1.x) - (point.x - p1.x) * (p2.y - p1.y);
+  //     if (Math.abs(crossProduct) > tolerance) continue;
+
+  //     const dotProduct =
+  //       (point.x - p1.x) * (p2.x - p1.x) + (point.y - p1.y) * (p2.y - p1.y);
+  //     if (dotProduct < 0) continue;
+
+  //     const squaredLength =
+  //       (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+  //     if (dotProduct > squaredLength) continue;
+
+  //     return true; // Point lies on the border
+  //   }
+
+  //   return false;
+  // };
+
+  // // Shoelace formula for polygon area
+  // const calculateArea = (points) => {
+  //   const validPoints = points.filter(
+  //     (point) => point && typeof point.x === "number" && typeof point.y === "number"
+  //   );
+
+  //   const n = validPoints.length;
+
+  //   if (n < 3) {
+  //     console.error("Not enough points to form a polygon.");
+  //     return 0;
+  //   }
+
+  //   let area = 0;
+
+  //   for (let i = 0; i < n; i++) {
+  //     const { x: x1, y: y1 } = validPoints[i];
+  //     const { x: x2, y: y2 } = validPoints[(i + 1) % n];
+  //     area += x1 * y2 - y1 * x2;
+  //   }
+
+  //   return Math.abs(area / 2);
+  // };
+
+  // const isBetween = (point, p1, p2, tolerance = 1e-6) => {
+  //   try {   
+  //     const crossProduct =
+  //       (point.y - p1.y) * (p2.x - p1.x) - (point.x - p1.x) * (p2.y - p1.y);
+  //     if (Math.abs(crossProduct) > tolerance) return false; // Not collinear
+
+  //     // Check if the point lies strictly within the bounds of the line segment
+  //     const withinXBounds = Math.min(p1.x, p2.x) < point.x && point.x < Math.max(p1.x, p2.x);
+  //     const withinYBounds = Math.min(p1.y, p2.y) < point.y && point.y < Math.max(p1.y, p2.y);
+
+  //     return withinXBounds && withinYBounds; // Return true only if point is strictly within bounds
+  //   } catch (error) {
+
+  //   }
+  //   // Check if the point is collinear with p1 and p2
+  // };
+
+
+  // const processPointsByLabel = (labels) => {
+  //   // Map labels to their corresponding points
+  //   const providedPoints = labels.map((label) => pointLookup[label]);
+
+  //   // Ensure there are exactly two provided points
+  //   if (providedPoints.length < 2) {
+  //     console.warn("Not enough points provided to create a line segment.");
+  //     return [];
+  //   }
+
+  //   const point1 = providedPoints[0];
+  //   const point2 = providedPoints[1];
+
+  //   // Find all points from the polygon that lie on the border or are strictly between the two provided points
+  //   const validBorderPoints = points.filter((point) =>
+  //     isBetween(point, point1, point2) // Check if point is strictly between the two provided points
+  //   );
+
+  //   return validBorderPoints;
+  // };
+
+
+  // // Main function to get area
+  // const getPolygonAreaFromLabels = (labels) => {
+  //   const validBorderPoints = processPointsByLabel(labels);
+
+  //   // Combine valid border points with centroid to form the new polygon
+  //   const newPolygon = [...validBorderPoints, centroid];
+  //   console.log("newP : ", newPolygon)
+  //   // Calculate the area of the new polygon
+  //   const area = newPolygon.length > 2 ? calculateArea(newPolygon) : 0;
+
+  //   return area;
+  // };
+  // const labels = ["N4", "N6"];
+  // const areadata = getPolygonAreaFromLabels(labels);
+  // console.log("areaData : ", areadata)
+  // // Combine valid border points with centroid to form the new polygon
+  // const newPolygon = [];
+  // // const newPolygon = [...processPointsByLabel(["N4","N6"]), centroid];
+
+  // console.log("lookup : ", pointLookup["N4"])
+  // console.log("lookup : ", pointLookup["N6"])
+  // // console.log("validBorderPoints : ",validBorderPoints)
+  // console.log("centroid : ", centroid)
+  // console.log("points : ", points)
+  // console.log("newPol : ", newPolygon)
+  // // Calculate the area of the new polygon
+  // const area = newPolygon.length > 2 ? calculateArea(newPolygon) : 0;
+
+
+
+  // const isBetween = (point, p1, p2, tolerance = 1e-6) => {
+  //   try {
+
+  //     const crossProduct =
+  //       (point.y - p1.y) * (p2.x - p1.x) - (point.x - p1.x) * (p2.y - p1.y);
+  //     if (Math.abs(crossProduct) > tolerance) return false; // Not collinear
+
+  //     // Check if the point lies within the bounds of the line segment
+  //     const withinXBounds =
+  //       Math.min(p1.x, p2.x) <= point.x && point.x <= Math.max(p1.x, p2.x);
+  //     const withinYBounds =
+  //       Math.min(p1.y, p2.y) <= point.y && point.y <= Math.max(p1.y, p2.y);
+
+  //     return withinXBounds && withinYBounds; // True if both bounds are satisfied
+  //   } catch (error) {
+
+  //   }
+  //   // Check collinearity using the cross product
+  // };
+
+
+
+
+  // Function to get valid border points between two provided points
+  // const getPointsBetween = (providedPoints, polygon) => {
+  //   if (providedPoints.length < 2) {
+  //     console.error("Two points are required to find points between them.");
+  //     return [];
+  //   }
+
+  //   const [p1, p2] = providedPoints;
+  //   console.log("p1 : ",p1)
+  //   console.log("p2 : ",p2)
+  //   const p11 = pointLookup["N4"];
+  //   const p22 = pointLookup["N6"];
+
+  //   console.log("p11 : ",p11)
+  //   console.log("p22 : ",p22)
+  //   console.log("polygon : ",polygon)
+
+  //   // Filter the polygon points that lie between the provided points
+  //   const validPoints = polygon.filter((point) => isBetween(point, p11, p22));
+  //   return validPoints;
+  // };
+
+  // const getPointsBetween = (providedPoints, polygon) => {
+  //   try {
+
+  //     if (providedPoints.length < 2) {
+  //       console.error("Two points are required to find points between them.");
+  //       return [];
+  //     }
+
+  //     const [p1, p2] = providedPoints;
+  //     console.log("p1:", p1);
+  //     console.log("p2:", p2);
+
+  //     const p11 = pointLookup["N4"];
+  //     const p22 = pointLookup["N6"];
+
+  //     console.log("p11:", p11);
+  //     console.log("p22:", p22);
+  //     console.log("polygon:", polygon);
+
+  //     // Adjust p11 and p22 to snap to the nearest polygon points
+  //     const snappedP11 = polygon.reduce(
+  //       (closest, current) =>
+  //         Math.hypot(current.x - p11.x, current.y - p11.y) <
+  //         Math.hypot(closest.x - p11.x, closest.y - p11.y)
+  //           ? current
+  //           : closest,
+  //       polygon[0]
+  //     );
+
+  //     const snappedP22 = polygon.reduce(
+  //       (closest, current) =>
+  //         Math.hypot(current.x - p22.x, current.y - p22.y) <
+  //         Math.hypot(closest.x - p22.x, closest.y - p22.y)
+  //           ? current
+  //           : closest,
+  //       polygon[0]
+  //     );
+
+  //     console.log("Snapped p11:", snappedP11);
+  //     console.log("Snapped p22:", snappedP22);
+
+  //     // Filter the polygon points that lie between the snapped points
+  //     const validPoints = polygon.filter((point) =>
+  //       isBetween(point, snappedP11, snappedP22)
+  //     );
+
+  //     const result = [p11, ...validPoints, p22,centroid];
+  //     return result;
+  //   } catch (error) {
+
+  //   }
+  // };
+  // const getPointsBetween = (polygon) => {
+  //   try {
+  // const p11 = pointLookup["N6"];
+  // const p22 = pointLookup["N8"];
+
+  // if (!p11 || !p22) {
+  //   console.error("Point lookup failed for N6 or N8.");
+  //   return [];
+  // }
+
+  // // Ensure the points are sorted by x-coordinate for simplicity
+  // const [start, end] = p11.x <= p22.x ? [p11, p22] : [p22, p11];
+  //     console.log("start and end : ",start,end)
+  //     // Find snapped points that are closest to p11 and p22
+  //     const snappedP11 = polygon.find(
+  //       (point) =>
+  //         point.x >= start.x &&
+  //         point.x <= end.x &&
+  //         Math.abs(point.y - p11.y) < 1e-6 // Ensure the y-coordinates match within a small tolerance
+  //       );
+
+  //       const snappedP22 = polygon.find(
+  //         (point) =>
+  //         point.x >= start.x &&
+  //         point.x <= end.x &&
+  //         Math.abs(point.y - p22.y) < 1e-6
+  //     );
+  //     console.log("Snapped p11:", snappedP11);
+  //     console.log("Snapped p22:", snappedP22);
+
+  //     if (!snappedP11 || !snappedP22) {
+  //       console.error("Failed to snap points to polygon within range.");
+  //       return [];
+  //     }
+
+
+  //     // Filter the polygon points that lie between the snapped points
+  //     const isBetween = (point, p1, p2) => {
+  //       return (
+  //         point.x >= Math.min(p1.x, p2.x) &&
+  //         point.x <= Math.max(p1.x, p2.x) &&
+  //         point.y >= Math.min(p1.y, p2.y) &&
+  //         point.y <= Math.max(p1.y, p2.y)
+  //       );
+  //     };
+
+  //     const validPoints = polygon.filter((point) =>
+  //       isBetween(point, snappedP11, snappedP22)
+  //     );
+
+  //     console.log("Valid points between:", validPoints);
+
+
+
+  //     // Combine the results: snapped points, valid points, and centroid
+  //     const result = [snappedP11, ...validPoints, snappedP22, centroid];
+  //     console.log("Result (including centroid):", result);
+
+  //     return result;
+  //   } catch (error) {
+  //     console.error("Error in getPointsBetween:", error);
+  //     return [];
+  //   }
+  // };
+
   const getPointsBetween = (point1Key, point2Key, returnParameterName, color) => {
     try {
       const p11 = pointLookup[point1Key];
@@ -1864,6 +2708,97 @@ const DrawingBoard = ({
       return [];
     }
   };
+
+  // const pointsBetween = getPointsBetween(points);
+  // console.log("Points between provided points:", pointsBetween);
+  // console.log("Points :", points);
+
+
+
+
+
+  const getPointsBetween1 = (polygon, point1Key, point2Key, returnParameterName) => {
+    try {
+      const p11 = pointLookup[point1Key];
+      const p22 = pointLookup[point2Key];
+
+      console.log("p11:", p11);
+      console.log("p22:", p22);
+      console.log("polygon:", polygon);
+      if (!p11 || !p22) {
+        console.error(`Point lookup failed for ${point1Key} or ${point2Key}.`);
+        return [];
+      }
+
+      const snappedP11 = polygon.includes(p11)
+        ? p11
+        : polygon.reduce((closest, current) => {
+          return Math.hypot(current.x - p11.x, current.y - p11.y) <
+            Math.hypot(closest.x - p11.x, closest.y - p11.y)
+            ? current
+            : closest;
+        }, polygon[0]);
+
+      const snappedP22 = polygon.includes(p22)
+        ? p22
+        : polygon.reduce((closest, current) => {
+          return Math.hypot(current.x - p22.x, current.y - p22.y) <
+            Math.hypot(closest.x - p22.x, closest.y - p22.y)
+            ? current
+            : closest;
+        }, polygon[0]);
+
+      console.log("Snapped p11:", snappedP11);
+      console.log("Snapped p22:", snappedP22);
+
+
+      // Filter the polygon points that lie between the snapped points
+      const isBetween = (point, p1, p2) => {
+        const crossProduct =
+          (point.y - p1.y) * (p2.x - p1.x) - (point.x - p1.x) * (p2.y - p1.y);
+        if (Math.abs(crossProduct) > 1e-6) return false; // Adjust tolerance
+
+        const dotProduct =
+          (point.x - p1.x) * (p2.x - p1.x) + (point.y - p1.y) * (p2.y - p1.y);
+        if (dotProduct < 0) return false;
+
+        const squaredLength =
+          (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+        return dotProduct <= squaredLength;
+      };
+
+      const validPoints = polygon.filter((point) =>
+        isBetween(point, snappedP11, snappedP22)
+      );
+
+      console.log("Valid points between:", validPoints);
+
+      // Combine the results
+      const result = [snappedP11, ...validPoints, snappedP22, centroid];
+      console.log(`Result (including centroid) as ${returnParameterName}:`, result);
+      const calculateArea = (points) => {
+        let area = 0;
+        for (let i = 0; i < points.length; i++) {
+          const j = (i + 1) % points.length; // Next vertex
+          area += points[i].x * points[j].y - points[j].x * points[i].y;
+        }
+        return Math.abs(area) / 2;
+      };
+
+      const area = calculateArea(result);
+      console.log("Calculated area:", area);
+
+      return { result: result, area: area, label: returnParameterName };
+      // return { [returnParameterName]: result }; // Return the result under the given parameter name
+    } catch (error) {
+      console.error("Error in getPointsBetween:", error);
+      return { [returnParameterName]: [] };
+    }
+  };
+
+
+
+
 
   const data = [
     // fire element 
@@ -2032,8 +2967,10 @@ const DrawingBoard = ({
           </div>
         )}
 
+        {/* Export Button */}
         <button
           onClick={downloadPDF}
+          // onClick={exportToPDF}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition w-full"
         >
           Download SVG
@@ -2832,8 +3769,44 @@ const DrawingBoard = ({
                       )
                     })}
 
+                    {/*                  
+                  <circle
+                          cx={"458.9167293323738"}
+                          cy={"150.2650693794946"}
+                          r={4}
+                          fill="black"
+                          stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          // onMouseLeave={handleMouseLeave}
+                        />
+                 <circle
+                          cx={"434.88520100613255"}
+                          cy={"174.29699416316885"}
+                          r={4}
+                          fill="black"
+                          stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          // onMouseLeave={handleMouseLeave}
+                        /> */}
                     {hideMarmaLines && (
                       <>
+                        {/* {lines.map((line, index) => {
+                          const [startPoint, endPoint] = line;
+                          return (
+                            <g key={`marma-line-${index}`}>
+                              {drawLines(startPoint, endPoint, "purple", 1)}
+                            </g>
+                          );
+                        })} */}
+                        {/* {linesLeft.map((line, index) => {
+                          const [startPoint, endPoint] = line;
+                          return (
+                            <g key={`marma-line-${index}`}>
+                              {drawLines(startPoint, endPoint, "orange", 1)}
+                            </g>
+                          );
+                        })} */}
+
                         {/* Direction fixed lines */}
                         <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
                         <g key="fixed-line-e1-w1">{drawLines("E1", "W1", "orange", 1)}</g>
@@ -2846,13 +3819,26 @@ const DrawingBoard = ({
 
 
                     {hideMarmapoints && <>
+                      {/* {console.log("marmaDevta[point.newNumber].color : ",point.newNumber,marmaDevta[10].color)} */}
                       {intersectionPoints.map((point, idx) => (
+                        // console.log("point : ",point)
                         <circle
                           key={idx}
                           cx={point.x}
                           cy={point.y}
                           r={4}
                           fill={point.color}
+                          // fill={
+                          //   point.newNumber
+                          //     ? point.lineNo == 1
+                          //       ? linemarmaDevta_1[point.newNumber]?.color || "gray"
+                          //       : point.lineNo == 2
+                          //         ? linemarmaDevta_2[point.newNumber]?.color || "gray"
+                          //         : point.lineNo == 3
+                          //           ? linemarmaDevta_3[point.newNumber]?.color || "gray"
+                          //           : "gray"
+                          //     : "green"
+                          // }
                           stroke="black"
                           onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
                           onMouseLeave={handleMouseLeave}
@@ -2865,6 +3851,10 @@ const DrawingBoard = ({
                           cx={point.x}
                           cy={point.y}
                           r={4}
+                          //   fill="blue"
+                          //   stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point,point.newNumber)}
+                          // onMouseLeave={handleMouseLeave}
                           fill={point.color}
                           stroke="black"
                           onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
@@ -2880,11 +3870,41 @@ const DrawingBoard = ({
                           cy={point.y}
                           r={4}
                           fill={point.color}
+                          // fill={
+                          //   point.newNumber
+                          //     ? point.lineNo == 1
+                          //       ? leftlinemarmaDevta_1[point.newNumber]?.color || "gray"
+                          //       : point.lineNo == 2
+                          //         ? leftlinemarmaDevta_2[point.newNumber]?.color || "gray"
+                          //         : point.lineNo == 3
+                          //           ? leftlinemarmaDevta_3[point.newNumber]?.color || "gray"
+                          //           : "gray"
+                          //     : "green"
+                          // }
+                          // stroke="black"
+                          // onMouseEnter={(e) => handleLeftMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo)}
+
+                          // fill={point.newNumber ? marmaLeftDevta[point.newNumber] ? marmaLeftDevta[point.newNumber].color : "gray" : "green"}
+                          // stroke="black"
+                          // onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaLeftDevta)}
                           stroke="black"
                           onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
                           onMouseLeave={handleMouseLeave}
                         />
                       ))}
+
+                      {/* {MarmaintersectionPoints.map((point, idx) => (
+                        <circle
+                          key={idx}
+                          cx={point.x}
+                          cy={point.y}
+                          r={4}
+                          fill="red"
+                          stroke="black"
+                          onMouseEnter={(e) => handleMouseEnter(e, point)}
+                          onMouseLeave={handleMouseLeave}
+                        />
+                      ))} */}
                       {/* uncomment this  till this*/}
                     </>}
                   </g>

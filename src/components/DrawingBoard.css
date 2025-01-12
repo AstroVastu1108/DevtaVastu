@@ -1,0 +1,14 @@
+.hidden-print {
+    position: absolute;
+    left: -9999px; /* Move off-screen */
+    top: 0;
+  }
+  
+  @media print {
+    .hidden-print {
+      position: static; /* Restore to default position during print */
+      left: auto;
+    }
+  }
+  
+  
