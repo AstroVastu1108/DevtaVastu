@@ -70,12 +70,47 @@ const DrawingBoard = ({
     }
   }, []);
 
+  // const downloadPDF = () => {
+  //   const scale = 5;
+
+  //   const a4Width = 841.89;
+  //   const a4Height = 595.28;
+
+  //   const leftDivRef = document.getElementById('hiddenDiv');
+  //   const rightDivRef = printRef.current;
+
+  //   Promise.all([
+  //     html2canvas(leftDivRef, { scale }),
+  //     html2canvas(rightDivRef, { scale }),
+  //   ]).then(([leftCanvas, rightCanvas]) => {
+  //     const pdf = new jsPDF('l', 'pt', 'a4');
+
+  //     const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
+  //     const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+
+  //     const leftOriginalWidth = leftCanvas.width;
+  //     const leftOriginalHeight = leftCanvas.height;
+  //     const leftImgWidth = a4Width * 0.3;
+  //     const leftImgHeight = leftOriginalHeight + 50;
+
+  //     const rightOriginalWidth = rightCanvas.width;
+  //     const rightOriginalHeight = rightCanvas.height;
+  //     const rightImgWidth = a4Width;
+  //     const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
+
+  //     const leftY = (a4Height - leftImgHeight) / 2;
+  //     const rightY = (a4Height - rightImgHeight) / 2;
+
+  //     pdf.addImage(leftImgData, 'JPEG', 0, leftY, leftImgWidth, leftImgHeight);
+
+  //     pdf.addImage(rightImgData, 'JPEG', leftImgWidth, rightY, rightImgWidth, rightImgHeight);
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
   const downloadPDF = () => {
     const scale = 5;
-
-    const a4Width = 841.89;
-    const a4Height = 595.28;
-
     const leftDivRef = document.getElementById('hiddenDiv');
     const rightDivRef = printRef.current;
 
@@ -88,26 +123,61 @@ const DrawingBoard = ({
       const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
       const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
 
-      const leftOriginalWidth = leftCanvas.width;
-      const leftOriginalHeight = leftCanvas.height;
-      const leftImgWidth = a4Width * 0.3;
-      const leftImgHeight = leftOriginalHeight + 50;
+      // Maintain fixed image dimensions
+      const leftImgWidth = 100; // Matches CSS width
+      const leftImgHeight = 100; // Matches CSS height
+      const rightImgWidth = 550; // Matches CSS width
+      const rightImgHeight = 550; // Matches CSS height
 
-      const rightOriginalWidth = rightCanvas.width;
-      const rightOriginalHeight = rightCanvas.height;
-      const rightImgWidth = a4Width;
-      const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
-
-      const leftY = (a4Height - leftImgHeight) / 2;
-      const rightY = (a4Height - rightImgHeight) / 2;
-
-      pdf.addImage(leftImgData, 'JPEG', 0, leftY, leftImgWidth, leftImgHeight);
-
-      pdf.addImage(rightImgData, 'JPEG', leftImgWidth, rightY, rightImgWidth, rightImgHeight);
+      pdf.addImage(leftImgData, 'JPEG', 0, 0, leftImgWidth, leftImgHeight);
+      pdf.addImage(rightImgData, 'JPEG', 300, 0, rightImgWidth, rightImgHeight);
 
       pdf.save('download.pdf');
     });
   };
+
+
+
+  // const downloadPDF = () => {
+  //   const scale = 5;
+
+  //   const a4Width = 595.28; // A4 width in portrait
+  //   const a4Height = 841.89; // A4 height in portrait
+
+  //   const leftDivRef = document.getElementById('hiddenDiv');
+  //   const rightDivRef = printRef.current;
+
+  //   Promise.all([
+  //     html2canvas(leftDivRef, { scale }),
+  //     html2canvas(rightDivRef, { scale }),
+  //   ]).then(([leftCanvas, rightCanvas]) => {
+  //     const pdf = new jsPDF('p', 'pt', 'a4'); // Changed 'l' to 'p'
+
+  //     const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
+  //     const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+
+  //     const leftOriginalWidth = leftCanvas.width;
+  //     const leftOriginalHeight = leftCanvas.height;
+  //     const leftImgWidth = a4Width * 0.3;
+  //     const leftImgHeight = (leftOriginalHeight / leftOriginalWidth) * leftImgWidth;
+
+  //     const rightOriginalWidth = rightCanvas.width;
+  //     const rightOriginalHeight = rightCanvas.height;
+  //     const rightImgWidth = a4Width * 0.7;
+  //     const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
+
+  //     const leftY = (a4Height - leftImgHeight) / 2;
+  //     const rightX = leftImgWidth; // Position the right image beside the left one
+  //     const rightY = (a4Height - rightImgHeight) / 2;
+
+  //     pdf.addImage(leftImgData, 'JPEG', 0, leftY, leftImgWidth, leftImgHeight);
+
+  //     pdf.addImage(rightImgData, 'JPEG', rightX, rightY, rightImgWidth, rightImgHeight);
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
 
   const getMousePosition = (e) => {
     const svg = svgRef.current;
@@ -625,7 +695,7 @@ const DrawingBoard = ({
     { value: "15R", color: "gray", line: 3 },
     { value: "", color: "gray", line: 3 },
   ]
- 
+
   const leftlinemarmaDevta_1 = [
     { value: "", color: "gray", line: 1 },
     { value: "10LN", color: "gray", line: 1 },
@@ -2047,170 +2117,171 @@ const DrawingBoard = ({
       </div>
 
       {/* SVG */}
-      <div className="flex-grow p-4" ref={printRef}>
-        <div className="flex mb-1 ms-2.5">
-          {Array.from({ length: 26 }, (_, i) => (
-            <div key={i} className="text-sm ms-2.5 w-4" style={{
-              userSelect: 'none', // Prevent text selection
-              cursor: 'default' // Optional: Make the cursor non-interactive
-            }}>{i + 1}</div>
-          ))}
-        </div>
-
-        <div className="relative flex">
-          <div className="flex flex-col">
-            {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
-              <div key={i} className="text-sm mb-1.5 w-4" style={{
+      <div ref={printRef}>
+        <div className="flex-grow p-4" >
+          <div className="flex mb-1 ms-2.5">
+            {Array.from({ length: 26 }, (_, i) => (
+              <div key={i} className="text-sm ms-2.5 w-4" style={{
                 userSelect: 'none', // Prevent text selection
                 cursor: 'default' // Optional: Make the cursor non-interactive
-              }}>{letter}</div>
+              }}>{i + 1}</div>
             ))}
           </div>
 
-          <svg
-            ref={svgRef}
-            width={width}
-            height={height}
-            className="cursor-pointer border border-gray-200 bg-white"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onDoubleClick={handleDoubleClick}
-            // style={{ touchAction: 'none', border: "0" }}
-            style={{
-              touchAction: "none",
-              border: "0",
-              shapeRendering: "auto", // Enables antialiasing
-            }}
-          >
+          <div className="relative flex">
+            <div className="flex flex-col">
+              {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
+                <div key={i} className="text-sm mb-1.5 w-4" style={{
+                  userSelect: 'none', // Prevent text selection
+                  cursor: 'default' // Optional: Make the cursor non-interactive
+                }}>{letter}</div>
+              ))}
+            </div>
 
-            {!fileUploaded && <>
-              <GridBackground width={width} height={height} gridSize={gridSize} />
-            </>}
+            <svg
+              ref={svgRef}
+              width={width}
+              height={height}
+              className="cursor-pointer border border-gray-200 bg-white"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onDoubleClick={handleDoubleClick}
+              // style={{ touchAction: 'none', border: "0" }}
+              style={{
+                touchAction: "none",
+                border: "0",
+                shapeRendering: "auto", // Enables antialiasing
+              }}
+            >
 
-            {fileUploaded &&
-              <>
-                <defs>
-                  <clipPath id="svgViewBox">
-                    <rect width={width} height={height} />
-                  </clipPath>
-                </defs>
+              {!fileUploaded && <>
+                <GridBackground width={width} height={height} gridSize={gridSize} />
+              </>}
 
-                <g clipPath="url(#svgViewBox)" vectorEffect="non-scaling-stroke">
-                  <g
-                    className="file-layer"
-                    transform={`translate(${translate.x + (width - width * zoom) / 2}, ${translate.y + (height - height * zoom) / 2}) rotate(${rotation}, ${width / 2}, ${height / 2}) scale(${zoom})`}
-                  >
-                    {previewUrl ? (
-                      <image
-                        href={previewUrl}
-                        style={{ maxWidth: "100%", maxHeight: "400px", imageRendering: "auto", }}
-                        width={width}
-                        height={height}
-                        onMouseDown={handleMouseDown1}
-                        onMouseMove={handleMouseMove1}
-                        onMouseUp={handleMouseUp1}
-                        onMouseLeave={handleMouseUp1}
-                      />
-                    ) : null}
-                  </g>
+              {fileUploaded &&
+                <>
+                  <defs>
+                    <clipPath id="svgViewBox">
+                      <rect width={width} height={height} />
+                    </clipPath>
+                  </defs>
 
-
-                  <GridBackground width={width} height={height} gridSize={gridSize} />
-
-                  <g className="drawing-layer" style={{ pointerEvents: 'all' }}>
-                    {points.length > 1 && (
-                      <polygon
-                        points={points.map(p => `${p.x},${p.y}`).join(' ')}
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="1"
-                      />
-                    )}
-
-                    {/* Draw points */}
-                    {!disableDraw && (
-                      points.map((point, i) => (
-                        <circle
-                          key={i}
-                          cx={point.x}
-                          cy={point.y}
-                          r="5"
-                          fill="red"
-                          stroke="white"
-                          strokeWidth="2"
+                  <g clipPath="url(#svgViewBox)" vectorEffect="non-scaling-stroke">
+                    <g
+                      className="file-layer"
+                      transform={`translate(${translate.x + (width - width * zoom) / 2}, ${translate.y + (height - height * zoom) / 2}) rotate(${rotation}, ${width / 2}, ${height / 2}) scale(${zoom})`}
+                    >
+                      {previewUrl ? (
+                        <image
+                          href={previewUrl}
+                          style={{ maxWidth: "100%", maxHeight: "400px", imageRendering: "auto", }}
+                          width={width}
+                          height={height}
+                          onMouseDown={handleMouseDown1}
+                          onMouseMove={handleMouseMove1}
+                          onMouseUp={handleMouseUp1}
+                          onMouseLeave={handleMouseUp1}
                         />
-                      ))
-                    )}
+                      ) : null}
+                    </g>
 
-                    {centroid && (
-                      <>
-                        <circle
-                          cx={centroid.x}
-                          cy={centroid.y}
-                          r="5"
-                          fill="green"
-                          stroke="white"
-                          strokeWidth="2"
+
+                    <GridBackground width={width} height={height} gridSize={gridSize} />
+
+                    <g className="drawing-layer" style={{ pointerEvents: 'all' }}>
+                      {points.length > 1 && (
+                        <polygon
+                          points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                          fill="none"
+                          stroke="blue"
+                          strokeWidth="1"
                         />
+                      )}
 
-                        {hideCircle &&
-                          Array.from({ length: totalLines }).map((_, index) => {
-                            const rotationIndex = index % totalLines;
-                            const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                            const radian = (angle * Math.PI) / 180;
+                      {/* Draw points */}
+                      {!disableDraw && (
+                        points.map((point, i) => (
+                          <circle
+                            key={i}
+                            cx={point.x}
+                            cy={point.y}
+                            r="5"
+                            fill="red"
+                            stroke="white"
+                            strokeWidth="2"
+                          />
+                        ))
+                      )}
 
-                            const squareSize = 676;
-                            const halfSize = squareSize;
-                            const margin = 26;
+                      {centroid && (
+                        <>
+                          <circle
+                            cx={centroid.x}
+                            cy={centroid.y}
+                            r="5"
+                            fill="green"
+                            stroke="white"
+                            strokeWidth="2"
+                          />
 
-                            let endX, endY;
-                            const slope = Math.tan(radian);
-                            const rightBoundary = centroid.x + halfSize - margin;
-                            const leftBoundary = centroid.x - halfSize + margin;
-                            const topBoundary = centroid.y - halfSize + margin;
-                            const bottomBoundary = centroid.y + halfSize - margin;
+                          {hideCircle &&
+                            Array.from({ length: totalLines }).map((_, index) => {
+                              const rotationIndex = index % totalLines;
+                              const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                              const radian = (angle * Math.PI) / 180;
 
-                            if (Math.abs(slope) <= 1) {
-                              if (Math.cos(radian) > 0) {
-                                endX = rightBoundary;
-                                endY = centroid.y + slope * (rightBoundary - centroid.x);
-                              } else {
-                                endX = leftBoundary;
-                                endY = centroid.y - slope * (centroid.x - leftBoundary);
-                              }
-                            } else {
-                              if (Math.sin(radian) > 0) {
-                                endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
-                                endY = bottomBoundary;
-                              } else {
-                                endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
-                                endY = topBoundary;
-                              }
-                            }
+                              const squareSize = 676;
+                              const halfSize = squareSize;
+                              const margin = 26;
 
-                            const style = lineSets[index % lineSets.length];
+                              let endX, endY;
+                              const slope = Math.tan(radian);
+                              const rightBoundary = centroid.x + halfSize - margin;
+                              const leftBoundary = centroid.x - halfSize + margin;
+                              const topBoundary = centroid.y - halfSize + margin;
+                              const bottomBoundary = centroid.y + halfSize - margin;
 
-                            return (
-                              <g key={index}>
-                                {index % lineSets.length == 0 &&
-                                  <line
-                                    x1={centroid.x}
-                                    y1={centroid.y}
-                                    x2={endX}
-                                    y2={endY}
-                                    stroke={style.stroke}
-                                    strokeWidth={style.strokeWidth}
-                                    strokeDasharray={style.strokeDasharray}
-                                  />
+                              if (Math.abs(slope) <= 1) {
+                                if (Math.cos(radian) > 0) {
+                                  endX = rightBoundary;
+                                  endY = centroid.y + slope * (rightBoundary - centroid.x);
+                                } else {
+                                  endX = leftBoundary;
+                                  endY = centroid.y - slope * (centroid.x - leftBoundary);
                                 }
-                              </g>
-                            );
-                          })
-                        }
+                              } else {
+                                if (Math.sin(radian) > 0) {
+                                  endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+                                  endY = bottomBoundary;
+                                } else {
+                                  endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+                                  endY = topBoundary;
+                                }
+                              }
 
-                        {/* {intersectionsState.map((intersection, i) => (
+                              const style = lineSets[index % lineSets.length];
+
+                              return (
+                                <g key={index}>
+                                  {index % lineSets.length == 0 &&
+                                    <line
+                                      x1={centroid.x}
+                                      y1={centroid.y}
+                                      x2={endX}
+                                      y2={endY}
+                                      stroke={style.stroke}
+                                      strokeWidth={style.strokeWidth}
+                                      strokeDasharray={style.strokeDasharray}
+                                    />
+                                  }
+                                </g>
+                              );
+                            })
+                          }
+
+                          {/* {intersectionsState.map((intersection, i) => (
                       <g key={i}>
                         <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
                         <text x={intersection.point.x + 5} y={intersection.point.y - 5} fontSize="10" fill="black" style={{
@@ -2221,53 +2292,53 @@ const DrawingBoard = ({
                         </text>
                       </g>
                     ))} */}
-                        {plotText()}
+                          {plotText()}
 
-                        {showDevta ? <>
+                          {showDevta ? <>
 
-                          {intersectionsState.map((intersection, i) => {
-                            // console.log("intersectionsState : ",intersectionsState)
-                            // Calculate the delta (difference) for x and y coordinates
-                            const dx = (centroid.x - intersection.point.x) / 3;
-                            const dy = (centroid.y - intersection.point.y) / 3;
-                            // console.log("lookup : ",pointLookup["S1"])
-                            // Calculate the first intermediate point (P1)
-                            const point1 = { x: intersection.point.x + dx, y: intersection.point.y + dy };
-                            intermediatePoints1.push(point1); // Add P1 to the array
-                            intermediatePoints1Test.push({
-                              point: point1,
-                              label: `I${i}`,
-                            });
-                            // Calculate the second intermediate point (P2)
-                            const point2 = { x: intersection.point.x + 2 * dx, y: intersection.point.y + 2 * dy };
-                            intermediatePoints2.push(point2); // Add P2 to the array
-                            intermediatePoints2Test.push({
-                              point: point2,
-                              label: `X${i}`,
-                            });
-                            return (
-                              <g key={i}>
-                                {/* Draw the intersection point */}
-                                {hideCircle && <>
-                                  {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
+                            {intersectionsState.map((intersection, i) => {
+                              // console.log("intersectionsState : ",intersectionsState)
+                              // Calculate the delta (difference) for x and y coordinates
+                              const dx = (centroid.x - intersection.point.x) / 3;
+                              const dy = (centroid.y - intersection.point.y) / 3;
+                              // console.log("lookup : ",pointLookup["S1"])
+                              // Calculate the first intermediate point (P1)
+                              const point1 = { x: intersection.point.x + dx, y: intersection.point.y + dy };
+                              intermediatePoints1.push(point1); // Add P1 to the array
+                              intermediatePoints1Test.push({
+                                point: point1,
+                                label: `I${i}`,
+                              });
+                              // Calculate the second intermediate point (P2)
+                              const point2 = { x: intersection.point.x + 2 * dx, y: intersection.point.y + 2 * dy };
+                              intermediatePoints2.push(point2); // Add P2 to the array
+                              intermediatePoints2Test.push({
+                                point: point2,
+                                label: `X${i}`,
+                              });
+                              return (
+                                <g key={i}>
+                                  {/* Draw the intersection point */}
+                                  {hideCircle && <>
+                                    {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
 
-                                  <text
-                                    x={intersection.point.x + 5}
-                                    y={intersection.point.y - 5}
-                                    fontSize="10"
-                                    fill="black"
-                                    style={{
-                                      userSelect: 'none',
-                                      cursor: 'default',
-                                    }}
-                                  >
-                                    {intersection.label}
-                                  </text>
-                                </>}
+                                    <text
+                                      x={intersection.point.x + 5}
+                                      y={intersection.point.y - 5}
+                                      fontSize="10"
+                                      fill="black"
+                                      style={{
+                                        userSelect: 'none',
+                                        cursor: 'default',
+                                      }}
+                                    >
+                                      {intersection.label}
+                                    </text>
+                                  </>}
 
-                                {/* Draw the first intermediate point (P1) */}
-                                {showDevtaIntersaction && <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />}
-                                {/* <text
+                                  {/* Draw the first intermediate point (P1) */}
+                                  {showDevtaIntersaction && <circle cx={point1.x} cy={point1.y} r="3" fill="blue" />}
+                                  {/* <text
                                   x={point1.x + 5}
                                   y={point1.y - 5}
                                   fontSize="10"
@@ -2277,9 +2348,9 @@ const DrawingBoard = ({
                                   I-{i}
                                 </text> */}
 
-                                {/* Draw the second intermediate point (P2) */}
-                                {showDevtaIntersaction && <circle cx={point2.x} cy={point2.y} r="3" fill="blue" />}
-                                {/* <text
+                                  {/* Draw the second intermediate point (P2) */}
+                                  {showDevtaIntersaction && <circle cx={point2.x} cy={point2.y} r="3" fill="blue" />}
+                                  {/* <text
                                   x={point2.x + 5}
                                   y={point2.y - 5}
                                   fontSize="10"
@@ -2288,99 +2359,99 @@ const DrawingBoard = ({
                                 >
                                   X-{i}
                                 </text> */}
-                              </g>
-                            );
-                          })}
+                                </g>
+                              );
+                            })}
 
-                          {/* uncomment this */}
-                          {intersactMidIntermediatePoints.map((item, i) => {
-                            return (
-                              // console.log("Items : ",item)
-                              <>
-                                {showDevtaIntersaction &&
-                                  <circle
-                                    key={i}
-                                    cx={item.midpoint.x}
-                                    cy={item.midpoint.y}
-                                    r="5"
+                            {/* uncomment this */}
+                            {intersactMidIntermediatePoints.map((item, i) => {
+                              return (
+                                // console.log("Items : ",item)
+                                <>
+                                  {showDevtaIntersaction &&
+                                    <circle
+                                      key={i}
+                                      cx={item.midpoint.x}
+                                      cy={item.midpoint.y}
+                                      r="5"
+                                      fill="black"
+                                      stroke="white"
+                                      strokeWidth="2"
+                                    />}
+                                  <text
+                                    x={item.midpoint.x + 5}
+                                    y={item.midpoint.y - 5}
+                                    fontSize="10"
                                     fill="black"
-                                    stroke="white"
-                                    strokeWidth="2"
-                                  />}
-                                <text
-                                  x={item.midpoint.x + 5}
-                                  y={item.midpoint.y - 5}
-                                  fontSize="10"
-                                  fill="black"
-                                  style={{ userSelect: 'none', cursor: 'default' }}
-                                >
-                                  {item.label}
-                                </text>
-                              </>
-                            )
-                          })}
-                          {/* uncomment this */}
-                          {drawDevtaObject && drawDevtaObject.map((item) => {
-                            return (
-                              drawDevtaLineData(item.point1, item.point2)
-                            )
-                          })}
-                          {/* <polygon 
+                                    style={{ userSelect: 'none', cursor: 'default' }}
+                                  >
+                                    {item.label}
+                                  </text>
+                                </>
+                              )
+                            })}
+                            {/* uncomment this */}
+                            {drawDevtaObject && drawDevtaObject.map((item) => {
+                              return (
+                                drawDevtaLineData(item.point1, item.point2)
+                              )
+                            })}
+                            {/* <polygon 
                                   points="450,230 450,294.44 486.67,279.25 486.67,193.33"
                                   fill="lightblue" 
                                   stroke="blue" 
                                   stroke-width="2" /> */}
-                          {/* <polygon 
+                            {/* <polygon 
                                   points="450,230 550,230 550,330 450,330"
                                   fill="lightblue" 
                                   stroke="blue" 
                                   stroke-width="2" /> */}
 
-                          {/* {drawDevtaLineData()} */}
+                            {/* {drawDevtaLineData()} */}
 
-                          {/* uncomment this */}
-                          {drawLinesForDevta("A1", "A2", "red", 2)}
-                          {drawLinesForDevta("A2", "A3", "red", 2)}
-                          {drawLinesForDevta("A3", "A4", "red", 2)}
-                          {drawLinesForDevta("A4", "A5", "red", 2)}
+                            {/* uncomment this */}
+                            {drawLinesForDevta("A1", "A2", "red", 2)}
+                            {drawLinesForDevta("A2", "A3", "red", 2)}
+                            {drawLinesForDevta("A3", "A4", "red", 2)}
+                            {drawLinesForDevta("A4", "A5", "red", 2)}
 
-                          {drawLinesForDevta("A6", "A7", "red", 2)}
-                          {drawLinesForDevta("A7", "A8", "red", 2)}
-                          {drawLinesForDevta("A8", "A9", "red", 2)}
-                          {drawLinesForDevta("A9", "A10", "red", 2)}
-                          {drawLinesForDevta("A11", "A12", "red", 2)}
-                          {drawLinesForDevta("A12", "A13", "red", 2)}
-                          {drawLinesForDevta("A13", "A14", "red", 2)}
-                          {drawLinesForDevta("A14", "A15", "red", 2)}
-                          {drawLinesForDevta("A16", "A17", "red", 2)}
-                          {drawLinesForDevta("A17", "A18", "red", 2)}
-                          {drawLinesForDevta("A18", "A19", "red", 2)}
-                          {drawLinesForDevta("A19", "A20", "red", 2)}
+                            {drawLinesForDevta("A6", "A7", "red", 2)}
+                            {drawLinesForDevta("A7", "A8", "red", 2)}
+                            {drawLinesForDevta("A8", "A9", "red", 2)}
+                            {drawLinesForDevta("A9", "A10", "red", 2)}
+                            {drawLinesForDevta("A11", "A12", "red", 2)}
+                            {drawLinesForDevta("A12", "A13", "red", 2)}
+                            {drawLinesForDevta("A13", "A14", "red", 2)}
+                            {drawLinesForDevta("A14", "A15", "red", 2)}
+                            {drawLinesForDevta("A16", "A17", "red", 2)}
+                            {drawLinesForDevta("A17", "A18", "red", 2)}
+                            {drawLinesForDevta("A18", "A19", "red", 2)}
+                            {drawLinesForDevta("A19", "A20", "red", 2)}
 
-                          {intermediatePoints1.length > 1 && (
-                            <polyline
-                              points={intermediatePoints1.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints1[0].x},${intermediatePoints1[0].y}`} // Connect back to the start point
-                              fill="none"
-                              stroke="purple"
-                              strokeWidth="2"
-                            />
-                          )}
+                            {intermediatePoints1.length > 1 && (
+                              <polyline
+                                points={intermediatePoints1.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints1[0].x},${intermediatePoints1[0].y}`} // Connect back to the start point
+                                fill="none"
+                                stroke="purple"
+                                strokeWidth="2"
+                              />
+                            )}
 
-                          {intermediatePoints2.length > 1 && (
-                            <polyline
-                              points={intermediatePoints2.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints2[0].x},${intermediatePoints2[0].y}`}
-                              fill="none"
-                              stroke="orange" // Different color for distinction
-                              strokeWidth="2"
-                            />
-                          )}
-                        </> : <>
-                          {hideCircle && <>
-                            {intersectionsState.map((intersection, i) => (
-                              <g key={i}>
-                                {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
+                            {intermediatePoints2.length > 1 && (
+                              <polyline
+                                points={intermediatePoints2.map((p) => `${p.x},${p.y}`).join(" ") + ` ${intermediatePoints2[0].x},${intermediatePoints2[0].y}`}
+                                fill="none"
+                                stroke="orange" // Different color for distinction
+                                strokeWidth="2"
+                              />
+                            )}
+                          </> : <>
+                            {hideCircle && <>
+                              {intersectionsState.map((intersection, i) => (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />}
 
-                                {/* <text
+                                  {/* <text
                                   x={intersection.point.x}
                                   y={intersection.point.y}
                                   fontSize="16"
@@ -2395,10 +2466,10 @@ const DrawingBoard = ({
                                   {intersection.label}
                                 </text> */}
 
-                              </g>
-                            ))}
+                                </g>
+                              ))}
 
-                            {/* {intersectionsState.map((intersection, i) => {
+                              {/* {intersectionsState.map((intersection, i) => {
                               const dx = intersection.point.x - centroid.x;
                               const dy = intersection.point.y - centroid.y;
                               const distance = Math.sqrt(dx ** 2 + dy ** 2);
@@ -2607,7 +2678,7 @@ const DrawingBoard = ({
                               );
                             })} */}
 
-                            {/* {intersectionsState.map((intersection, i) => {
+                              {/* {intersectionsState.map((intersection, i) => {
                               const dx = intersection.point.x - centroid.x;
                               const dy = intersection.point.y - centroid.y;
                               const distance = Math.sqrt(dx ** 2 + dy ** 2);
@@ -2705,8 +2776,8 @@ const DrawingBoard = ({
 
 
 
-                            {/* {intersectionsState && plotText()} */}
-                            {/* {intersectionsState.map((intersection, i) => {
+                              {/* {intersectionsState && plotText()} */}
+                              {/* {intersectionsState.map((intersection, i) => {
                               const { point, label } = intersection;
                               const halfSize = 676/2;
                               const margin = 26;
@@ -2746,7 +2817,7 @@ const DrawingBoard = ({
                                 </g>
                               );
                             })} */}
-                            {/* 
+                              {/* 
                             {intersectionsState.map((intersection, i) => {
                               const { point, label } = intersection;
                               // Base offset for x and y
@@ -2776,7 +2847,7 @@ const DrawingBoard = ({
                             })} */}
 
 
-                            {/* {intersectionsState.map((intersection, i) => {
+                              {/* {intersectionsState.map((intersection, i) => {
                               const { point, label } = intersection;
 
                               // Adjusted positions for the labels
@@ -2817,260 +2888,260 @@ const DrawingBoard = ({
                               );
                             })} */}
 
+                            </>}
                           </>}
-                        </>}
-                      </>
-                    )}
+                        </>
+                      )}
 
-                    {areas.map((area, index) => {
-                      return (
-                        <HoverArea
-                          key={area.id}
-                          coordinates={area.coordinates}
-                          hoverText={(index + 1) + " " + devta[index]}
-                        />
-                      )
-                    })}
+                      {areas.map((area, index) => {
+                        return (
+                          <HoverArea
+                            key={area.id}
+                            coordinates={area.coordinates}
+                            hoverText={(index + 1) + " " + devta[index]}
+                          />
+                        )
+                      })}
 
-                    {hideMarmaLines && (
-                      <>
-                        {/* Direction fixed lines */}
-                        <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
-                        <g key="fixed-line-e1-w1">{drawLines("E1", "W1", "orange", 1)}</g>
-                        <g key="fixed-line-e2-s8">{drawLines("E2", "S8", "orange", 1)}</g>
-                        <g key="fixed-line-w8-s2">{drawLines("W8", "S2", "orange", 1)}</g>
-                        <g key="fixed-line-n1-s1">{drawLines("N1", "S1", "orange", 1)}</g>
-                        <g key="fixed-line-n2-e8">{drawLines("N2", "E8", "orange", 1)}</g>
-                      </>
-                    )}
+                      {hideMarmaLines && (
+                        <>
+                          {/* Direction fixed lines */}
+                          <g key="fixed-line-n8-w2">{drawLines("N8", "W2", "orange", 1)}</g>
+                          <g key="fixed-line-e1-w1">{drawLines("E1", "W1", "orange", 1)}</g>
+                          <g key="fixed-line-e2-s8">{drawLines("E2", "S8", "orange", 1)}</g>
+                          <g key="fixed-line-w8-s2">{drawLines("W8", "S2", "orange", 1)}</g>
+                          <g key="fixed-line-n1-s1">{drawLines("N1", "S1", "orange", 1)}</g>
+                          <g key="fixed-line-n2-e8">{drawLines("N2", "E8", "orange", 1)}</g>
+                        </>
+                      )}
 
 
-                    {hideMarmapoints && <>
-                      {intersectionPoints.map((point, idx) => (
-                        <circle
-                          key={idx}
-                          cx={point.x}
-                          cy={point.y}
-                          r={4}
-                          fill={point.color}
-                          stroke="black"
-                          onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
-                          onMouseLeave={handleMouseLeave}
-                        />
-                      ))}
+                      {hideMarmapoints && <>
+                        {intersectionPoints.map((point, idx) => (
+                          <circle
+                            key={idx}
+                            cx={point.x}
+                            cy={point.y}
+                            r={4}
+                            fill={point.color}
+                            stroke="black"
+                            onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
+                            onMouseLeave={handleMouseLeave}
+                          />
+                        ))}
 
-                      {leftIntersectionPoints.map((point, idx) => (
-                        <circle
-                          key={idx}
-                          cx={point.x}
-                          cy={point.y}
-                          r={4}
-                          fill={point.color}
-                          stroke="black"
-                          onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
-                          onMouseLeave={handleMouseLeave}
-                        />
-                      ))}
+                        {leftIntersectionPoints.map((point, idx) => (
+                          <circle
+                            key={idx}
+                            cx={point.x}
+                            cy={point.y}
+                            r={4}
+                            fill={point.color}
+                            stroke="black"
+                            onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
+                            onMouseLeave={handleMouseLeave}
+                          />
+                        ))}
 
-                      {/* uncomment this */}
-                      {newLeftintersectionPoints.map((point, idx) => (
-                        <circle
-                          key={idx}
-                          cx={point.x}
-                          cy={point.y}
-                          r={4}
-                          fill={point.color}
-                          stroke="black"
-                          onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
-                          onMouseLeave={handleMouseLeave}
-                        />
-                      ))}
-                      {/* uncomment this  till this*/}
-                    </>}
-                  </g>
-                </g>
-                <rect x={0} y={0} width="676" height="27" fill="white" mask="url(#white-mask)" />
-                <rect x={0} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
-                <rect x={0} y={649} width="676" height="27" fill="white" mask="url(#white-mask)" />
-                <rect x={649} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
-                {hideCircle && Array.from({ length: totalLines }).map((_, index) => {
-                  const rotationIndex = index % totalLines;
-                  const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                  const radian = (angle * Math.PI) / 180;
-
-                  const squareSize = 676;
-                  const halfSize = squareSize;
-                  const margin = 26;
-
-                  let endX, endY;
-                  const slope = Math.tan(radian);
-                  const rightBoundary = centroid.x + halfSize - margin;
-                  const leftBoundary = centroid.x - halfSize + margin;
-                  const topBoundary = centroid.y - halfSize + margin;
-                  const bottomBoundary = centroid.y + halfSize - margin;
-
-                  if (Math.abs(slope) <= 1) {
-                    if (Math.cos(radian) > 0) {
-                      endX = rightBoundary;
-                      endY = centroid.y + slope * (rightBoundary - centroid.x);
-                    } else {
-                      endX = leftBoundary;
-                      endY = centroid.y - slope * (centroid.x - leftBoundary);
-                    }
-                  } else {
-                    if (Math.sin(radian) > 0) {
-                      endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
-                      endY = bottomBoundary;
-                    } else {
-                      endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
-                      endY = topBoundary;
-                    }
-                  }
-
-                  const style = lineSets[index % lineSets.length];
-
-                  return (
-                    <g key={index}>
-                      {index % lineSets.length &&
-                        <line
-                          x1={centroid.x}
-                          y1={centroid.y}
-                          x2={endX}
-                          y2={endY}
-                          stroke={style.stroke}
-                          strokeWidth={style.strokeWidth}
-                          strokeDasharray={style.strokeDasharray}
-                        />
-                      }
+                        {/* uncomment this */}
+                        {newLeftintersectionPoints.map((point, idx) => (
+                          <circle
+                            key={idx}
+                            cx={point.x}
+                            cy={point.y}
+                            r={4}
+                            fill={point.color}
+                            stroke="black"
+                            onMouseEnter={(e) => handleMouseEnter(e, point, point.newNumber, marmaDevta, point.lineNo, point.name)}
+                            onMouseLeave={handleMouseLeave}
+                          />
+                        ))}
+                        {/* uncomment this  till this*/}
+                      </>}
                     </g>
-                  );
-                })}
-                {Array.from({ length: totalLines }).map((_, index) => {
-                  const rotationIndex = index % totalLines;
-                  const angle = rotationIndex * angleIncrement + (270 + inputDegree);
-                  const radian = (angle * Math.PI) / 180;
+                  </g>
+                  <rect x={0} y={0} width="676" height="27" fill="white" mask="url(#white-mask)" />
+                  <rect x={0} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
+                  <rect x={0} y={649} width="676" height="27" fill="white" mask="url(#white-mask)" />
+                  <rect x={649} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
+                  {hideCircle && Array.from({ length: totalLines }).map((_, index) => {
+                    const rotationIndex = index % totalLines;
+                    const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                    const radian = (angle * Math.PI) / 180;
 
-                  // Dynamic centroid-based calculation
-                  const svgWidth = width; // SVG width
-                  const svgHeight = height; // SVG height
-                  const minBoundary = 50; // Minimum inner boundary to avoid
+                    const squareSize = 676;
+                    const halfSize = squareSize;
+                    const margin = 26;
 
-                  // Outer boundaries for the text
-                  const outerBounds = {
-                    xMin: 0 + 15,
-                    xMax: svgWidth - 15,
-                    yMin: 0 + 15,
-                    yMax: svgHeight - 15,
-                  };
+                    let endX, endY;
+                    const slope = Math.tan(radian);
+                    const rightBoundary = centroid.x + halfSize - margin;
+                    const leftBoundary = centroid.x - halfSize + margin;
+                    const topBoundary = centroid.y - halfSize + margin;
+                    const bottomBoundary = centroid.y + halfSize - margin;
 
-                  // Inner restricted boundaries (600x600 zone to avoid)
-                  const restrictedBounds = {
-                    xMin: (svgWidth - minBoundary) / 2,
-                    xMax: svgWidth - (svgWidth - minBoundary) / 2,
-                    yMin: (svgHeight - minBoundary) / 2,
-                    yMax: svgHeight - (svgHeight - minBoundary) / 2,
-                  };
+                    if (Math.abs(slope) <= 1) {
+                      if (Math.cos(radian) > 0) {
+                        endX = rightBoundary;
+                        endY = centroid.y + slope * (rightBoundary - centroid.x);
+                      } else {
+                        endX = leftBoundary;
+                        endY = centroid.y - slope * (centroid.x - leftBoundary);
+                      }
+                    } else {
+                      if (Math.sin(radian) > 0) {
+                        endX = centroid.x + (1 / slope) * (bottomBoundary - centroid.y);
+                        endY = bottomBoundary;
+                      } else {
+                        endX = centroid.x - (1 / slope) * (centroid.y - topBoundary);
+                        endY = topBoundary;
+                      }
+                    }
 
-                  const slope = Math.tan(radian);
-                  const direction = index % 2 === 0 ? DIRECTION_DATA[index / 2] : null;
+                    const style = lineSets[index % lineSets.length];
 
-                  let endX, endY;
-                  let labelX, labelY;
-                  const labelOffset = 1.04; // Label position offset
-
-                  if (Math.abs(slope) <= 1) {
-                    // Horizontal placement
-                    endX = Math.cos(radian) > 0 ? outerBounds.xMax : outerBounds.xMin;
-                    endY = centroid.y + slope * (endX - centroid.x);
-
-                    // Adjust label position dynamically
-                    labelX = Math.min(
-                      Math.max(outerBounds.xMin, centroid.x + (endX - centroid.x) * labelOffset),
-                      outerBounds.xMax
-                    );
-                    labelY = Math.min(
-                      Math.max(outerBounds.yMin, centroid.y + (endY - centroid.y) * labelOffset),
-                      outerBounds.yMax
-                    );
-                  } else {
-                    // Vertical placement
-                    endY = Math.sin(radian) > 0 ? outerBounds.yMax : outerBounds.yMin;
-                    endX = centroid.x + (1 / slope) * (endY - centroid.y);
-
-                    // Adjust label position dynamically
-                    labelX = Math.min(
-                      Math.max(outerBounds.xMin, centroid.x + (endX - centroid.x) * labelOffset),
-                      outerBounds.xMax
-                    );
-                    labelY = Math.min(
-                      Math.max(outerBounds.yMin, centroid.y + (endY - centroid.y) * labelOffset),
-                      outerBounds.yMax
-                    );
-                  }
-
-                  // Avoid restricted (600x600) zone
-                  if (
-                    labelX > restrictedBounds.xMin &&
-                    labelX < restrictedBounds.xMax &&
-                    labelY > restrictedBounds.yMin &&
-                    labelY < restrictedBounds.yMax
-                  ) {
-                    // Adjust label position slightly to move out of the restricted area
-                    const adjustFactor = 10; // Push outside the restricted bounds
-                    labelX = labelX < restrictedBounds.xMin ? restrictedBounds.xMin - adjustFactor : labelX;
-                    labelX = labelX > restrictedBounds.xMax ? restrictedBounds.xMax + adjustFactor : labelX;
-                    labelY = labelY < restrictedBounds.yMin ? restrictedBounds.yMin - adjustFactor : labelY;
-                    labelY = labelY > restrictedBounds.yMax ? restrictedBounds.yMax + adjustFactor : labelY;
-                  }
-                  if (Math.abs(slope) <= 1) {
                     return (
                       <g key={index}>
-                        {direction && (
-                          <text
-                            x={labelX}
-                            y={labelY}
-                            fontSize="18"
-                            fontWeight="500"
-                            fill="purple"
-                            transform={Math.cos(radian) > 0 ? `rotate(90, ${labelX}, ${labelY})` : `rotate(-90, ${labelX}, ${labelY})`}
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                            style={{
-                              userSelect: 'none', // Prevent text selection
-                              cursor: 'default', // Optional: Make the cursor non-interactive
-                            }}
-                          >
-                            {direction}
-                          </text>
-                        )}
+                        {index % lineSets.length &&
+                          <line
+                            x1={centroid.x}
+                            y1={centroid.y}
+                            x2={endX}
+                            y2={endY}
+                            stroke={style.stroke}
+                            strokeWidth={style.strokeWidth}
+                            strokeDasharray={style.strokeDasharray}
+                          />
+                        }
                       </g>
                     );
-                  } else {
-                    return (
-                      <g key={index}>
-                        {direction && (
-                          <text
-                            x={labelX}
-                            y={labelY}
-                            fontSize="18"
-                            fontWeight="500"
-                            fill="purple"
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                            style={{
-                              userSelect: 'none', // Prevent text selection
-                              cursor: 'default', // Optional: Make the cursor non-interactive
-                            }}
-                          >
-                            {direction}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  }
+                  })}
+                  {Array.from({ length: totalLines }).map((_, index) => {
+                    const rotationIndex = index % totalLines;
+                    const angle = rotationIndex * angleIncrement + (270 + inputDegree);
+                    const radian = (angle * Math.PI) / 180;
 
-                })}
-                {/* {(
+                    // Dynamic centroid-based calculation
+                    const svgWidth = width; // SVG width
+                    const svgHeight = height; // SVG height
+                    const minBoundary = 50; // Minimum inner boundary to avoid
+
+                    // Outer boundaries for the text
+                    const outerBounds = {
+                      xMin: 0 + 15,
+                      xMax: svgWidth - 15,
+                      yMin: 0 + 15,
+                      yMax: svgHeight - 15,
+                    };
+
+                    // Inner restricted boundaries (600x600 zone to avoid)
+                    const restrictedBounds = {
+                      xMin: (svgWidth - minBoundary) / 2,
+                      xMax: svgWidth - (svgWidth - minBoundary) / 2,
+                      yMin: (svgHeight - minBoundary) / 2,
+                      yMax: svgHeight - (svgHeight - minBoundary) / 2,
+                    };
+
+                    const slope = Math.tan(radian);
+                    const direction = index % 2 === 0 ? DIRECTION_DATA[index / 2] : null;
+
+                    let endX, endY;
+                    let labelX, labelY;
+                    const labelOffset = 1.04; // Label position offset
+
+                    if (Math.abs(slope) <= 1) {
+                      // Horizontal placement
+                      endX = Math.cos(radian) > 0 ? outerBounds.xMax : outerBounds.xMin;
+                      endY = centroid.y + slope * (endX - centroid.x);
+
+                      // Adjust label position dynamically
+                      labelX = Math.min(
+                        Math.max(outerBounds.xMin, centroid.x + (endX - centroid.x) * labelOffset),
+                        outerBounds.xMax
+                      );
+                      labelY = Math.min(
+                        Math.max(outerBounds.yMin, centroid.y + (endY - centroid.y) * labelOffset),
+                        outerBounds.yMax
+                      );
+                    } else {
+                      // Vertical placement
+                      endY = Math.sin(radian) > 0 ? outerBounds.yMax : outerBounds.yMin;
+                      endX = centroid.x + (1 / slope) * (endY - centroid.y);
+
+                      // Adjust label position dynamically
+                      labelX = Math.min(
+                        Math.max(outerBounds.xMin, centroid.x + (endX - centroid.x) * labelOffset),
+                        outerBounds.xMax
+                      );
+                      labelY = Math.min(
+                        Math.max(outerBounds.yMin, centroid.y + (endY - centroid.y) * labelOffset),
+                        outerBounds.yMax
+                      );
+                    }
+
+                    // Avoid restricted (600x600) zone
+                    if (
+                      labelX > restrictedBounds.xMin &&
+                      labelX < restrictedBounds.xMax &&
+                      labelY > restrictedBounds.yMin &&
+                      labelY < restrictedBounds.yMax
+                    ) {
+                      // Adjust label position slightly to move out of the restricted area
+                      const adjustFactor = 10; // Push outside the restricted bounds
+                      labelX = labelX < restrictedBounds.xMin ? restrictedBounds.xMin - adjustFactor : labelX;
+                      labelX = labelX > restrictedBounds.xMax ? restrictedBounds.xMax + adjustFactor : labelX;
+                      labelY = labelY < restrictedBounds.yMin ? restrictedBounds.yMin - adjustFactor : labelY;
+                      labelY = labelY > restrictedBounds.yMax ? restrictedBounds.yMax + adjustFactor : labelY;
+                    }
+                    if (Math.abs(slope) <= 1) {
+                      return (
+                        <g key={index}>
+                          {direction && (
+                            <text
+                              x={labelX}
+                              y={labelY}
+                              fontSize="18"
+                              fontWeight="500"
+                              fill="purple"
+                              transform={Math.cos(radian) > 0 ? `rotate(90, ${labelX}, ${labelY})` : `rotate(-90, ${labelX}, ${labelY})`}
+                              textAnchor="middle"
+                              alignmentBaseline="middle"
+                              style={{
+                                userSelect: 'none', // Prevent text selection
+                                cursor: 'default', // Optional: Make the cursor non-interactive
+                              }}
+                            >
+                              {direction}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    } else {
+                      return (
+                        <g key={index}>
+                          {direction && (
+                            <text
+                              x={labelX}
+                              y={labelY}
+                              fontSize="18"
+                              fontWeight="500"
+                              fill="purple"
+                              textAnchor="middle"
+                              alignmentBaseline="middle"
+                              style={{
+                                userSelect: 'none', // Prevent text selection
+                                cursor: 'default', // Optional: Make the cursor non-interactive
+                              }}
+                            >
+                              {direction}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    }
+
+                  })}
+                  {/* {(
                   allResults.map((item) => {
                     console.log("item : ", item)
                     return (
@@ -3082,122 +3153,123 @@ const DrawingBoard = ({
                     )
                   })
                 )} */}
-                {graphDraw &&
-                  allResults.map((item, index) => {
-                    const width = 200; // Width of the SVG container
-                    const height = 150;
-                    const barWidth = 20; // Width of each bar
-                    const barPadding = 20;
-                    const barHeight = (item.area / maxValue) * (height - 20); // Scale the bar height
-                    const x = index * (barWidth + barPadding) + 20; // Calculate x position
-                    const y = height - barHeight; // Calculate y position
-                    // console.log("item : ",item)
-                    let additionalText = "";
-                    if (item.label === "ESE") additionalText = "Fire";
-                    if (item.label === "W") additionalText = "Air";
-                    if (item.label === "NNE") additionalText = "Water";
+                  {graphDraw &&
+                    allResults.map((item, index) => {
+                      const width = 200; // Width of the SVG container
+                      const height = 150;
+                      const barWidth = 20; // Width of each bar
+                      const barPadding = 20;
+                      const barHeight = (item.area / maxValue) * (height - 20); // Scale the bar height
+                      const x = index * (barWidth + barPadding) + 20; // Calculate x position
+                      const y = height - barHeight; // Calculate y position
+                      // console.log("item : ",item)
+                      let additionalText = "";
+                      if (item.label === "ESE") additionalText = "Fire";
+                      if (item.label === "W") additionalText = "Air";
+                      if (item.label === "NNE") additionalText = "Water";
 
-                    return (
-                      <g key={index}>
-                        <rect
-                          x={x}
-                          y={y + 450}
-                          width={barWidth}
-                          height={barHeight}
-                          fill={item.color}
-                          onMouseEnter={(e) => handleMouseEnter(e, item.area)}
-                          onMouseLeave={handleMouseLeave}
-                        />
-                        <text x={x + barWidth / 2} y={height - 5 + 480}
-                          textAnchor="middle"
-                          fontSize="14"
-                          fontWeight="500"
-                          fill="purple"
-                          alignmentBaseline="middle"
-                          style={{
-                            userSelect: 'none',
-                            cursor: 'default'
-                          }}
-                        >
-                          {item.label}
-                        </text>
-                        {additionalText && (
-                          <text
-                            x={x + barWidth / 2 + 20}
-                            y={height + 10 + 480}
+                      return (
+                        <g key={index}>
+                          <rect
+                            x={x}
+                            y={y + 450}
+                            width={barWidth}
+                            height={barHeight}
+                            fill={item.color}
+                            onMouseEnter={(e) => handleMouseEnter(e, item.area)}
+                            onMouseLeave={handleMouseLeave}
+                          />
+                          <text x={x + barWidth / 2} y={height - 5 + 480}
                             textAnchor="middle"
-                            fontSize="15"
+                            fontSize="14"
                             fontWeight="500"
                             fill="purple"
                             alignmentBaseline="middle"
                             style={{
-                              userSelect: 'none', // Prevent text selection
-                              cursor: 'default', // Optional: Make the cursor non-interactive
+                              userSelect: 'none',
+                              cursor: 'default'
                             }}
                           >
-                            {additionalText}
+                            {item.label}
                           </text>
-                        )}
-                      </g>
-                    );
-                  })
-                }
+                          {additionalText && (
+                            <text
+                              x={x + barWidth / 2 + 20}
+                              y={height + 10 + 480}
+                              textAnchor="middle"
+                              fontSize="15"
+                              fontWeight="500"
+                              fill="purple"
+                              alignmentBaseline="middle"
+                              style={{
+                                userSelect: 'none', // Prevent text selection
+                                cursor: 'default', // Optional: Make the cursor non-interactive
+                              }}
+                            >
+                              {additionalText}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    })
+                  }
 
-                {tooltip.visible && (
-                  <text
-                    x={tooltip.x}
-                    y={tooltip.y - 10}
-                    fill="black"
-                    fontSize="14"
-                    textAnchor="middle"
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    {tooltip.value}
-                  </text>
-                )}
-              </>
-            }
+                  {tooltip.visible && (
+                    <text
+                      x={tooltip.x}
+                      y={tooltip.y - 10}
+                      fill="black"
+                      fontSize="14"
+                      textAnchor="middle"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      {tooltip.value}
+                    </text>
+                  )}
+                </>
+              }
 
-          </svg>
+            </svg>
 
-          {tooltip.visible && (
-            <div
-              style={{
-                position: 'absolute',
-                left: tooltip.x + 20,
-                top: tooltip.y - 30,
-                backgroundColor: 'white',
-                border: '1px solid black',
-                padding: '5px',
-                borderRadius: '5px',
-                pointerEvents: 'none',
-                fontSize: '12px',
-              }}
-            >
-              {/* x: {tooltip.x}, y: {tooltip.y}, Text :  */}
-              {tooltip.text}
-              {/* { console.log("tooltip : ",tool)}
+            {tooltip.visible && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: tooltip.x + 20,
+                  top: tooltip.y - 30,
+                  backgroundColor: 'white',
+                  border: '1px solid black',
+                  padding: '5px',
+                  borderRadius: '5px',
+                  pointerEvents: 'none',
+                  fontSize: '12px',
+                }}
+              >
+                {/* x: {tooltip.x}, y: {tooltip.y}, Text :  */}
+                {tooltip.text}
+                {/* { console.log("tooltip : ",tool)}
               {tooltip.text ? marmaDevta[tooltip.text] ? marmaDevta[tooltip.text].value : "":""} */}
-            </div>
-          )}
+              </div>
+            )}
 
-          <div className="flex flex-col ms-2">
-            {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
-              <div key={i} className="text-sm mb-1.5 w-4" style={{
+            <div className="flex flex-col ms-2">
+              {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, i) => (
+                <div key={i} className="text-sm mb-1.5 w-4" style={{
+                  userSelect: 'none', // Prevent text selection
+                  cursor: 'default' // Optional: Make the cursor non-interactive
+                }}>{letter}</div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex mb-1 ms-2.5">
+            {Array.from({ length: 26 }, (_, i) => (
+              <div key={i} className="text-sm ms-2.5 w-4" style={{
                 userSelect: 'none', // Prevent text selection
                 cursor: 'default' // Optional: Make the cursor non-interactive
-              }}>{letter}</div>
+              }}>{i + 1}</div>
             ))}
           </div>
-        </div>
-
-        <div className="flex mb-1 ms-2.5">
-          {Array.from({ length: 26 }, (_, i) => (
-            <div key={i} className="text-sm ms-2.5 w-4" style={{
-              userSelect: 'none', // Prevent text selection
-              cursor: 'default' // Optional: Make the cursor non-interactive
-            }}>{i + 1}</div>
-          ))}
         </div>
       </div>
     </div>
