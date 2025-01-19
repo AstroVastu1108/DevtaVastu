@@ -17,12 +17,12 @@ export const DEFAULT_LINE_SETS = [
     stroke: '#000',
     strokeWidth: 0.5,
     strokeDasharray: '5,5',
-    name: 'Set 1'
+    name: 'Line 1'
   },
   {
     stroke: '#0066cc',
     strokeWidth: 0.5,
     strokeDasharray: '',
-    name: 'Set 2'
+    name: 'Line 2'
   }
 ];

@@ -30,18 +30,9 @@ const DrawingBoard = ({
   drawingMode = 'drawing'
 }) => {
   const [lineSets, setLineSets] = useState(DEFAULT_LINE_SETS);
-  const [selectedLineIndex, setSelectedLineIndex] = useState(0); // Default to the first line
-
-  const handleLineSetUpdate = (index, updates) => {
-    setLineSets((prevLineSets) =>
-      prevLineSets.map((lineSet, i) =>
-        i === index ? { ...lineSet, ...updates } : lineSet
-      )
-    );
-  };
   const [points, setPoints] = useState(DEFAULT_POINTS);
   const [centroid, setCentroid] = useState(null);
-  const [snapToCentroid, setSnapToCentroid] = useState(false);
+  const [snapToCentroid, setSnapToCentroid] = useState(true);
   // Show Marma lines
   const [hideMarmaLines, setHideMarmaLines] = useState(false);
   // Show Marma points
@@ -50,12 +41,7 @@ const DrawingBoard = ({
   const [fileUploaded, setFileUploaded] = useState(false);
   // circle visible state
   const [hideCircle, setHideCircle] = useState(false);
-  const [hide16Circle, setHide16Circle] = useState(false);
-  const [hide32Circle, setHide32Circle] = useState(false);
-  const [hide8Circle, setHide8Circle] = useState(false);
-  const [hide4Circle, setHide4Circle] = useState(false);
   const [imageDragDone, setImageDragDone] = useState(false);
-  const [lockChakra, setLockChakra] = useState(false);
   // circle visible state
   const [hideCircleIntersaction, setHideCircleIntersaction] = useState(false);
   // Show Devta
@@ -84,6 +70,45 @@ const DrawingBoard = ({
     }
   }, []);
 
+  // const downloadPDF = () => {
+  //   const scale = 5;
+
+  //   const a4Width = 841.89;
+  //   const a4Height = 595.28;
+
+  //   const leftDivRef = document.getElementById('hiddenDiv');
+  //   const rightDivRef = printRef.current;
+
+  //   Promise.all([
+  //     html2canvas(leftDivRef, { scale }),
+  //     html2canvas(rightDivRef, { scale }),
+  //   ]).then(([leftCanvas, rightCanvas]) => {
+  //     const pdf = new jsPDF('l', 'pt', 'a4');
+
+  //     const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
+  //     const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+
+  //     const leftOriginalWidth = leftCanvas.width;
+  //     const leftOriginalHeight = leftCanvas.height;
+  //     const leftImgWidth = a4Width * 0.3;
+  //     const leftImgHeight = leftOriginalHeight + 50;
+
+  //     const rightOriginalWidth = rightCanvas.width;
+  //     const rightOriginalHeight = rightCanvas.height;
+  //     const rightImgWidth = a4Width;
+  //     const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
+
+  //     const leftY = (a4Height - leftImgHeight) / 2;
+  //     const rightY = (a4Height - rightImgHeight) / 2;
+
+  //     pdf.addImage(leftImgData, 'JPEG', 0, leftY, leftImgWidth, leftImgHeight);
+
+  //     pdf.addImage(rightImgData, 'JPEG', leftImgWidth, rightY, rightImgWidth, rightImgHeight);
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
+
   const downloadPDF = () => {
     const scale = 5;
     const leftDivRef = document.getElementById('hiddenDiv');
@@ -110,6 +135,48 @@ const DrawingBoard = ({
       pdf.save('download.pdf');
     });
   };
+
+
+
+  // const downloadPDF = () => {
+  //   const scale = 5;
+
+  //   const a4Width = 595.28; // A4 width in portrait
+  //   const a4Height = 841.89; // A4 height in portrait
+
+  //   const leftDivRef = document.getElementById('hiddenDiv');
+  //   const rightDivRef = printRef.current;
+
+  //   Promise.all([
+  //     html2canvas(leftDivRef, { scale }),
+  //     html2canvas(rightDivRef, { scale }),
+  //   ]).then(([leftCanvas, rightCanvas]) => {
+  //     const pdf = new jsPDF('p', 'pt', 'a4'); // Changed 'l' to 'p'
+
+  //     const leftImgData = leftCanvas.toDataURL('image/jpeg', 0.8);
+  //     const rightImgData = rightCanvas.toDataURL('image/jpeg', 0.8);
+
+  //     const leftOriginalWidth = leftCanvas.width;
+  //     const leftOriginalHeight = leftCanvas.height;
+  //     const leftImgWidth = a4Width * 0.3;
+  //     const leftImgHeight = (leftOriginalHeight / leftOriginalWidth) * leftImgWidth;
+
+  //     const rightOriginalWidth = rightCanvas.width;
+  //     const rightOriginalHeight = rightCanvas.height;
+  //     const rightImgWidth = a4Width * 0.7;
+  //     const rightImgHeight = (rightOriginalHeight / rightOriginalWidth) * rightImgWidth;
+
+  //     const leftY = (a4Height - leftImgHeight) / 2;
+  //     const rightX = leftImgWidth; // Position the right image beside the left one
+  //     const rightY = (a4Height - rightImgHeight) / 2;
+
+  //     pdf.addImage(leftImgData, 'JPEG', 0, leftY, leftImgWidth, leftImgHeight);
+
+  //     pdf.addImage(rightImgData, 'JPEG', rightX, rightY, rightImgWidth, rightImgHeight);
+
+  //     pdf.save('download.pdf');
+  //   });
+  // };
 
 
   const getMousePosition = (e) => {
@@ -331,13 +398,13 @@ const DrawingBoard = ({
     }
   };
 
-  // const handleLineSetUpdate = (setIndex, updates) => {
-  //   setLineSets(prevSets =>
-  //     prevSets.map((set, i) =>
-  //       i === setIndex ? { ...set, ...updates } : set
-  //     )
-  //   );
-  // };
+  const handleLineSetUpdate = (setIndex, updates) => {
+    setLineSets(prevSets =>
+      prevSets.map((set, i) =>
+        i === setIndex ? { ...set, ...updates } : set
+      )
+    );
+  };
 
   const DIRECTION_DATA = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
@@ -1909,33 +1976,6 @@ const DrawingBoard = ({
   const allResults = processData(points, data);
   const maxValue = Math.max(...allResults.map(item => item.area)); // Find the maximum value for scaling
 
-  const handleShowChakra = (label, text) => {
-    if (text) {
-      // If the checkbox is being turned on, update all states
-      setHideCircle(true);
-      setHide32Circle(label === 32);
-      setHide16Circle(label === 16);
-      setHide8Circle(label === 8);
-      setHide4Circle(label === 4);
-    } else {
-      // If the checkbox is being turned off, reset only the selected one
-      setHideCircle(false);
-      if (label === 32) setHide32Circle(false);
-      if (label === 16) setHide16Circle(false);
-      if (label === 8) setHide8Circle(false);
-      if (label === 4) setHide4Circle(false);
-    }
-  };
-
-
-
-  const chakras = [
-    { id: "hide32Circle", label: "Show Chakra - 32 Entrance", checked: hide32Circle, onChange: setHide32Circle, textLabel: 32 },
-    { id: "hide16Circle", label: "Show Chakra - 16 Entrance", checked: hide16Circle, onChange: setHide16Circle, textLabel: 16 },
-    { id: "hide8Circle", label: "Show Chakra - 8 Entrance", checked: hide8Circle, onChange: setHide8Circle, textLabel: 8 },
-    { id: "hide4Circle", label: "Show Chakra - 4 Entrance", checked: hide4Circle, onChange: setHide4Circle, textLabel: 4 },
-
-  ];
 
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
@@ -1961,117 +2001,53 @@ const DrawingBoard = ({
           </label>
           <p className="text-sm text-gray-500 mt-2">Supported: .jpg, .jpeg, .png, .pdf</p>
         </div>
-        
-        <label htmlFor="line-select" className="text-sm font-medium text-gray-600">
-          Default Options
-        </label>
-        {/* Checkbox Toggles */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-2">
-            <span className="text-sm text-gray-700">Enter Degree to move cricle:</span>
+
+        {/* Image Controls */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
             <input
               type="number"
-              readOnly={lockChakra}
-              value={inputDegree}
-              onChange={handleInputChange}
-              className="border border-gray-300 rounded px-2 py-1 w-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="0"
-              aria-label="Degree input"
+              value={rotation}
+              onChange={handleRotationChange}
+              placeholder="Rotation (°)"
+              className="border border-gray-300 rounded px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </label>
-          {[
-            { id: "lockChakra", label: "Lock Chakra", checked: lockChakra, onChange: setLockChakra },
-            { id: "lockCentroid", label: "Lock Center", checked: lockCentroid, onChange: setLockCentroid },
-            { id: "snapToCentroid", label: "Reset Auto Center", checked: snapToCentroid, onChange: setSnapToCentroid },
-            // { id: "hideCircle", label: "Show Chakra - 32 Entrance", checked: hideCircle, onChange: setHideCircle },
-            // { id: "hide16Circle", label: "Show Chakra - 16 Entrance", checked: hide16Circle, onChange: setHide16Circle },
-            // { id: "hide8Circle", label: "Show Chakra - 8 Entrance", checked: hide8Circle, onChange: setHide8Circle },
-            // { id: "hide4Circle", label: "Show Chakra - 4 Entrance", checked: hide4Circle, onChange: setHide4Circle },
-            // { id: "imageDragDone", label: "Lock Drag Image", checked: imageDragDone, onChange: setImageDragDone },
-            // { id: "hideCircle", label: "Show Chakra", checked: hideCircle, onChange: setHideCircle },
-            // { id: "hideCircleIntersaction", label: "Show Chakra Intersaction points", checked: hideCircleIntersaction, onChange: setHideCircleIntersaction },
-            // { id: "showDevta", label: "Show Devta", checked: showDevta, onChange: setShowDevta },
-            // { id: "showDevtaIntersaction", label: "Show Devta Intersaction points", checked: showDevtaIntersaction, onChange: setShowDevtaIntersaction },
-            // { id: "hideMarmaLines", label: "Show Marma Lines", checked: hideMarmaLines, onChange: setHideMarmaLines },
-            // { id: "hideMarmapoints", label: "Show Marma Points", checked: hideMarmapoints, onChange: setHideMarmapoints },
-            // { id: "disableDraw", label: "Done Drawing", checked: disableDraw, onChange: setDisableDraw },
-            // { id: "lockCentroid", label: "Lock Centroid", checked: lockCentroid, onChange: setLockCentroid },
-            // { id: "graphDraw", label: "Graph Drawing", checked: graphDraw, onChange: setGraphDraw },
-          ].map(({ id, label, checked, onChange }) => (
-            <div key={id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={id}
-                checked={checked}
-                onChange={(e) => onChange(e.target.checked)}
-                className="cursor-pointer w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor={id} className="text-sm text-gray-700 cursor-pointer">
-                {label}
-              </label>
-            </div>
-          ))}
-          {/*  */}
-          {chakras.map(({ id, label, checked, onChange, textLabel }) => (
-            <div key={id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={id}
-                checked={checked}
-                onChange={(e) => handleShowChakra(textLabel, e.target.checked)}
-
-                // checked={selectedChakra === textLabel}
-                // onChange={() => handleShowChakra(textLabel)}
-                className="cursor-pointer w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor={id} className="text-sm text-gray-700 cursor-pointer">
-                {label}
-              </label>
-            </div>
-          ))}
-          <div className="space-y-4 p-4 bg-gray-50 rounded-lg shadow">
-            {/* Line Selection Dropdown */}
-            <div className="flex items-center gap-3 mb-4">
-              <label htmlFor="line-select" className="text-sm font-medium text-gray-600">
-                Select Line:
-              </label>
-              <select
-                id="line-select"
-                value={selectedLineIndex}
-                onChange={(e) => setSelectedLineIndex(parseInt(e.target.value, 10))}
-                className="text-sm border rounded p-2 w-40"
-              >
-                {lineSets.map((lineSet, index) => (
-                  <option key={index} value={index}>
-                    {lineSet.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Line Controls for Selected Line */}
-            <LineControls
-              lineSet={lineSets[selectedLineIndex]}
-              setIndex={selectedLineIndex}
-              onUpdate={handleLineSetUpdate}
-            />
+            <button
+              onClick={handleReset}
+              className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+            >
+              Reset
+            </button>
           </div>
-          <br></br>
-          <label htmlFor="line-select" className="text-sm font-medium text-gray-600">
-            Other Options
-          </label>
+
+          <div className="flex justify-between gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition w-full"
+            >
+              Zoom In
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition w-full"
+            >
+              Zoom Out
+            </button>
+          </div>
+        </div>
+
+        {/* Checkbox Toggles */}
+        <div className="space-y-3">
           {[
-            // { id: "lockChakra", label: "Lock Chakra", checked: lockChakra, onChange: setLockChakra },
-            // { id: "lockCentroid", label: "Lock Center", checked: lockCentroid, onChange: setLockCentroid },
-            // { id: "snapToCentroid", label: "Reset Auto Center", checked: snapToCentroid, onChange: setSnapToCentroid },
             { id: "imageDragDone", label: "Lock Drag Image", checked: imageDragDone, onChange: setImageDragDone },
+            { id: "hideCircle", label: "Show Chakra", checked: hideCircle, onChange: setHideCircle },
             { id: "hideCircleIntersaction", label: "Show Chakra Intersaction points", checked: hideCircleIntersaction, onChange: setHideCircleIntersaction },
             { id: "showDevta", label: "Show Devta", checked: showDevta, onChange: setShowDevta },
             { id: "showDevtaIntersaction", label: "Show Devta Intersaction points", checked: showDevtaIntersaction, onChange: setShowDevtaIntersaction },
             { id: "hideMarmaLines", label: "Show Marma Lines", checked: hideMarmaLines, onChange: setHideMarmaLines },
             { id: "hideMarmapoints", label: "Show Marma Points", checked: hideMarmapoints, onChange: setHideMarmapoints },
             { id: "disableDraw", label: "Done Drawing", checked: disableDraw, onChange: setDisableDraw },
-            // { id: "lockCentroid", label: "Lock Centroid", checked: lockCentroid, onChange: setLockCentroid },
+            { id: "lockCentroid", label: "Lock Centroid", checked: lockCentroid, onChange: setLockCentroid },
             { id: "graphDraw", label: "Graph Drawing", checked: graphDraw, onChange: setGraphDraw },
           ].map(({ id, label, checked, onChange }) => (
             <div key={id} className="flex items-center gap-2">
@@ -2089,7 +2065,42 @@ const DrawingBoard = ({
           ))}
         </div>
 
-
+        {/* Line Controls (Conditionally Rendered) */}
+        {hideCircle && fileUploaded && (
+          <div className="space-y-4">
+            {lineSets.map((lineSet, i) => (
+              <LineControls
+                key={i}
+                lineSet={lineSet}
+                setIndex={i}
+                onUpdate={handleLineSetUpdate}
+              />
+            ))}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="snapToCentroid"
+                checked={snapToCentroid}
+                onChange={(e) => setSnapToCentroid(e.target.checked)}
+                className="cursor-pointer w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="snapToCentroid" className="text-sm text-gray-700">
+                Snap to Centroid
+              </label>
+            </div>
+            <label className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Enter Degree:</span>
+              <input
+                type="number"
+                value={inputDegree}
+                onChange={handleInputChange}
+                className="border border-gray-300 rounded px-2 py-1 w-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0"
+                aria-label="Degree input"
+              />
+            </label>
+          </div>
+        )}
 
         <button
           onClick={downloadPDF}
@@ -2251,11 +2262,10 @@ const DrawingBoard = ({
                               }
 
                               const style = lineSets[index % lineSets.length];
-                              console.log("index % lineSets.length : ", index % lineSets.length)
-                              console.log("hide16Circle ? 2 : hide8Circle ? 8 : hide4Circle ? 4 : 2 : ", hide16Circle ? 2 : hide8Circle ? 8 : hide4Circle ? 4 : 2)
+
                               return (
                                 <g key={index}>
-                                  {index % (hide16Circle ? 2 : hide8Circle ? 4 : hide4Circle ? 8 : 2) == 0 &&
+                                  {index % lineSets.length == 0 &&
                                     <line
                                       x1={centroid.x}
                                       y1={centroid.y}
@@ -2458,6 +2468,426 @@ const DrawingBoard = ({
 
                                 </g>
                               ))}
+
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const dx = intersection.point.x - centroid.x;
+                              const dy = intersection.point.y - centroid.y;
+                              const distance = Math.sqrt(dx ** 2 + dy ** 2);
+                            
+                              // Define a minimum distance
+                              const minDistance = 100;
+                            
+                              // Adjust the position to maintain the minimum distance
+                              let adjustedX = intersection.point.x;
+                              let adjustedY = intersection.point.y;
+                            
+                              if (distance < minDistance) {
+                                // Scale the delta values to extend the distance to the minimum
+                                const scale = minDistance / distance;
+                                adjustedX = centroid.x + dx * scale;
+                                adjustedY = centroid.y + dy * scale;
+                              }
+
+                              if (intersection.label === "S1") {
+                                adjustedX -= 20; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "E8") {
+                                adjustedX += 30; 
+                                adjustedY += 55; 
+                              }
+
+                              if (intersection.label === "E7") {
+                                adjustedX += 30; 
+                                adjustedY += 45; 
+                              }
+
+                              if (intersection.label === "E6") {
+                                adjustedX += 30; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "E5") {
+                                adjustedX += 30; 
+                                adjustedY += 25; 
+                              }
+
+                              if (intersection.label === "E4") {
+                                adjustedX += 30; 
+                                adjustedY += 20;
+                              }
+                              
+                              if (intersection.label === "E3") {
+                                adjustedX += 30; 
+                                adjustedY += 15; 
+                              }
+
+                              if (intersection.label === "E2") {
+                                adjustedX += 30; 
+                                adjustedY += 15; 
+                              }
+
+                              if (intersection.label === "E1") {
+                                adjustedX += 30; 
+                                adjustedY += 15; 
+                              }
+
+                              if (intersection.label === "N8") {
+                                adjustedX += 60; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N7") {
+                                adjustedX += 45; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N6") {
+                                adjustedX += 35; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N5") {
+                                adjustedX += 25; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N4") {
+                                adjustedX += 20; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N3") {
+                                adjustedX += 15; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N2") {
+                                adjustedX += 15; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N1") {
+                                adjustedX += 15; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "W8") {
+                                adjustedX -= 30; 
+                                adjustedY -= 55; 
+                              }
+
+                              if (intersection.label === "W7") {
+                                adjustedX -= 30; 
+                                adjustedY -= 45; 
+                              }
+
+                              if (intersection.label === "W6") {
+                                adjustedX -= 30; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "W5") {
+                                adjustedX -= 30; 
+                                adjustedY -= 25; 
+                              }
+
+                              if (intersection.label === "W4") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "W3") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "W2") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "W1") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "S8") {
+                                adjustedX -= 55; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S7") {
+                                adjustedX -= 40; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S6") {
+                                adjustedX -= 30; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S5") {
+                                adjustedX -= 25; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S4") {
+                                adjustedX -= 20; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S3") {
+                                adjustedX -= 15; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S2") {
+                                adjustedX -= 15; 
+                                adjustedY += 30; 
+                              }
+
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && (
+                                    <circle
+                                      cx={intersection.point.x}
+                                      cy={intersection.point.y}
+                                      r="3"
+                                      fill="red"
+                                    />
+                                  )}
+
+                                  <text
+                                    x={adjustedX}
+                                    y={adjustedY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: "none",
+                                      cursor: "default",
+                                    }}
+                                  >
+                                    {intersection.label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const dx = intersection.point.x - centroid.x;
+                              const dy = intersection.point.y - centroid.y;
+                              const distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+                              // Define a minimum distance
+                              const minDistance = 200;
+
+                              // Adjust the position to maintain the minimum distance
+                              let adjustedX = intersection.point.x;
+                              let adjustedY = intersection.point.y;
+
+                              if (distance < minDistance) {
+                                // Scale the delta values to extend the distance to the minimum
+                                const scale = minDistance / distance;
+                                adjustedX = centroid.x + dx * scale;
+                                adjustedY = centroid.y + dy * scale;
+                              }
+
+                              // Define offsets for specific labels
+                              const labelOffsets = {
+                                S1: { x: -20, y: 30 },
+                                E8: { x: 30, y: 55 },
+                                E7: { x: 30, y: 45 },
+                                E6: { x: 30, y: 30 },
+                                E5: { x: 30, y: 25 },
+                                E4: { x: 30, y: 20 },
+                                E3: { x: 30, y: 15 },
+                                E2: { x: 30, y: 15 },
+                                E1: { x: 30, y: 15 },
+                                N8: { x: 60, y: -30 },
+                                N7: { x: 45, y: -30 },
+                                N6: { x: 35, y: -30 },
+                                N5: { x: 25, y: -30 },
+                                N4: { x: 20, y: -30 },
+                                N3: { x: 15, y: -30 },
+                                N2: { x: 15, y: -30 },
+                                N1: { x: 15, y: -30 },
+                                W8: { x: -30, y: -55 },
+                                W7: { x: -30, y: -45 },
+                                W6: { x: -30, y: -30 },
+                                W5: { x: -30, y: -25 },
+                                W4: { x: -30, y: -15 },
+                                W3: { x: -30, y: -15 },
+                                W2: { x: -30, y: -15 },
+                                W1: { x: -30, y: -15 },
+                                S8: { x: -55, y: 30 },
+                                S7: { x: -40, y: 30 },
+                                S6: { x: -30, y: 30 },
+                                S5: { x: -25, y: 30 },
+                                S4: { x: -20, y: 30 },
+                                S3: { x: -15, y: 30 },
+                                S2: { x: -15, y: 30 },
+                              };
+
+                              // Apply specific label offsets if defined
+                              if (labelOffsets[intersection.label]) {
+                                adjustedX += labelOffsets[intersection.label].x;
+                                adjustedY += labelOffsets[intersection.label].y;
+                              }
+
+                              return (
+                                <g key={i}>
+                                  <rect
+                                    x={adjustedX - 5} // Center the square (10x10) at adjustedX, adjustedY
+                                    y={adjustedY - 5}
+                                    width="10"
+                                    height="10"
+                                    fill="blue" // You can change the color as needed
+                                  />
+
+                                  {hideCircleIntersaction && (
+                                    <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
+                                  )}
+
+                                  <text
+                                    x={adjustedX}
+                                    y={adjustedY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: "none",
+                                      cursor: "default",
+                                    }}
+                                  >
+                                    {intersection.label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
+
+
+
+
+                              {/* {intersectionsState && plotText()} */}
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const { point, label } = intersection;
+                              const halfSize = 676/2;
+                              const margin = 26;
+                              // Adjusted positions for the labels
+                              const adjustedX = point.x; // Base offset for x
+                              const adjustedY = point.y; // Base offset for y
+
+                              // Additional adjustments for label positioning
+                              const labelOffsetX = Math.cos(Math.atan2(adjustedY, adjustedX)) > 0 ? 10 : 30;
+                              const labelOffsetY = Math.cos(Math.atan2(adjustedY, adjustedX)) > 0 ? 30 : 30;
+
+                              const finalLabelX = adjustedX + labelOffsetX;
+                              const finalLabelY = adjustedY + labelOffsetY;
+
+                              const rightBoundary = centroid.x + halfSize - margin;
+                              const leftBoundary = centroid.x - halfSize + margin;
+                              const topBoundary = centroid.y - halfSize + margin;
+                              const bottomBoundary = centroid.y + halfSize - margin;
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={point.x} cy={point.y} r="3" fill="red" />}
+                                  <text
+                                    x={finalLabelX}
+                                    y={finalLabelY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+                              {/* 
+                            {intersectionsState.map((intersection, i) => {
+                              const { point, label } = intersection;
+                              // Base offset for x and y
+                              const adjustedX = point.x;
+                              const adjustedY = point.y;
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={point.x} cy={point.y} r="3" fill="red" />}
+                                  <text
+                                    x={adjustedX + 55}
+                                    y={adjustedY + 35}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor='middle'
+                                    // textAnchor={finalLabelX > adjustedX ? "start" : "end"} // Adjust text anchor based on position
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
+
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const { point, label } = intersection;
+
+                              // Adjusted positions for the labels
+                              const adjustedX = point.x; // Base offset for x
+                              const adjustedY = point.y; // Base offset for y
+
+                              // Additional adjustments for label positioning based on SVG dimensions
+                              const svgWidth = 500; // Replace with your actual SVG width
+                              const svgHeight = 500; // Replace with your actual SVG height
+
+                              const labelOffsetX = adjustedX / svgWidth > 0.5 ? 10 : 30;
+                              const labelOffsetY = adjustedY / svgHeight > 0.5 ? 30 : 30;
+
+                              const finalLabelX = adjustedX + labelOffsetX;
+                              const finalLabelY = adjustedY + labelOffsetY;
+
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={point.x} cy={point.y} r="3" fill="red" />}
+
+                                  <text
+                                    x={finalLabelX}
+                                    y={finalLabelY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor={labelOffsetX < 0 ? "end" : "start"}
+                                    // textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
                             </>}
                           </>}
                         </>
@@ -2534,7 +2964,7 @@ const DrawingBoard = ({
                   <rect x={0} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
                   <rect x={0} y={649} width="676" height="27" fill="white" mask="url(#white-mask)" />
                   <rect x={649} y={0} width="27" height="676" fill="white" mask="url(#white-mask)" />
-                  {hideCircle && !hide16Circle && !hide4Circle && !hide8Circle && Array.from({ length: totalLines }).map((_, index) => {
+                  {hideCircle && Array.from({ length: totalLines }).map((_, index) => {
                     const rotationIndex = index % totalLines;
                     const angle = rotationIndex * angleIncrement + (270 + inputDegree);
                     const radian = (angle * Math.PI) / 180;
@@ -2712,17 +3142,17 @@ const DrawingBoard = ({
 
                   })}
                   {/* {(
-                    allResults.map((item) => {
-                      console.log("item : ", item)
-                      return (
-                        <polygon
-                          points={item.result.map((p) => `${p.x},${p.y}`).join(" ")}
-                          fill="pink"
-                          stroke="green"
-                        />
-                      )
-                    })
-                  )} */}
+                  allResults.map((item) => {
+                    console.log("item : ", item)
+                    return (
+                      <polygon
+                        points={item.result.map((p) => `${p.x},${p.y}`).join(" ")}
+                        fill="pink"
+                        stroke="green"
+                      />
+                    )
+                  })
+                )} */}
                   {graphDraw &&
                     allResults.map((item, index) => {
                       const width = 200; // Width of the SVG container

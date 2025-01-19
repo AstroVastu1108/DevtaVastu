@@ -55,7 +55,6 @@ const DrawingBoard = ({
   const [hide8Circle, setHide8Circle] = useState(false);
   const [hide4Circle, setHide4Circle] = useState(false);
   const [imageDragDone, setImageDragDone] = useState(false);
-  const [lockChakra, setLockChakra] = useState(false);
   // circle visible state
   const [hideCircleIntersaction, setHideCircleIntersaction] = useState(false);
   // Show Devta
@@ -1909,6 +1908,46 @@ const DrawingBoard = ({
   const allResults = processData(points, data);
   const maxValue = Math.max(...allResults.map(item => item.area)); // Find the maximum value for scaling
 
+  const [selectedChakra, setSelectedChakra] = useState(null);
+
+
+  // const handleShowChakra = (label, text) => {
+  //   if (label == 16) {
+  //     setHideCircle(text)
+  //     setHide16Circle(text)
+  //     setHide8Circle(!text)
+  //     setHide4Circle(!text)
+  //     setHide32Circle(!text)
+  //   } else if (label == 8) {
+  //     setHideCircle(text)
+  //     setHide16Circle(!text)
+  //     setHide8Circle(text)
+  //     setHide4Circle(!text)
+  //     setHide32Circle(!text)
+  //   } else if (label == 4) {
+  //     setHideCircle(text)
+  //     setHide32Circle(!text)
+  //     setHide16Circle(!text)
+  //     setHide8Circle(!text)
+  //     setHide4Circle(text)
+  //   } else if (label == 32) {
+  //     setHideCircle(text)
+  //     setHide32Circle(text)
+  //     setHide16Circle(!text)
+  //     setHide8Circle(!text)
+  //     setHide4Circle(!text)
+  //   }
+  // }
+
+  // const handleShowChakra = (label, text) => {
+  //   setHideCircle(text);
+
+  //   setHide32Circle(label === 32 ? text : !text);
+  //   setHide16Circle(label === 16 ? text : !text);
+  //   setHide8Circle(label === 8 ? text : !text);
+  //   setHide4Circle(label === 4 ? text : !text);
+  // };
+
   const handleShowChakra = (label, text) => {
     if (text) {
       // If the checkbox is being turned on, update all states
@@ -1937,6 +1976,10 @@ const DrawingBoard = ({
 
   ];
 
+  // const handleShowChakra = (textLabel) => {
+  //   setSelectedChakra((prev) => (prev === textLabel ? null : textLabel)); // Deselect if already selected
+  // };
+
   return (
     <div className="flex flex-row p-4 bg-gray-100 rounded shadow-lg">
       <div className="flex flex-col w-1/4 p-6 bg-white rounded-lg shadow-lg space-y-6 h-[100vh] overflow-y-auto">
@@ -1961,7 +2004,52 @@ const DrawingBoard = ({
           </label>
           <p className="text-sm text-gray-500 mt-2">Supported: .jpg, .jpeg, .png, .pdf</p>
         </div>
-        
+
+        {/* Image Controls */}
+        {/* <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={rotation}
+              onChange={handleRotationChange}
+              placeholder="Rotation (°)"
+              className="border border-gray-300 rounded px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleReset}
+              className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="flex justify-between gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition w-full"
+            >
+              Zoom In
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition w-full"
+            >
+              Zoom Out
+            </button>
+          </div>
+
+          <label className="flex items-center gap-2">
+            <span className="text-sm text-gray-700">Enter Degree to move cricle:</span>
+            <input
+              type="number"
+              value={inputDegree}
+              onChange={handleInputChange}
+              className="border border-gray-300 rounded px-2 py-1 w-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0"
+              aria-label="Degree input"
+            />
+          </label>
+        </div> */}
         <label htmlFor="line-select" className="text-sm font-medium text-gray-600">
           Default Options
         </label>
@@ -1971,7 +2059,6 @@ const DrawingBoard = ({
             <span className="text-sm text-gray-700">Enter Degree to move cricle:</span>
             <input
               type="number"
-              readOnly={lockChakra}
               value={inputDegree}
               onChange={handleInputChange}
               className="border border-gray-300 rounded px-2 py-1 w-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1980,7 +2067,7 @@ const DrawingBoard = ({
             />
           </label>
           {[
-            { id: "lockChakra", label: "Lock Chakra", checked: lockChakra, onChange: setLockChakra },
+            { id: "imageDragDone", label: "Lock Chakra", checked: imageDragDone, onChange: setImageDragDone },
             { id: "lockCentroid", label: "Lock Center", checked: lockCentroid, onChange: setLockCentroid },
             { id: "snapToCentroid", label: "Reset Auto Center", checked: snapToCentroid, onChange: setSnapToCentroid },
             // { id: "hideCircle", label: "Show Chakra - 32 Entrance", checked: hideCircle, onChange: setHideCircle },
@@ -2061,9 +2148,9 @@ const DrawingBoard = ({
             Other Options
           </label>
           {[
-            // { id: "lockChakra", label: "Lock Chakra", checked: lockChakra, onChange: setLockChakra },
-            // { id: "lockCentroid", label: "Lock Center", checked: lockCentroid, onChange: setLockCentroid },
-            // { id: "snapToCentroid", label: "Reset Auto Center", checked: snapToCentroid, onChange: setSnapToCentroid },
+            { id: "imageDragDone", label: "Lock Chakra", checked: imageDragDone, onChange: setImageDragDone },
+            { id: "lockCentroid", label: "Lock Center", checked: lockCentroid, onChange: setLockCentroid },
+            { id: "snapToCentroid", label: "Reset Auto Center", checked: snapToCentroid, onChange: setSnapToCentroid },
             { id: "imageDragDone", label: "Lock Drag Image", checked: imageDragDone, onChange: setImageDragDone },
             { id: "hideCircleIntersaction", label: "Show Chakra Intersaction points", checked: hideCircleIntersaction, onChange: setHideCircleIntersaction },
             { id: "showDevta", label: "Show Devta", checked: showDevta, onChange: setShowDevta },
@@ -2458,6 +2545,426 @@ const DrawingBoard = ({
 
                                 </g>
                               ))}
+
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const dx = intersection.point.x - centroid.x;
+                              const dy = intersection.point.y - centroid.y;
+                              const distance = Math.sqrt(dx ** 2 + dy ** 2);
+                            
+                              // Define a minimum distance
+                              const minDistance = 100;
+                            
+                              // Adjust the position to maintain the minimum distance
+                              let adjustedX = intersection.point.x;
+                              let adjustedY = intersection.point.y;
+                            
+                              if (distance < minDistance) {
+                                // Scale the delta values to extend the distance to the minimum
+                                const scale = minDistance / distance;
+                                adjustedX = centroid.x + dx * scale;
+                                adjustedY = centroid.y + dy * scale;
+                              }
+
+                              if (intersection.label === "S1") {
+                                adjustedX -= 20; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "E8") {
+                                adjustedX += 30; 
+                                adjustedY += 55; 
+                              }
+
+                              if (intersection.label === "E7") {
+                                adjustedX += 30; 
+                                adjustedY += 45; 
+                              }
+
+                              if (intersection.label === "E6") {
+                                adjustedX += 30; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "E5") {
+                                adjustedX += 30; 
+                                adjustedY += 25; 
+                              }
+
+                              if (intersection.label === "E4") {
+                                adjustedX += 30; 
+                                adjustedY += 20;
+                              }
+                              
+                              if (intersection.label === "E3") {
+                                adjustedX += 30; 
+                                adjustedY += 15; 
+                              }
+
+                              if (intersection.label === "E2") {
+                                adjustedX += 30; 
+                                adjustedY += 15; 
+                              }
+
+                              if (intersection.label === "E1") {
+                                adjustedX += 30; 
+                                adjustedY += 15; 
+                              }
+
+                              if (intersection.label === "N8") {
+                                adjustedX += 60; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N7") {
+                                adjustedX += 45; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N6") {
+                                adjustedX += 35; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N5") {
+                                adjustedX += 25; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N4") {
+                                adjustedX += 20; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N3") {
+                                adjustedX += 15; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N2") {
+                                adjustedX += 15; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "N1") {
+                                adjustedX += 15; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "W8") {
+                                adjustedX -= 30; 
+                                adjustedY -= 55; 
+                              }
+
+                              if (intersection.label === "W7") {
+                                adjustedX -= 30; 
+                                adjustedY -= 45; 
+                              }
+
+                              if (intersection.label === "W6") {
+                                adjustedX -= 30; 
+                                adjustedY -= 30; 
+                              }
+
+                              if (intersection.label === "W5") {
+                                adjustedX -= 30; 
+                                adjustedY -= 25; 
+                              }
+
+                              if (intersection.label === "W4") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "W3") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "W2") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "W1") {
+                                adjustedX -= 30; 
+                                adjustedY -= 15; 
+                              }
+
+                              if (intersection.label === "S8") {
+                                adjustedX -= 55; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S7") {
+                                adjustedX -= 40; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S6") {
+                                adjustedX -= 30; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S5") {
+                                adjustedX -= 25; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S4") {
+                                adjustedX -= 20; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S3") {
+                                adjustedX -= 15; 
+                                adjustedY += 30; 
+                              }
+
+                              if (intersection.label === "S2") {
+                                adjustedX -= 15; 
+                                adjustedY += 30; 
+                              }
+
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && (
+                                    <circle
+                                      cx={intersection.point.x}
+                                      cy={intersection.point.y}
+                                      r="3"
+                                      fill="red"
+                                    />
+                                  )}
+
+                                  <text
+                                    x={adjustedX}
+                                    y={adjustedY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: "none",
+                                      cursor: "default",
+                                    }}
+                                  >
+                                    {intersection.label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const dx = intersection.point.x - centroid.x;
+                              const dy = intersection.point.y - centroid.y;
+                              const distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+                              // Define a minimum distance
+                              const minDistance = 200;
+
+                              // Adjust the position to maintain the minimum distance
+                              let adjustedX = intersection.point.x;
+                              let adjustedY = intersection.point.y;
+
+                              if (distance < minDistance) {
+                                // Scale the delta values to extend the distance to the minimum
+                                const scale = minDistance / distance;
+                                adjustedX = centroid.x + dx * scale;
+                                adjustedY = centroid.y + dy * scale;
+                              }
+
+                              // Define offsets for specific labels
+                              const labelOffsets = {
+                                S1: { x: -20, y: 30 },
+                                E8: { x: 30, y: 55 },
+                                E7: { x: 30, y: 45 },
+                                E6: { x: 30, y: 30 },
+                                E5: { x: 30, y: 25 },
+                                E4: { x: 30, y: 20 },
+                                E3: { x: 30, y: 15 },
+                                E2: { x: 30, y: 15 },
+                                E1: { x: 30, y: 15 },
+                                N8: { x: 60, y: -30 },
+                                N7: { x: 45, y: -30 },
+                                N6: { x: 35, y: -30 },
+                                N5: { x: 25, y: -30 },
+                                N4: { x: 20, y: -30 },
+                                N3: { x: 15, y: -30 },
+                                N2: { x: 15, y: -30 },
+                                N1: { x: 15, y: -30 },
+                                W8: { x: -30, y: -55 },
+                                W7: { x: -30, y: -45 },
+                                W6: { x: -30, y: -30 },
+                                W5: { x: -30, y: -25 },
+                                W4: { x: -30, y: -15 },
+                                W3: { x: -30, y: -15 },
+                                W2: { x: -30, y: -15 },
+                                W1: { x: -30, y: -15 },
+                                S8: { x: -55, y: 30 },
+                                S7: { x: -40, y: 30 },
+                                S6: { x: -30, y: 30 },
+                                S5: { x: -25, y: 30 },
+                                S4: { x: -20, y: 30 },
+                                S3: { x: -15, y: 30 },
+                                S2: { x: -15, y: 30 },
+                              };
+
+                              // Apply specific label offsets if defined
+                              if (labelOffsets[intersection.label]) {
+                                adjustedX += labelOffsets[intersection.label].x;
+                                adjustedY += labelOffsets[intersection.label].y;
+                              }
+
+                              return (
+                                <g key={i}>
+                                  <rect
+                                    x={adjustedX - 5} // Center the square (10x10) at adjustedX, adjustedY
+                                    y={adjustedY - 5}
+                                    width="10"
+                                    height="10"
+                                    fill="blue" // You can change the color as needed
+                                  />
+
+                                  {hideCircleIntersaction && (
+                                    <circle cx={intersection.point.x} cy={intersection.point.y} r="3" fill="red" />
+                                  )}
+
+                                  <text
+                                    x={adjustedX}
+                                    y={adjustedY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: "none",
+                                      cursor: "default",
+                                    }}
+                                  >
+                                    {intersection.label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
+
+
+
+
+                              {/* {intersectionsState && plotText()} */}
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const { point, label } = intersection;
+                              const halfSize = 676/2;
+                              const margin = 26;
+                              // Adjusted positions for the labels
+                              const adjustedX = point.x; // Base offset for x
+                              const adjustedY = point.y; // Base offset for y
+
+                              // Additional adjustments for label positioning
+                              const labelOffsetX = Math.cos(Math.atan2(adjustedY, adjustedX)) > 0 ? 10 : 30;
+                              const labelOffsetY = Math.cos(Math.atan2(adjustedY, adjustedX)) > 0 ? 30 : 30;
+
+                              const finalLabelX = adjustedX + labelOffsetX;
+                              const finalLabelY = adjustedY + labelOffsetY;
+
+                              const rightBoundary = centroid.x + halfSize - margin;
+                              const leftBoundary = centroid.x - halfSize + margin;
+                              const topBoundary = centroid.y - halfSize + margin;
+                              const bottomBoundary = centroid.y + halfSize - margin;
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={point.x} cy={point.y} r="3" fill="red" />}
+                                  <text
+                                    x={finalLabelX}
+                                    y={finalLabelY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+                              {/* 
+                            {intersectionsState.map((intersection, i) => {
+                              const { point, label } = intersection;
+                              // Base offset for x and y
+                              const adjustedX = point.x;
+                              const adjustedY = point.y;
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={point.x} cy={point.y} r="3" fill="red" />}
+                                  <text
+                                    x={adjustedX + 55}
+                                    y={adjustedY + 35}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor='middle'
+                                    // textAnchor={finalLabelX > adjustedX ? "start" : "end"} // Adjust text anchor based on position
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
+
+                              {/* {intersectionsState.map((intersection, i) => {
+                              const { point, label } = intersection;
+
+                              // Adjusted positions for the labels
+                              const adjustedX = point.x; // Base offset for x
+                              const adjustedY = point.y; // Base offset for y
+
+                              // Additional adjustments for label positioning based on SVG dimensions
+                              const svgWidth = 500; // Replace with your actual SVG width
+                              const svgHeight = 500; // Replace with your actual SVG height
+
+                              const labelOffsetX = adjustedX / svgWidth > 0.5 ? 10 : 30;
+                              const labelOffsetY = adjustedY / svgHeight > 0.5 ? 30 : 30;
+
+                              const finalLabelX = adjustedX + labelOffsetX;
+                              const finalLabelY = adjustedY + labelOffsetY;
+
+                              return (
+                                <g key={i}>
+                                  {hideCircleIntersaction && <circle cx={point.x} cy={point.y} r="3" fill="red" />}
+
+                                  <text
+                                    x={finalLabelX}
+                                    y={finalLabelY}
+                                    fontSize="16"
+                                    fontWeight="500"
+                                    fill="black"
+                                    textAnchor={labelOffsetX < 0 ? "end" : "start"}
+                                    // textAnchor="middle"
+                                    alignmentBaseline="middle"
+                                    style={{
+                                      userSelect: 'none', // Prevent text selection
+                                      cursor: 'default', // Optional: Make the cursor non-interactive
+                                    }}
+                                  >
+                                    {label}
+                                  </text>
+                                </g>
+                              );
+                            })} */}
+
                             </>}
                           </>}
                         </>
